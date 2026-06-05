@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": ".cursor/hooks/session-start.sh"
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": ".cursor/hooks/post-write-check.sh",
+        "matcher": "Write|StrReplace"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/stop-check.sh"
+      }
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "date_str=$(date \"+%A, %B %d, %Y %H:%M %Z\") && echo \"{\\\"hookSpecificOutput\\\": {\\\"hookEventName\\\": \\\"SessionStart\\\", \\\"additionalContext\\\": \\\"Current date and time: $date_str\\\"}}\"",
+            "statusMessage": "Loading session date..."
+          },
+          {
+            "type": "command",
+            "command": "bash scripts/meta/session-start-report.sh",
+            "statusMessage": "Loading project state..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/meta/post-write-check.sh",
+            "timeout": 30,
+            "statusMessage": "Checking for stale references..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/meta/check-index.sh && bash scripts/meta/check-links.sh && bash scripts/meta/check-stale-refs.sh && bash scripts/meta/check-conclusions-alignment.sh",
+            "statusMessage": "Verifying knowledge base consistency..."
+          }
+        ]
+      }
+    ]
+  }
+}

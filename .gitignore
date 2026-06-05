@@ -1,0 +1,7 @@
+.DS_Store
+tmp/
+.obsidian/
+node_modules/
+
+# npm pack output (Phase 1 acceptance)
+*.tgz

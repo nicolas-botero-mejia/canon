@@ -1,0 +1,21 @@
+{
+  "name": "@scope/name",
+  "version": "0.1.0",
+  "description": "Framework for AI-assisted consulting engagements",
+  "type": "module",
+  "bin": {
+    "framework": "./bin/cli.mjs"
+  },
+  "files": [
+    "bin/",
+    "payload/",
+    "manifest.json"
+  ],
+  "scripts": {
+    "pack-dry": "npm pack --dry-run"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}
