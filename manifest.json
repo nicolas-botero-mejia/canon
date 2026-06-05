@@ -1,9 +1,9 @@
 {
   "_comment": "Single source of truth for what sync may write. 'referenced' = stays in node_modules, never copied. 'vendored' = copied into consumer on init/sync, overwritten on update.",
   "referenced": [
-    "node_modules/@scope/name/payload/CLAUDE.base.md",
-    "node_modules/@scope/name/payload/scripts/meta/",
-    "node_modules/@scope/name/payload/wiki/meta/"
+    "node_modules/@scope/canon/payload/CLAUDE.base.md",
+    "node_modules/@scope/canon/payload/scripts/meta/",
+    "node_modules/@scope/canon/payload/wiki/meta/"
   ],
   "vendored": [
     ".claude/agents",

@@ -43,7 +43,7 @@ The whole design problem reduces to: **keep the wiring bucket as small and as pu
 
 | File / dir | Where the real content lives | Wiring in the repo | Owner | What `update` + `sync` does |
 |------------|------------------------------|--------------------|-------|------------------------------|
-| `CLAUDE.md` | user's facts in the repo; framework base in `node_modules` | one `@import node_modules/@scope/name/CLAUDE.base.md` line | **User** | nothing — the imported file changes, the user's file doesn't |
+| `CLAUDE.md` | user's facts in the repo; framework base in `node_modules` | one `@import node_modules/@scope/canon/CLAUDE.base.md` line | **User** | nothing — the imported file changes, the user's file doesn't |
 | `CONTENT_INDEX.md` | indexes user dirs only | n/a — framework wiki isn't in monitored dirs | **User** | nothing |
 | `.claude/settings.json` | hook logic in `node_modules` | hooks call `bin/hook.sh <event>` dispatcher | Wiring | optional re-sync if the dispatcher contract changes |
 | `.claude/skills`, `.claude/agents`, `.claude/rules` | the package | **symlink → node_modules** *or* **thin-vendor** (see §5) | Framework (discovered) | overwrite — safe, no user content |
@@ -65,7 +65,7 @@ Claude Code and Cursor discover skills/agents/rules/hooks by scanning fixed root
 
 | Option | Pro | Con |
 |--------|-----|-----|
-| **Symlink** `.claude/skills → ../node_modules/@scope/name/.claude/skills` | updates are instant; nothing to re-sync | fragile on Windows; symlink-in-git quirks; tools must follow symlinks |
+| **Symlink** `.claude/skills → ../node_modules/@scope/canon/.claude/skills` | updates are instant; nothing to re-sync | fragile on Windows; symlink-in-git quirks; tools must follow symlinks |
 | **Thin-vendor** (copy on `init`/`sync`, overwrite-on-update) | fully portable; explicit; git-clean | requires `sync` after `npm update` (one command) |
 
 **Recommendation:** thin-vendor (portable, and overwrite is safe). Revisit symlink if a spike confirms clean cross-platform behavior. **Validate in spike:** does Claude Code discover a symlinked `.claude/skills`?
@@ -86,10 +86,10 @@ Why npm over the alternatives, given the "update the core later" requirement:
 
 | Command | Does |
 |---------|------|
-| `npx @scope/name init` | Interactive. Asks which AI-tool layers to enable (Claude / Cursor / Copilot / Windsurf / Codex). Scaffolds the user content dirs, writes the wiring (`CLAUDE.md` skeleton + `@import`, `settings.json` delegating to the dispatcher, discovered dirs), and records `.framework-version`. |
-| `npx @scope/name sync` | Re-applies the wiring from the currently-installed package version. Writes only the wiring bucket; never the user bucket. Run after `npm update`. |
-| `npx @scope/name doctor` | Validates integrity: package installed, `@import` line present, discovered dirs present and pointing at the right version, hook dispatcher resolves, `.framework-version` matches `node_modules`. This is the user's "guarantee the link is always there." |
-| `npx @scope/name migrate` *(later)* | Imports existing project content (e.g. the CRC Phase-1 corpus) into a fresh consumer project. |
+| `npx @scope/canon init` | Interactive. Asks which AI-tool layers to enable (Claude / Cursor / Copilot / Windsurf / Codex). Scaffolds the user content dirs, writes the wiring (`CLAUDE.md` skeleton + `@import`, `settings.json` delegating to the dispatcher, discovered dirs), and records `.framework-version`. |
+| `npx @scope/canon sync` | Re-applies the wiring from the currently-installed package version. Writes only the wiring bucket; never the user bucket. Run after `npm update`. |
+| `npx @scope/canon doctor` | Validates integrity: package installed, `@import` line present, discovered dirs present and pointing at the right version, hook dispatcher resolves, `.framework-version` matches `node_modules`. This is the user's "guarantee the link is always there." |
+| `npx @scope/canon migrate` *(later)* | Imports existing project content (e.g. the CRC Phase-1 corpus) into a fresh consumer project. |
 
 ---
 
@@ -102,7 +102,7 @@ Why npm over the alternatives, given the "update the core later" requirement:
 
 ## 9. The update-safety contract (the guarantee)
 
-> `npm update` + `npx @scope/name sync` will **only** write to the **wiring bucket** (discovered dirs + `settings.json` dispatcher + `.framework-version`). It will **never** write to `plans/`, `findings/`, `output/`, `raw/`, `wiki/project/`, `wiki/standards/`, `tmp/`, the body of `CLAUDE.md`, or the user's `CONTENT_INDEX.md` entries. `doctor` enforces and reports.
+> `npm update` + `npx @scope/canon sync` will **only** write to the **wiring bucket** (discovered dirs + `settings.json` dispatcher + `.framework-version`). It will **never** write to `plans/`, `findings/`, `output/`, `raw/`, `wiki/project/`, `wiki/standards/`, `tmp/`, the body of `CLAUDE.md`, or the user's `CONTENT_INDEX.md` entries. `doctor` enforces and reports.
 
 This is the headline promise; every design choice above exists to make it true by construction.
 

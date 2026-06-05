@@ -3,7 +3,7 @@ import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 // The package name — placeholder until named in Phase 5
-export const PKG_NAME = '@scope/name'
+export const PKG_NAME = '@scope/canon'
 
 // Resolve the package root from this file's location (bin/lib/paths.mjs → ../../)
 export function packageRoot() {

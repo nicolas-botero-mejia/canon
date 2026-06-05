@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Dispatcher called by consumer settings.json / hooks.json.
 # Routes hook events to the framework scripts in payload/scripts/meta/.
-# Usage: bash node_modules/@scope/name/bin/hook.sh <EventName>
+# Usage: bash node_modules/@scope/canon/bin/hook.sh <EventName>
 
 set -euo pipefail
 

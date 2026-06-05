@@ -5,8 +5,8 @@
 **Design reference:** [`docs/architecture.md`](./architecture.md) — the packaging/update model this plan executes. Read it first.
 
 **Done looks like:**
-- `npx @scope/name init` scaffolds a consumer project (choice of AI-tool layers).
-- `npm update @scope/name && npx @scope/name sync` refreshes the core and **provably never writes a user file** (the §9 contract in architecture.md, enforced by a test).
+- `npx @scope/canon init` scaffolds a consumer project (choice of AI-tool layers).
+- `npm update @scope/canon && npx @scope/canon sync` refreshes the core and **provably never writes a user file** (the §9 contract in architecture.md, enforced by a test).
 - The meta-wiki IP (the `system-*` docs, lifecycle, notes model) ships *inside* the package, so it updates the same way.
 - The existing corpus runs on the new structure via `migrate`.
 
@@ -23,23 +23,23 @@
 ```bash
 mkdir -p /tmp/fw-spike && cd /tmp/fw-spike
 npm init -y >/dev/null
-mkdir -p node_modules/@scope/name/.claude/skills/demo-skill
-mkdir -p node_modules/@scope/name/scripts/meta
-printf '# Framework base\nYou are operating under the framework.\n' > node_modules/@scope/name/CLAUDE.base.md
-printf 'name: demo-skill\ndescription: spike probe skill\n' > node_modules/@scope/name/.claude/skills/demo-skill/SKILL.md
-printf '#!/usr/bin/env bash\necho "dispatcher ran: $1"\n' > node_modules/@scope/name/scripts/meta/hook.sh
-chmod +x node_modules/@scope/name/scripts/meta/hook.sh
+mkdir -p node_modules/@scope/canon/.claude/skills/demo-skill
+mkdir -p node_modules/@scope/canon/scripts/meta
+printf '# Framework base\nYou are operating under the framework.\n' > node_modules/@scope/canon/CLAUDE.base.md
+printf 'name: demo-skill\ndescription: spike probe skill\n' > node_modules/@scope/canon/.claude/skills/demo-skill/SKILL.md
+printf '#!/usr/bin/env bash\necho "dispatcher ran: $1"\n' > node_modules/@scope/canon/scripts/meta/hook.sh
+chmod +x node_modules/@scope/canon/scripts/meta/hook.sh
 
 # Wiring under test
-printf '# My Project\n\nMy facts here.\n\n@node_modules/@scope/name/CLAUDE.base.md\n' > CLAUDE.md
+printf '# My Project\n\nMy facts here.\n\n@node_modules/@scope/canon/CLAUDE.base.md\n' > CLAUDE.md
 mkdir -p .claude
-ln -s ../node_modules/@scope/name/.claude/skills .claude/skills   # symlink variant
+ln -s ../node_modules/@scope/canon/.claude/skills .claude/skills   # symlink variant
 ```
 
 **Checks (open a Claude Code session in `/tmp/fw-spike`):**
 - **Spike A — `@import`:** Does `CLAUDE.md`'s `@node_modules/...` line pull the framework base into context? (Ask the session something only the base would answer.)
 - **Spike B — symlinked discovery:** Does `demo-skill` appear in available skills? → **decides §5.** If no, fall back to thin-vendor.
-- **Spike C — dispatcher:** Can a `settings.json` hook run `bash node_modules/@scope/name/scripts/meta/hook.sh stop`? (Shell-testable from anywhere; confirm in-tool too.)
+- **Spike C — dispatcher:** Can a `settings.json` hook run `bash node_modules/@scope/canon/scripts/meta/hook.sh stop`? (Shell-testable from anywhere; confirm in-tool too.)
 
 **Acceptance:** §5 decided (symlink ✅ or thin-vendor fallback). `@import` and dispatcher confirmed working.
 **Decision gate:** symlink vs thin-vendor for discovered dirs.
@@ -54,7 +54,7 @@ ln -s ../node_modules/@scope/name/.claude/skills .claude/skills   # symlink vari
 
 **Target layout:**
 ```
-@scope/name/
+@scope/canon/
 ├── package.json            # bin, files, version
 ├── bin/                    # init.mjs · sync.mjs · doctor.mjs · hook.sh dispatcher
 ├── manifest.json           # framework-owned paths: referenced | vendored (architecture.md §8)

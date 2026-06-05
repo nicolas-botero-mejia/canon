@@ -1,6 +1,6 @@
 # [Project Name] — Project Context
 
-@node_modules/@scope/name/CLAUDE.base.md
+@node_modules/@scope/canon/CLAUDE.base.md
 
 ---
 

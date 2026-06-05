@@ -34,11 +34,11 @@ pass "package installed"
 
 # ── Step 2: init a consumer ──────────────────────────────────────────────────
 echo "[2] Init consumer"
-node "${WORK_DIR}/node_modules/@scope/name/bin/cli.mjs" init --yes
+node "${WORK_DIR}/node_modules/@scope/canon/bin/cli.mjs" init --yes
 pass "init ran"
 
 # Verify doctor passes after init
-node "${WORK_DIR}/node_modules/@scope/name/bin/cli.mjs" doctor >/dev/null
+node "${WORK_DIR}/node_modules/@scope/canon/bin/cli.mjs" doctor >/dev/null
 pass "doctor green after init"
 
 # ── Step 3: write junk into user dirs and CLAUDE.md body ────────────────────
@@ -90,7 +90,7 @@ pass "updated package installed"
 
 # ── Step 5: sync ────────────────────────────────────────────────────────────
 echo "[5] sync"
-node "${WORK_DIR}/node_modules/@scope/name/bin/cli.mjs" sync
+node "${WORK_DIR}/node_modules/@scope/canon/bin/cli.mjs" sync
 pass "sync ran"
 
 # ── Step 6: assert user files untouched ─────────────────────────────────────
@@ -119,7 +119,7 @@ grep -q "$MARKER" "${WORK_DIR}/.claude/skills/wiki-manage/SKILL.md" \
 
 # ── Step 8: doctor green ────────────────────────────────────────────────────
 echo "[8] Doctor"
-node "${WORK_DIR}/node_modules/@scope/name/bin/cli.mjs" doctor >/dev/null
+node "${WORK_DIR}/node_modules/@scope/canon/bin/cli.mjs" doctor >/dev/null
 pass "doctor green after sync"
 
 # ── Cleanup: revert payload marker and version bump ─────────────────────────
