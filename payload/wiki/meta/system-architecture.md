@@ -3,7 +3,7 @@
 **Last updated:** 2026-06-03 (governance hardening — Phase vs. Activity skill model; scripts split into meta/ and project/; /activity-new + /activity-conclude + /phase-new + /phase-conclude added; old individual skills retired; post-write-check.sh covers findings/ and output/; check-index.sh path-grep and mtime improvements)
 **Scope:** The self-maintaining documentation infrastructure — hooks, scripts, templates, and the file watcher. How it works, what it depends on, and how to verify it.
 
-> For maintenance process (when to update content, naming conventions, what belongs where) → [system-maintenance.md](./system-maintenance.md)
+> For maintenance process (when to update content, naming conventions, what belongs where) → [system-operations.md](./system-operations.md)
 > For project-wide content map → [CONTENT_INDEX.md](../../CONTENT_INDEX.md)
 
 ---
@@ -106,13 +106,13 @@ Agent + skill layer (`.claude/`):
 - `skills/[name]/SKILL.md` — **Phase:** `/phase-new`, `/phase-conclude` | **Activity:** `/activity-new`, `/activity-conclude` | **System:** `/wiki-manage`, `/knowledge-audit`, `/conclusions-review`
 - `rules/behavioral.md` — 15 behavioral rules (auto-loaded each session)
 
-**Meta-doc currency:** `wiki/meta/architecture.md` and `wiki/meta/system-maintenance.md` must be updated whenever a structural change is made (CLAUDE.md Rule 10). The Librarian agent flags this inline during structural work.
+**Meta-doc currency:** `wiki/meta/system-architecture.md` and `wiki/meta/system-operations.md` must be updated whenever a structural change is made (CLAUDE.md Rule 10). The Librarian agent flags this inline during structural work.
 
 ---
 
 ### §1.3 — Knowledge Layer Architecture
 
-How the folders relate compositionally — what feeds what, and why content belongs where it does. See `wiki/meta/system-maintenance.md §4` for the content rules that follow from this diagram.
+How the folders relate compositionally — what feeds what, and why content belongs where it does. See `wiki/meta/system-operations.md §4` for the content rules that follow from this diagram.
 
 ```
 ╔═══════════════════════╗       ╔══════════════════════════════════════════════╗
@@ -265,7 +265,7 @@ Archives all `plans/phase-<N>-*.md` files, scaffolds the next phase index from t
 
 **Knowledge templates** (used by the Writer agent and team, copy-rename-fill pattern):
 
-Named `[process-type].[file-type]-template.md`. Full map, destination folders, and usage rules → `wiki/meta/templates/TEMPLATE_MAP.md`.
+Named `[process-type].[file-type]-template.md`. Full map, destination folders, and usage rules → `wiki/meta/templates/template-index.md`.
 
 | Template | Creates | Goes to |
 |----------|---------|---------|
@@ -357,7 +357,7 @@ Functional test → Invoke the changed mechanism against a controlled case. Obse
                   Caught by: running the skill/hook/agent in the session before closing.
 ```
 
-**Rule:** Never close a session that adds or modifies governance mechanisms without running both levels. See `behavioral.md Rule 15` and `wiki/meta/system-maintenance.md §14`.
+**Rule:** Never close a session that adds or modifies governance mechanisms without running both levels. See `behavioral.md Rule 15` and `wiki/meta/system-operations.md §14`.
 
 ---
 

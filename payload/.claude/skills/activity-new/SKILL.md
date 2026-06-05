@@ -52,7 +52,7 @@ Using the template for the activity type:
 - `poc`: `poc.plan-template.md` → `plans/phase-NN-poc-NN-[name]-plan.md`
 - `addendum`: `addendum.plan-template.md` → `plans/phase-NN-[parent-id]-addendum-NN-[slug]-plan.md`
 - `research`: `research.plan-template.md` → `plans/phase-NN-research-[topic]-plan.md`
-- `session`: `poc.plan-template.md` (adapted for sessions per `wiki/meta/system-maintenance.md §9`) → `plans/phase-NN-session-NN-[topic]-plan.md`
+- `session`: `poc.plan-template.md` (adapted for sessions per `wiki/meta/system-operations.md §9`) → `plans/phase-NN-session-NN-[topic]-plan.md`
 
 Pre-populate with:
 - `**Project root:**` — absolute path to this project (fill at creation time)

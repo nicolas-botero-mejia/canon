@@ -5,3 +5,6 @@ node_modules/
 
 # npm pack output (Phase 1 acceptance)
 *.tgz
+
+# runtime artifact
+.claude/pending-updates.log

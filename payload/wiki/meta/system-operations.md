@@ -200,7 +200,7 @@ Not indexed by check-index.sh. Not linked from other project files.
 
 **When to add a rule vs. update CLAUDE.md:** If the content governs *how Claude should act*, it belongs in `.claude/rules/`. If it is a confirmed project *fact*, it belongs in `CLAUDE.md`.
 
-### wiki/meta/architecture.md and wiki/meta/system-maintenance.md
+### wiki/meta/system-architecture.md and wiki/meta/system-operations.md
 These two files are the system's source of truth — not regular wiki files. Any structural change (new folder, naming convention, new template type, new process type, new behavioral rule) requires updating both in the same session. See CLAUDE.md Rule 10.
 
 ---
@@ -250,7 +250,7 @@ plans/
   phase-02-index.md                               ← when Phase 2 starts
 ```
 
-**Template naming:** `[process-type].[file-type]-template.md` — process-first. Full map → `wiki/meta/templates/TEMPLATE_MAP.md`.
+**Template naming:** `[process-type].[file-type]-template.md` — process-first. Full map → `wiki/meta/templates/template-index.md`.
 
 **Subdirectories vs. prefixes:** Use prefixes (flat) for findings/, output/, plans/. Use subdirectories only for wiki/ where content types are genuinely different.
 
@@ -566,4 +566,52 @@ Every wiki file should pass: could someone use it in 6 months, without having be
 | /conclusions-review run | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ sets **Alignment verified:** on target file | ✅ (tmp/ file if persistent copy requested) |
 | Monthly audit | ✅ if needed | ✅ currency check | ✅ prune | ✅ archive closed | ❌ | ❌ | ✅ |
 
-> **⚠️ Structural changes that modify a skill, agent, or hook:** functional test also required (Rule 15) — confirm actual behavior, not just that the text is correct. See `wiki/meta/architecture.md §7` for what counts as a functional test.
+> **⚠️ Structural changes that modify a skill, agent, or hook:** functional test also required (Rule 15) — confirm actual behavior, not just that the text is correct. See `wiki/meta/system-architecture.md §7` for what counts as a functional test.
+
+---
+
+## 15. The Framework in Practice — Activity-by-Activity Patterns
+
+This section is the designer-facing guide: what to do at each stage of each activity, and why the structure is the way it is.
+
+### Starting an activity
+
+Always use `/activity-new [type]` — it loads prior conclusions, open decisions, and wiki state before creating the plan. Never create a plan file manually; the skill ensures alignment is checked first (Rule 12).
+
+**If the previous conclusions file lacks an `**Alignment verified:**` date:** `/activity-new` will catch this and prompt `/conclusions-review` before proceeding. Don't skip it.
+
+### During execution — use notes, not results
+
+The `*-notes.md` file is your working surface. Write freely — raw observations, open questions, scratch. It is explicitly *not* a structured record; it exists so results stay clean.
+
+Common mistake: writing directly into results while the activity is in progress. Results are synthesized *after* the activity closes, from notes. A results file that was written live is usually a mix of observations and interpretation that's hard to untangle.
+
+### Closing an activity
+
+Use `/activity-conclude [type]`. It:
+1. Synthesizes notes → results (if notes exist and results don't)
+2. Reviews results → proposes conclusions
+3. Routes conclusions to `output/`
+4. Sets the `**Alignment verified:**` date
+5. Prompts wiki updates
+6. Appends to `log.md`
+
+Don't manually write conclusions. The skill enforces the structure, the evidence chain, and the alignment field — all of which downstream activities depend on.
+
+### Signal vs. addendum routing
+
+A **signal** has no parent document. Use `signal.results-template.md` → `findings/`. Signals route to `plans/discovery-backlog.md` and don't have their own conclusions. If a signal grows into a testable hypothesis, it becomes a POC or research plan.
+
+An **addendum** has a parent conclusions file. Use the addendum plan template → activate with `/activity-new addendum`. The addendum's conclusions file carries a backlink to the parent and a `§Downstream Impact` section.
+
+### When conclusions close a wiki decision
+
+After `/activity-conclude`, if a decision in `wiki/project/` or `plans/phase-NN-index.md §Decisions Tracker` is now resolved:
+1. Update the tracker (mark the decision closed, record the conclusion)
+2. Run `/wiki-manage` to propagate to the relevant wiki files
+3. Check CLAUDE.md — if a confirmed fact changed, update it (Rule 10)
+
+### The notes file lifecycle
+
+Notes files are tier-1 capture — informal and short-lived. After `/activity-conclude` runs and results are complete, the notes file can be deleted or archived to `tmp/`. It should never be cited in conclusions or wiki. If an observation is worth keeping, it belongs in results.
+

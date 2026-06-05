@@ -2,7 +2,7 @@
 
 **Status:** Draft — design spec for how this framework ships, installs, and updates.
 **Scope:** The *package* layer (how the framework is distributed and updated safely). This is distinct from `wiki/meta/architecture.md`, which documents the *knowledge system* itself.
-**Decided so far:** npm + reference model (this doc, §6). Open decisions tracked in §10.
+**Decided so far:** npm + reference model (§6); discovered-dirs = thin-vendor (§5, Phase 0). Open decisions tracked in §10.
 
 ---
 
@@ -56,7 +56,10 @@ The rule of thumb a human can verify at a glance: **anything pointing into `node
 
 ---
 
-## 5. The one open decision — discovered dirs: symlink vs thin-vendor
+## 5. Discovered dirs: symlink vs thin-vendor — **DECIDED: thin-vendor**
+
+> **Decision (Phase 0, 2026-06-05):** thin-vendor. Evidence: the Phase 0 spike confirmed a symlinked `.claude/skills` *is* discovered on macOS, but symlink-as-shipped-artifact fails on the three axes that matter — containers (`COPY` drops symlink targets), Windows (privileged symlink creation), and git (symlink-in-git footguns), none of which the spike exercised. The prevailing ecosystem pattern for a host tool that scans fixed root paths and does not follow into `node_modules` (e.g. Husky) is to **materialize real files** via a `prepare`/`sync` step, not symlink. Thin-vendor's only cost — running `sync` after `npm update` — is one command, and overwrite is data-safe because the dirs are 100% framework. Symlink may be revisited as an opt-in optimization if cross-platform behavior is later validated.
+
 
 Claude Code and Cursor discover skills/agents/rules/hooks by scanning fixed root paths; they do **not** follow into `node_modules`. So this small set of dirs cannot be pure-reference. Two options, both data-safe (the dirs are 100% framework):
 
@@ -107,10 +110,10 @@ This is the headline promise; every design choice above exists to make it true b
 
 ## 10. Open questions / next steps
 
-**Spikes to de-risk the model:**
-- Confirm `CLAUDE.md`'s `@import` resolves a path inside `node_modules`.
-- Confirm Claude Code/Cursor discover a **symlinked** `.claude/skills` (decides §5).
-- Confirm a hook `command` in `settings.json` can point at a `node_modules` dispatcher and run.
+**Spikes to de-risk the model — ✅ all complete (Phase 0, 2026-06-05):**
+- ✅ `CLAUDE.md`'s `@import` resolves a path inside `node_modules` (SPIKE_A).
+- ✅ Claude Code discovers a **symlinked** `.claude/skills` on macOS (SPIKE_B). §5 nonetheless decided **thin-vendor** on portability grounds — see §5.
+- ✅ A hook `command` in `settings.json` points at a `node_modules` dispatcher and runs (SPIKE_C).
 
 **Build order (proposed):**
 1. Lock §5 (symlink vs vendor) via the spike.

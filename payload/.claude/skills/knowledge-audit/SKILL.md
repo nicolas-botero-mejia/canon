@@ -25,7 +25,7 @@ Two scopes — both required:
 
 **Dimension 2 — Meta-doc currency (Rule 10)**
 Reads `log.md` — finds all `restructure` and structural `create` entries.
-Reads `**Last updated:**` in `wiki/meta/architecture.md` and `wiki/meta/system-maintenance.md`.
+Reads `**Last updated:**` in `wiki/meta/system-architecture.md` and `wiki/meta/system-operations.md`.
 If either meta doc predates the most recent structural log entry → flags: *"Meta-doc drift: [specific log entry] was not reflected in [file]. Sections needing update: [§N, §M]."*
 
 **Dimension 3 — Stale content**
@@ -50,7 +50,7 @@ Scans `findings/` files. For each file: does it have an `**Author:**` field? Doe
 Reads each file in `tmp/`. For each: reads its `**Closes when:**` condition and assesses whether the condition has been met. Flags files ready for cleanup.
 
 **Dimension 9 — Template coverage**
-Reads `wiki/meta/templates/TEMPLATE_MAP.md`. For each file type that exists in the project, confirms a template entry exists. Flags any file types without templates.
+Reads `wiki/meta/templates/template-index.md`. For each file type that exists in the project, confirms a template entry exists. Flags any file types without templates.
 
 **Dimension 10 — Parent-backlink integrity**
 For every addendum conclusions file in `output/` (filename contains `addendum-NN`):
@@ -89,7 +89,7 @@ For each flagged section, recommend one of:
 *Rationale:* As POC conclusions are incorporated, targeted sections inside general files grow disproportionately. Over multiple sessions this accumulates into files where one section dominates. The section becomes the real reference doc and the parent file becomes an awkward wrapper. Dimension 13 catches this pattern before it requires a large restructure.
 
 **Dimension 14 — Content-type boundary audit**
-For each `wiki/project/` file, scan every H2/H3 section against the content rules in `wiki/meta/system-maintenance.md §4`. Flag any section matching these patterns:
+For each `wiki/project/` file, scan every H2/H3 section against the content rules in `wiki/meta/system-operations.md §4`. Flag any section matching these patterns:
 
 (a) **Removed-tool documentation**: section documents API inventory, output schema, or session discipline for a tool explicitly marked ⚠️ removed — more than a one-line pointer with a deprecation marker
 (b) **Standards-level justification**: section contains paragraphs arguing a choice is correct by appeal to industry patterns, external comparisons, or general best practices rather than project-specific reasons. Signature phrases: "this is the standard for…", "[a major library] does it this way…", "[the framework] itself uses…"

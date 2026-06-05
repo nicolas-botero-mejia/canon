@@ -27,8 +27,8 @@ When a request is for a new document, new research, or a complex new task — an
 
 Do not ask this for corrections, lookups, targeted edits, or clarifying questions.
 
-For background → `wiki/meta/prompting-workflow.md`
-For system maintenance rules → `wiki/meta/system-maintenance.md`
+For background → `wiki/meta/system-principles.md`
+For system maintenance rules → `wiki/meta/system-operations.md`
 
 ### 6. File Routing
 Observations → `findings/`, synthesized conclusions → `output/`, plans → `plans/`, transient working files → `tmp/`. Use skills (`/activity-conclude session`, `/activity-conclude poc`) for routing. Do not synthesize directly into `plans/` or `wiki/`.
@@ -40,10 +40,10 @@ Wiki updates use conclusions as the primary source and findings as supplementary
 Before creating a new session plan, POC, research plan, or addendum plan: load relevant prior conclusions (including the parent conclusions file for addendums), open decisions, and wiki state. Use `/activity-new session`, `/activity-new poc`, `/activity-new research`, or `/activity-new addendum` — they do this automatically.
 
 ### 9. Template Coverage
-Every file type must have a template before more files of that type are created. Template names follow `[process-type].[file-type]-template.md`. See `wiki/meta/templates/TEMPLATE_MAP.md` for the full map and destination rules.
+Every file type must have a template before more files of that type are created. Template names follow `[process-type].[file-type]-template.md`. See `wiki/meta/templates/template-index.md` for the full map and destination rules.
 
 ### 10. Meta-Doc Currency
-`wiki/meta/architecture.md` and `wiki/meta/system-maintenance.md` are the system's source of truth — not regular wiki files. Any structural change (new folder, naming convention change, new template type, new process type, new behavioral rule) requires updating both before the session closes.
+`wiki/meta/system-architecture.md` and `wiki/meta/system-operations.md` are the system's source of truth — not regular wiki files. Any structural change (new folder, naming convention change, new template type, new process type, new behavioral rule) requires updating both before the session closes.
 
 Updating means two things — both required:
 1. **Add** the new content (new skill, new rule, new template section)
@@ -90,4 +90,4 @@ Content checks alone are not sufficient for governance system changes. "The skil
 - For a new hook script: introduce a controlled violation, trigger the hook, confirm it fires; resolve the violation, confirm the hook passes
 - For a new agent behavior: ask the agent to perform the new behavior and verify it does so correctly without prompting
 
-Do not close a session that adds or modifies governance mechanisms without running both levels. See `wiki/meta/architecture.md §7`.
+Do not close a session that adds or modifies governance mechanisms without running both levels. See `wiki/meta/system-architecture.md §7`.

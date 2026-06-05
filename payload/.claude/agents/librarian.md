@@ -44,7 +44,7 @@ Signal naming: `phase-NN-signal-NN-[slug]-results.md` (results only — no plan,
 ### Template System
 
 Templates live at `wiki/meta/templates/`. Named `[process-type].[file-type]-template.md`.
-Full authoritative map → `wiki/meta/templates/TEMPLATE_MAP.md`.
+Full authoritative map → `wiki/meta/templates/template-index.md`.
 Always verify a template exists before the Writer creates a new file type.
 
 ### The Knowledge Base Structure
@@ -61,7 +61,7 @@ log.md     → append-only ledger of all structural changes
 
 ### Meta-Doc Currency (Rule 10)
 
-`wiki/meta/architecture.md` and `wiki/meta/system-maintenance.md` are the system's source of truth. They must be updated whenever a structural change is made. You are responsible for flagging this inline.
+`wiki/meta/system-architecture.md` and `wiki/meta/system-operations.md` are the system's source of truth. They must be updated whenever a structural change is made. You are responsible for flagging this inline.
 
 ### Consistency Dimensions (8 total)
 
@@ -70,7 +70,7 @@ log.md     → append-only ledger of all structural changes
 3. **Orphans** — file exists in CONTENT_INDEX.md but nothing links to it
 4. **Missing coverage** — confirmed fact from plans/phase-NN-index.md not reflected in wiki/project/
 5. **Structural inconsistency** — heading hierarchy, metadata format, link style differs from the majority
-6. **Meta-doc drift** — architecture.md or system-maintenance.md predate the last structural entry in log.md
+6. **Meta-doc drift** — system-architecture.md or system-operations.md predate the last structural entry in log.md
 7. **Parent-backlink integrity** — for every addendum conclusions file in `output/`, its parent conclusions file must have an `## Addendums` section with a link back to it. If the parent is missing the section or the specific link: flag as drift.
 8. **Content-type boundary drift** — a `wiki/project/` file contains content that belongs elsewhere:
    (a) Research history or API documentation for removed tools — more than a one-line pointer with a deprecation marker
@@ -79,7 +79,7 @@ log.md     → append-only ledger of all structural changes
    (d) Planning stubs — ⏳ sections with no decided content beyond "pending" or "TBD"
    (e) Intra-wiki duplication — the same sub-topic covered with overlapping detail in two `wiki/project/` files
 
-   For each instance: file, section (§N), violation type (a–e), recommended destination. Reference `wiki/meta/system-maintenance.md §4` for the content rules table.
+   For each instance: file, section (§N), violation type (a–e), recommended destination. Reference `wiki/meta/system-operations.md §4` for the content rules table.
 
 ---
 
@@ -101,7 +101,7 @@ When running a full audit (via `/knowledge-audit`):
 
 ### 3. Inline Meta-Doc Flagging
 Whenever you are involved in a skill that makes a structural change (new folder, naming convention, template type, process type, behavioral rule):
-- Immediately emit: *"⚠️ Structural change detected — update `wiki/meta/architecture.md` and `wiki/meta/system-maintenance.md` before this session closes. Specifically: [what sections need updating]."*
+- Immediately emit: *"⚠️ Structural change detected — update `wiki/meta/system-architecture.md` and `wiki/meta/system-operations.md` before this session closes. Specifically: [what sections need updating]."*
 - Track this as an open obligation for the session — remind if the session moves to close without addressing it
 
 ### 4. tmp/ Lifecycle Check
@@ -113,7 +113,7 @@ When reviewing tmp/ files:
 
 ### 5. Template Verification
 Before the Writer creates any file:
-- Confirm the file type has an entry in `wiki/meta/templates/TEMPLATE_MAP.md`
+- Confirm the file type has an entry in `wiki/meta/templates/template-index.md`
 - If not: *"⚠️ No template exists for [file type]. Per Rule 9, a template must be created before more files of this type are made. Create template first?"*
 
 ### 6. Deprecation Proposals

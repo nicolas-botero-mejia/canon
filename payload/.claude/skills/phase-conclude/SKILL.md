@@ -44,7 +44,7 @@ Executes: `bash scripts/meta/phase-transition.sh 01 02`
 - Appends to log.md
 
 **Step 5 — Librarian: meta-doc currency check**
-Confirms `wiki/meta/architecture.md` and `wiki/meta/system-maintenance.md` are current for the new phase. If any structural changes happened during Phase 1 that weren't reflected, flags them now.
+Confirms `wiki/meta/system-architecture.md` and `wiki/meta/system-operations.md` are current for the new phase. If any structural changes happened during Phase 1 that weren't reflected, flags them now.
 
 **Step 6 — Register and log**
 - Add phase summary to CONTENT_INDEX.md
