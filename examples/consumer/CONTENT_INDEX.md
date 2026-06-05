@@ -16,7 +16,7 @@ How we work and how we maintain this knowledge system.
 
 ---
 
-### [meta/prompting-workflow.md](./wiki/meta/prompting-workflow.md)
+### [meta/system-principles.md](./wiki/meta/system-principles.md)
 **What it is:** Prompting best practices and AI workflow methodology — based on Karpathy's analysis of LLM failure modes, extended to design and research work.
 
 **Key facts:**
@@ -34,7 +34,7 @@ How we work and how we maintain this knowledge system.
 
 ---
 
-### [meta/system-maintenance.md](./wiki/meta/system-maintenance.md)
+### [meta/system-operations.md](./wiki/meta/system-operations.md)
 **What it is:** Maintenance guide for CLAUDE.md and the entire knowledge system — folder structure rationale, what belongs where, naming conventions, update triggers, and pruning.
 
 **Key facts:**
@@ -55,7 +55,7 @@ How we work and how we maintain this knowledge system.
 
 ---
 
-### [meta/templates/TEMPLATE_MAP.md](./wiki/meta/templates/TEMPLATE_MAP.md)
+### [meta/templates/template-index.md](./wiki/meta/templates/template-index.md)
 **What it is:** Template map and index for all project templates. Naming convention: `[process-type].[file-type]-template.md`. Full template listing in the Templates section below.
 
 **Mandatory sections in every POC session plan:** Prerequisites (with roadmap link), Context, Validation table, Hypotheses table, External Validation step (second-to-last), Conclusion Synthesis + Wiki Update step (last), Success Criteria, POC Roadmap Position.
@@ -91,7 +91,7 @@ How we work and how we maintain this knowledge system.
 
 ## wiki/meta/templates/ — Templates
 
-> Full map → `wiki/meta/templates/TEMPLATE_MAP.md`
+> Full map → `wiki/meta/templates/template-index.md`
 
 | Template | Destination | Output naming |
 |----------|-------------|---------------|
@@ -145,7 +145,7 @@ Mirrors the Claude hook + rule layer for the Cursor editor.
 Agents are subagent system prompts invoked by skills. Each encodes a role's knowledge, behaviors, and constraints.
 
 ### [.claude/agents/librarian.md](./.claude/agents/librarian.md)
-Knowledge steward. Knows the file taxonomy (4 finding types, authorship distinction, priority order), TEMPLATE_MAP, consistency dimensions (8 total including meta-doc currency and content-type boundary drift), tmp/ lifecycle. Surfaces prior context, runs audits, flags structural changes, proposes deprecations. Never edits or deletes without human approval.
+Knowledge steward. Knows the file taxonomy (4 finding types, authorship distinction, priority order), template-index, consistency dimensions (8 total including meta-doc currency and content-type boundary drift), tmp/ lifecycle. Surfaces prior context, runs audits, flags structural changes, proposes deprecations. Never edits or deletes without human approval.
 
 ### [.claude/agents/writer.md](./.claude/agents/writer.md)
 Structured document producer. Always loads prior context from Librarian before writing. Enforces naming convention, template selection, Author: metadata, and mandatory conclusions sections (Evidence Summary + Deferred Observations). Never fills human field-notes content.
