@@ -14,7 +14,7 @@ Canon gives every engagement a consistent shape: how sessions are planned, how f
 
 ```bash
 # In a new project directory:
-npm install --save-dev @scope/canon
+npm install --save-dev @nicolas-botero-mejia/canon
 npx canon init
 ```
 
@@ -33,7 +33,7 @@ CLAUDE.md       CONTENT_INDEX.md  log.md
 ## Staying up to date
 
 ```bash
-npm update @scope/canon
+npm update @nicolas-botero-mejia/canon
 npx canon sync
 ```
 
@@ -77,12 +77,12 @@ After `init`, the framework methodology is available inside your `node_modules/`
 
 | Doc | Path |
 |-----|------|
-| System index | `node_modules/@scope/canon/payload/wiki/meta/system-index.md` |
-| Knowledge architecture | `node_modules/@scope/canon/payload/wiki/meta/system-architecture.md` |
-| Operations guide | `node_modules/@scope/canon/payload/wiki/meta/system-operations.md` |
-| Prompting principles | `node_modules/@scope/canon/payload/wiki/meta/system-principles.md` |
-| Verification guide | `node_modules/@scope/canon/payload/wiki/meta/system-verification.md` |
-| Template index | `node_modules/@scope/canon/payload/wiki/meta/templates/template-index.md` |
+| System index | `node_modules/@nicolas-botero-mejia/canon/payload/wiki/meta/system-index.md` |
+| Knowledge architecture | `node_modules/@nicolas-botero-mejia/canon/payload/wiki/meta/system-architecture.md` |
+| Operations guide | `node_modules/@nicolas-botero-mejia/canon/payload/wiki/meta/system-operations.md` |
+| Prompting principles | `node_modules/@nicolas-botero-mejia/canon/payload/wiki/meta/system-principles.md` |
+| Verification guide | `node_modules/@nicolas-botero-mejia/canon/payload/wiki/meta/system-verification.md` |
+| Template index | `node_modules/@nicolas-botero-mejia/canon/payload/wiki/meta/templates/template-index.md` |
 
 These update with the package. Your AI session loads `CLAUDE.base.md` automatically via the `@import` line in your `CLAUDE.md`.
 
@@ -104,15 +104,9 @@ Canon follows **semver** with one opinionated rule about what counts as breaking
 
 ---
 
-## Naming the scope
+## Package name
 
-The package name is `@scope/canon`. Before publishing, replace `@scope` with your npm org or username and run a global find-replace across the repo. The one-line change is in `bin/lib/paths.mjs`:
-
-```js
-export const PKG_NAME = '@yourscope/canon'
-```
-
-Then update `package.json` `name` field to match.
+Published as **`@nicolas-botero-mejia/canon`**. The canonical name is set in `package.json` and `bin/lib/paths.mjs` (`PKG_NAME`).
 
 ---
 
