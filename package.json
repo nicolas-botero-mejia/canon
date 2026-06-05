@@ -21,6 +21,14 @@
     "node": ">=18"
   },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nicolas-botero-mejia/canon.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nicolas-botero-mejia/canon/issues"
+  },
+  "homepage": "https://github.com/nicolas-botero-mejia/canon#readme",
   "publishConfig": {
     "access": "public"
   },
