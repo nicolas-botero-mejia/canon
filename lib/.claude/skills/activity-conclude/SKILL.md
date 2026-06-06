@@ -32,17 +32,17 @@ Returns a context brief: what the results prove, which deferred observations fro
 Type-specific output:
 
 **`poc`** — fill `poc.conclusions-template.md` (or the stub created by `/activity-new poc`):
-- File: `output/phase-NN-poc-NN-[name]-conclusions.md`
+- File: `conclusions/phase-NN-poc-NN-[name]-conclusions.md`
 - Required sections: Verdict (1–2 sentences), H1–HN blocks (Status / Finding / Decision / Wiki update), Evidence Summary (key raw observations per hypothesis), Deferred Observations, Decisions Closed, Wiki Files Updated, Addendum Candidates
 
 **`addendum`** — fill `addendum.conclusions-template.md` (or the stub created by `/activity-new addendum`):
-- File: `output/phase-NN-[parent-id]-addendum-NN-[slug]-conclusions.md`
+- File: `conclusions/phase-NN-[parent-id]-addendum-NN-[slug]-conclusions.md`
 - Required sections: same as poc PLUS:
   - **Tracker Delta** — compare tracker state TODAY vs. at the parent's conclusion date. List every decision that opened, closed, or was revised between the parent's synthesis date and now. This is the primary safeguard against context drift when an addendum extends old work through multiple rounds of POCs.
   - Decisions Revised / Decisions Unchanged (replaces Decisions Closed from poc format)
 
 **`research`** — fill `research.conclusions-template.md`:
-- File: `output/phase-NN-research-[topic]-conclusions.md`
+- File: `conclusions/phase-NN-research-[topic]-conclusions.md`
 - **Optional** — only create when this research closes a tracked decision. If research only produces findings (no decision closes), run this skill to update CONTENT_INDEX status entries for plan + results from "In Progress" → "Complete" and set the Alignment Verified field on the results file.
 - Required sections (when conclusions file is written): Research Verdict, Key Findings, Decisions Closed, Deferred Observations, Wiki Files Updated
 
@@ -70,8 +70,19 @@ If no decisions were confirmed: note explicitly — *"Activity NN closed with no
 `session` — observation surface:
 - Surface any key observations from field-notes or session notes that should feed the backlog or upcoming session plans.
 
+**Signal check (all types):**
+"Did anything unexpected surface during this activity that:
+ - Connects patterns across multiple prior activities?
+ - Challenges an assumption in a wiki file or prior conclusion?
+ - Feels important but doesn't fit any hypothesis in this activity?
+
+If yes → run `/signal <slug>` before closing. Takes 2 minutes. Prevents the insight from being lost.
+If no → proceed to Step 5."
+
+This is advisory, not blocking. Human decides.
+
 **Step 5 — Parent backlink** (`addendum` type only)
-Open the parent conclusions file (`output/phase-NN-poc-NN-[parent-name]-conclusions.md`):
+Open the parent conclusions file (`conclusions/phase-NN-poc-NN-[parent-name]-conclusions.md`):
 - If it has a `## Addendums` section: append a new line with a link and one-sentence verdict summary
 - If not: add the `## Addendums` section at the end of the file, then add the entry
 
@@ -103,9 +114,9 @@ Format:
 
 | Type | Primary output | Decisions updated | Alignment Verified |
 |------|---------------|------------------|--------------------|
-| `poc` | `output/.../conclusions.md` | ✅ | ✅ |
-| `addendum` | `output/.../conclusions.md` + parent backlink | ✅ | ✅ |
-| `research` | `output/.../conclusions.md` (optional) | ✅ if decisions close | ✅ on conclusions or results |
+| `poc` | `conclusions/.../conclusions.md` | ✅ | ✅ |
+| `addendum` | `conclusions/.../conclusions.md` + parent backlink | ✅ | ✅ |
+| `research` | `conclusions/.../conclusions.md` (optional) | ✅ if decisions close | ✅ on conclusions or results |
 | `session` | `findings/.../results.md` (stub) | ✅ | ❌ (set when transcript fills results) |
 
 ## What comes next

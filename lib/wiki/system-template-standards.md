@@ -106,6 +106,6 @@ Script templates follow `[output-name]-template.md`:
 ## What does NOT belong in templates
 
 - **Framework docs** — go in `lib/wiki/`
-- **Actual activity files** — go in `plans/`, `findings/`, or `output/` in the consumer project
+- **Actual activity files** — go in `plans/`, `findings/`, or `conclusions/` in the consumer project
 - **Consumer project content** — never in the package at all
 - **Configurable wiring** — goes in `manifest.json` or the CLI commands

@@ -6,7 +6,7 @@
 >
 > **How to use:** Find which file answers your question here. Don't open full files unless the index sends you. This keeps the context window lean.
 >
-> **Framework template.** Only the framework layer is indexed below. The project layer (`standards/`, `project/`, `plans/`, `findings/`, `output/`, `raw/`) ships empty — add entries here as you populate those folders.
+> **Framework template.** Only the framework layer is indexed below. The project layer (`standards/`, `project/`, `plans/`, `findings/`, `conclusions/`, `raw/`) ships empty — add entries here as you populate those folders.
 
 ---
 
@@ -38,11 +38,11 @@ How we work and how we maintain this knowledge system.
 **What it is:** Maintenance guide for CLAUDE.md and the entire knowledge system — folder structure rationale, what belongs where, naming conventions, update triggers, and pruning.
 
 **Key facts:**
-- **Three-layer knowledge model:** raw/ (received, immutable) → findings/ (team-generated, pre-synthesis) → output/ (synthesized conclusions + deliverables)
+- **Five conceptual layers:** Input (raw/) → Process (plans/ + findings/ + conclusions/) → Knowledge (wiki/) → Output (deliverables/) → Transient (tmp/)
 - **CLAUDE.md target:** Under 200 lines; no research content; behavioral rules at principle level only
-- **Prefix naming convention:** Phase prefix on all findings/, output/, and plans/ files
-- **Wiki subdirectories:** standards/ (industry) | project/ (client-specific, living) | meta/ (methodology)
-- **Update triggers:** Confirmed facts → CLAUDE.md; research → wiki; session outcomes → findings; conclusions → output
+- **Prefix naming convention:** Phase prefix on all findings/, conclusions/, and plans/ files
+- **Wiki subdirectories:** standards/ (industry) | project/ (client decisions) | client/ (org knowledge) | user/ (user research) | meta/ (methodology)
+- **Update triggers:** Confirmed facts → CLAUDE.md; research → wiki; session outcomes → findings; synthesized activity conclusions → conclusions/; client-facing artifacts → deliverables/
 - **6-month test:** Could someone use this file in 6 months, without being in the project, to answer a real question?
 - **Active skills:** `/phase-new` + `/phase-conclude` (phase layer) | `/activity-new [type]` + `/activity-conclude [type]` (activity layer) | `/wiki-manage`, `/knowledge-audit`, `/conclusions-review` (system)
 
@@ -70,10 +70,10 @@ How we work and how we maintain this knowledge system.
 **Key facts:**
 - **Phase vs. Activity model (§1.1):** Two skill layers — `/phase-new` + `/phase-conclude` manage the engagement container; `/activity-new [type]` + `/activity-conclude [type]` manage work inside phases (poc | addendum | research | session)
 - **§1.2 Session lifecycle diagram**: BACKGROUND → SESSION START → PRE-WORK SETUP → WORK PHASE → CLOSE → SESSION STOP → PERIODIC
-- **§1.3 Knowledge layer diagram**: raw/ → findings/ → output/ feeds wiki/project/; standards/ from external knowledge; node_modules/.../lib/wiki/ + .claude/ are the system layer
+- **§1.3 Knowledge layer diagram**: raw/ → findings/ → conclusions/ feeds wiki/project/; standards/ from external knowledge; node_modules/.../lib/wiki/ + .claude/ are the system layer
 - **Scripts split:** `node_modules/@nicolas-botero-mejia/canon/lib/scripts/` (8 governance scripts) | `scripts/project/` (empty extension point — projects add deliverable scripts)
 - Stop hook (exit 2) blocks session close if index is stale, links are broken, or deprecated patterns found. Also warns on unverified conclusions.
-- PostToolUse hook covers wiki/ and plans/ (stale-ref block) AND findings/ and output/ (CONTENT_INDEX advisory warning)
+- PostToolUse hook covers wiki/ and plans/ (stale-ref block) AND findings/ and conclusions/ (CONTENT_INDEX advisory warning)
 - Stop hook chain: `node_modules/@nicolas-botero-mejia/canon/lib/scripts/check-index.sh` → `check-links.sh` → `check-stale-refs.sh` → `check-conclusions-alignment.sh`
 - `watch-project.sh` requires `fswatch` (`brew install fswatch`); `check-links.sh` requires python3 (pre-installed macOS)
 - `/knowledge-audit` runs 14 dimensions; Librarian runs 8 consistency dimensions
@@ -97,17 +97,17 @@ How we work and how we maintain this knowledge system.
 |----------|-------------|---------------|
 | [poc.plan-template.md(node_modules/.../lib/templates/poc.plan-template.md) | `plans/` | `phase-NN-poc-NN-[name]-plan.md` |
 | [poc.results-template.md(node_modules/.../lib/templates/poc.results-template.md) | `findings/` | `phase-NN-poc-NN-[name]-results.md` |
-| [poc.conclusions-template.md(node_modules/.../lib/templates/poc.conclusions-template.md) | `output/` | `phase-NN-poc-NN-[name]-conclusions.md` — includes **Addendum Candidates** section for forward signals |
+| [poc.conclusions-template.md(node_modules/.../lib/templates/poc.conclusions-template.md) | `conclusions/` | `phase-NN-poc-NN-[name]-conclusions.md` — includes **Addendum Candidates** section for forward signals |
 | [addendum.plan-template.md(node_modules/.../lib/templates/addendum.plan-template.md) | `plans/` | `phase-NN-poc-NN-addendum-NN-[slug]-plan.md` |
 | [addendum.results-template.md(node_modules/.../lib/templates/addendum.results-template.md) | `findings/` | `phase-NN-poc-NN-addendum-NN-[slug]-results.md` |
-| [addendum.conclusions-template.md(node_modules/.../lib/templates/addendum.conclusions-template.md) | `output/` | `phase-NN-poc-NN-addendum-NN-[slug]-conclusions.md` |
+| [addendum.conclusions-template.md(node_modules/.../lib/templates/addendum.conclusions-template.md) | `conclusions/` | `phase-NN-poc-NN-addendum-NN-[slug]-conclusions.md` |
 | [signal.results-template.md(node_modules/.../lib/templates/signal.results-template.md) | `findings/` | `phase-NN-signal-NN-[slug]-results.md` |
 | [research.plan-template.md(node_modules/.../lib/templates/research.plan-template.md) | `plans/` | `phase-NN-research-[topic]-plan.md` |
 | [research.results-template.md(node_modules/.../lib/templates/research.results-template.md) | `findings/` | `phase-NN-research-[topic]-results.md` |
-| [research.conclusions-template.md(node_modules/.../lib/templates/research.conclusions-template.md) | `output/` | `phase-NN-research-[topic]-conclusions.md` — only when research closes a tracked decision |
+| [research.conclusions-template.md(node_modules/.../lib/templates/research.conclusions-template.md) | `conclusions/` | `phase-NN-research-[topic]-conclusions.md` — only when research closes a tracked decision |
 | [session.field-notes-template.md(node_modules/.../lib/templates/session.field-notes-template.md) | `findings/` | `phase-NN-session-NN-[topic]-field-notes.md` |
 | [session.results-template.md(node_modules/.../lib/templates/session.results-template.md) | `findings/` | `phase-NN-session-NN-[topic]-results.md` |
-| [session.conclusions-template.md(node_modules/.../lib/templates/session.conclusions-template.md) | `output/` | `phase-NN-session-NN-[topic]-conclusions.md` |
+| [session.conclusions-template.md(node_modules/.../lib/templates/session.conclusions-template.md) | `conclusions/` | `phase-NN-session-NN-[topic]-conclusions.md` |
 | [handoff.results-template.md(node_modules/.../lib/templates/handoff.results-template.md) | `findings/` | `phase-NN-handoff-[source]-to-[dest]-handoff.md` |
 | [tmp.working-file-template.md(node_modules/.../lib/templates/tmp.working-file-template.md) | `tmp/` | `[descriptive-name].md` |
 
@@ -196,8 +196,11 @@ These folders ship empty and are populated per engagement. Add index entries her
 
 - `wiki/standards/` → industry / domain reference — see `wiki/standards/README.md`
 - `wiki/project/` → client-specific reference — see `wiki/project/README.md`
+- `wiki/client/` → org knowledge (stakeholders, decision-making, engagement context). Empty in the framework template. Populate per engagement.
+- `wiki/user/` → end-user research. Empty in the framework template. Populate per engagement.
 - `plans/` → engagement plans (phase index, sessions, POCs)
 - `findings/` → team-generated observations (field-notes, results, handoffs)
-- `output/` → synthesized conclusions and deliverables
+- `conclusions/` → synthesized conclusions (team-internal)
+- `deliverables/` → client-facing formal artifacts (presentations, formal recommendations, handoff specs)
 - `raw/` → received source materials (immutable)
 - `tmp/` → transient working files (each carries a `Closes when:` condition; not committed)

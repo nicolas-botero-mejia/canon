@@ -1,6 +1,6 @@
 # Knowledge System Architecture
 
-**Last updated:** 2026-06-06 (v0.1.3 restructure — payload/ → lib/; scripts/meta/ flattened to scripts/; all templates consolidated into lib/templates/; wiki/meta/ flattened to wiki/; migrate command removed; sync user-mod detection added; system-decisions.md + system-template-standards.md added)
+**Last updated:** 2026-06-06
 **Scope:** The self-maintaining documentation infrastructure — hooks, scripts, templates, and the file watcher. How it works, what it depends on, and how to verify it.
 
 > For maintenance process (when to update content, naming conventions, what belongs where) → [system-operations.md](./system-operations.md)
@@ -63,7 +63,7 @@ Phase lifecycle
 ║  Agents [manually spawned]: librarian, pm, writer                    ║
 ║  Hook [PostToolUse, auto]: scripts/post-write-check.sh          ║
 ║    → wiki/ + plans/: blocks on deprecated tool names                 ║
-║    → findings/ + output/: warns if file not in CONTENT_INDEX         ║
+║    → findings/ + conclusions/: warns if file not in CONTENT_INDEX         ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
@@ -110,72 +110,70 @@ Agent + skill layer (`.claude/`):
 
 ---
 
-### §1.3 — Knowledge Layer Architecture
+### §1.3 — Knowledge Layer Model
 
-How the folders relate compositionally — what feeds what, and why content belongs where it does. See `system-operations.md §4` for the content rules that follow from this diagram.
+The folder structure maps to five conceptual layers. Each layer has a distinct role and a
+distinct immutability contract:
 
-```
-╔═══════════════════════╗       ╔══════════════════════════════════════════════╗
-║  External world       ║       ║  wiki/standards/                              ║
-║                       ║──────→║  Generalizable knowledge. Stable across       ║
-║  Industry research    ║       ║  projects. Does not know about clients.       ║
-║  Tool documentation   ║       ╚══════════════════════╦═══════════════════════╝
-║  Open-source patterns ║                               ║ informs decisions
-╚═══════════════════════╝                               ↓
-                               ╔═══════════════════════════════════════════════╗
-╔═══════════════════════╗      ║  wiki/project/                                ║
-║  raw/                 ║─────→║  Client-specific decisions. Derived from:     ║
-║  (client documents,   ║      ║  standards/ + raw/ + findings/ + output/.     ║
-║   immutable)          ║  ↗   ║  Institutionalized memory — stable, sessionless║
-╚═══════════════════════╝  │   ╚═══════════════════════════════════════════════╝
-                           │                    ↑
-╔═══════════════════════╗  │    (stable decisions promoted as conclusions land)
-║  findings/            ║──┘                    │
-║  (team evidence)      ║──────────────────────→│
-╚═══════════════════════╝                       │
-           ↓                                    │
-╔═══════════════════════╗                       │
-║  output/conclusions   ║───────────────────────┘
-║  (synthesized)        ║────────→  plans/ (closes tracked decisions)
-╚═══════════════════════╝
+**Input** (`raw/`) — What you receive. Authored by others, arrived from outside.
+Immutable — never edited, never generated, never synthesized. Transcripts, client documents,
+third-party source material. The "raw" name is intentional: it signals the no-touch contract.
 
-─────────────────────────────────────────────────────────────────────────────
-SYSTEM LAYER — stands apart from the knowledge flow; describes the pipeline itself
-(framework wiki) · .claude/ (agents, skills, rules, hooks) · scripts/
-─────────────────────────────────────────────────────────────────────────────
-TRANSIENT
-tmp/ (audits, trackers — lifecycle-limited, not part of the permanent knowledge base)
-```
+**Process** (`plans/` · `findings/` · `conclusions/`) — What you do.
+Three folders, not one, because they have different lifecycles and different roles in the pipeline:
 
-**Reading the diagram:**
-- `wiki/project/` is the intersection of three inputs: external industry knowledge (standards/), confirmed project discoveries (output/conclusions), and client context (raw/ → findings/)
-- `wiki/standards/` is never derived from project-specific work — it only accepts generalizable knowledge that would be true on any engagement
-- Content enters `wiki/project/` only after going through findings/ → output/. Project wiki pages are the stable, sessionless distillation of conclusions — not the synthesis itself.
-- The system layer (meta/, .claude/, scripts/) describes the pipeline; it is not part of the knowledge flow.
+| Folder | Content | Lifecycle | Direction |
+|--------|---------|-----------|-----------|
+| `plans/` | Session guides, decisions tracker, roadmaps | Living — edited continuously | Prospective (what will happen) |
+| `findings/` | Field notes, results files, signals, handoffs | Append-only — created during activity, not edited after | Retrospective (what was observed) |
+| `conclusions/` | Synthesized verdicts, decisions closed, wiki triggers | Immutable after synthesis | Retrospective (what it means) |
+
+The folders enforce the pipeline direction: `plans/` precedes work, `findings/` captures work,
+`conclusions/` synthesizes work. Collapsing them would remove structural enforcement — the
+scripts (check-conclusions-alignment, session-start-report) and skills (/activity-conclude,
+/conclusions-review) use folder location as a pipeline stage signal, not just the filename suffix.
+
+**Knowledge** (`wiki/`) — What compounds.
+Stable reference that persists and grows across the engagement. Sourced from `conclusions/` (and
+from `raw/` for wiki/client/, wiki/user/, wiki/standards/ — with human approval).
+Not raw, not findings, not output — the layer that makes each session more productive than the last.
+
+Four sub-layers within `wiki/`:
+
+| Sub-layer | What it holds |
+|-----------|--------------|
+| `wiki/project/` | Client-specific decisions — what was chosen and why |
+| `wiki/standards/` | Industry patterns true of any engagement |
+| `wiki/client/` | Org knowledge — who the client is, how they operate |
+| `wiki/user/` | End-user research synthesized across the engagement |
+
+**Output** (`deliverables/`) — What the client receives.
+Packaged formal artifacts derived from conclusions. Different audience, different polish, different
+confidentiality than conclusions. Not part of the knowledge synthesis chain — a presentation
+created from conclusions stays in `deliverables/` and does not feed wiki.
+
+**Transient** (`tmp/`) — What gets cleaned up.
+Lifecycle-limited working files. Each has a `**Closes when:**` condition. Not indexed, not linked,
+not permanent knowledge. Cleaned when the condition is met.
+
+For intellectual lineage (how this maps to Karpathy's model and ResearchOps patterns) →
+`system-operations.md §3`. For content rules (what belongs in each folder) → `system-operations.md §4`.
 
 ---
 
 ## 2. Hook Configuration
 
-**File:** `.claude/settings.json` (wiring — written by `canon sync`; delegates all hook events to `bin/hook.sh`)
+The framework uses lifecycle hooks to enforce consistency automatically. Hooks fire at key
+session events and dispatch to the governance scripts in `lib/scripts/`. The dispatch
+mechanism is tool-specific — see `system-tool-integration.md` for how each tool wires hooks.
 
-> **Note:** `check-index.sh` monitors `wiki/`, `findings/`, `plans/`, and `output/`. It does NOT monitor `tmp/` — transient working files are intentionally excluded from index enforcement.
+The three canonical lifecycle events the framework requires:
+- **Session open** — surface project state (`session-start-report.sh`)
+- **After write/edit** — stale-ref check on wiki/plans, CONTENT_INDEX advisory (`post-write-check.sh`)
+- **Session close** — four-script consistency chain (check-index → check-links → check-stale-refs → check-conclusions-alignment)
 
-Hooks fire automatically — no manual trigger.
-
-| Event | Hook | Script | Behavior |
-|-------|------|--------|----------|
-| SessionStart | Fires once at session open | `scripts/session-start-report.sh` | Reports file counts, pending external updates, CLAUDE.md age. Informational — never blocks. |
-| SessionStart | Fires once at session open | (inline date command) | Outputs current date/time to session context. Duplicated from global settings so it works without the global file. |
-| PostToolUse (Write\|Edit) | Fires after every Write or Edit tool call | `scripts/post-write-check.sh` | Reads JSON from stdin. Extracts `tool_input.file_path`. For wiki/ and plans/ files: runs `check-stale-refs.sh --file`, returns `{"decision":"block"}` if a deprecated pattern is found. For findings/ and output/ files: emits ⚠ warning if file is not yet in CONTENT_INDEX.md (advisory, non-blocking). 30-second timeout. |
-| Stop | Fires when Claude finishes a response | `scripts/check-index.sh` | Exits 2 if any .md files in wiki/findings/plans/output/ are missing from CONTENT_INDEX.md (full relative path match). Also emits ⚠ if files are newer than the index (potentially stale entries). |
-| Stop | Fires when Claude finishes a response | `scripts/check-links.sh` | Exits 2 if any relative markdown links in wiki/findings/plans/.claude/ are broken. |
-| Stop | Fires when Claude finishes a response | `scripts/check-stale-refs.sh` | Exits 2 if deprecated tool/pattern names (from the maintained pattern list in the script) appear in wiki/ or plans/ without a deprecation context word on the same line. |
-| Stop | Fires when Claude finishes a response | `scripts/check-conclusions-alignment.sh` | Warns (exit 0) if any Complete conclusions file in output/ is missing a dated **Alignment verified:** field. |
-
-**Exit code behavior:**
-- Exit 0 → session closes normally
-- Exit 2 → Claude is forced to continue working — cannot finish until checks pass
+The hook dispatcher (`bin/hook.sh`) receives the event name and routes to the correct script.
+Tool-specific configuration (event names, JSON format, exit code behavior) → `system-tool-integration.md`.
 
 ---
 
@@ -190,7 +188,7 @@ All scripts are executable (`chmod +x`).
 ### Governance Scripts (`scripts/`)
 
 ### `scripts/check-index.sh`
-Scans `wiki/`, `findings/`, `plans/`, `output/` for `.md` files not listed in `CONTENT_INDEX.md`. Excludes `_archive/` subdirs and `README.md` files. Matches using full relative path (e.g., `findings/phase-01-...md`) to prevent false-positives when a filename appears in prose. mtime drift elevated to `⚠` warning level.
+Scans `wiki/`, `findings/`, `plans/`, `conclusions/` for `.md` files not listed in `CONTENT_INDEX.md`. Excludes `_archive/` subdirs and `README.md` files. Matches using full relative path (e.g., `findings/phase-01-...md`) to prevent false-positives when a filename appears in prose. mtime drift elevated to `⚠` warning level.
 
 **Dependencies:** `find`, `grep`, `basename` — standard POSIX, no external deps.
 **Used by:** Stop hook.
@@ -211,7 +209,7 @@ Counts `.md` files per folder, reads `.claude/pending-updates.log` to surface ou
 **Used by:** SessionStart hook.
 
 ### `scripts/watch-project.sh`
-Background `fswatch` process watching `wiki/`, `findings/`, `plans/`, `output/`, `raw/`. Appends timestamped entries to `.claude/pending-updates.log` when `.md` files are added or modified. Excludes `CONTENT_INDEX.md` and the sentinel file from the watch to prevent feedback loops.
+Background `fswatch` process watching `wiki/`, `findings/`, `plans/`, `conclusions/`, `raw/`. Appends timestamped entries to `.claude/pending-updates.log` when `.md` files are added or modified. Excludes `CONTENT_INDEX.md` and the sentinel file from the watch to prevent feedback loops.
 
 **Dependencies:** `fswatch` — external, not installed by default.
 **Install:** `brew install fswatch`
@@ -219,7 +217,7 @@ Background `fswatch` process watching `wiki/`, `findings/`, `plans/`, `output/`,
 **Multi-session safety:** Sentinel is append-only. Multiple sessions can read it safely — whoever indexes a file first makes subsequent reads a no-op.
 
 ### `scripts/check-stale-refs.sh`
-Scans `wiki/` and `plans/` for deprecated tool/pattern names. Checks each line against a maintained pattern list (the `PATTERN` variable in the script — an empty placeholder by default; projects add retired tool/approach names as they accumulate). Skips code blocks, inline code spans, and lines containing deprecation context words (`deprecated`, `removed`, `superseded`, `deferred`, `replaced by`, `⚠`). Also skips `output/` and `findings/` — those directories document history and may intentionally reference deprecated items.
+Scans `wiki/` and `plans/` for deprecated tool/pattern names. Checks each line against a maintained pattern list (the `PATTERN` variable in the script — an empty placeholder by default; projects add retired tool/approach names as they accumulate). Skips code blocks, inline code spans, and lines containing deprecation context words (`deprecated`, `removed`, `superseded`, `deferred`, `replaced by`, `⚠`). Also skips `conclusions/` and `findings/` — those directories document history and may intentionally reference deprecated items.
 
 **Modes:** Full scan (no args) for Stop hook; single-file scan (`--file <path>`) for PostToolUse hook.
 **Dependencies:** `grep`, `find`, `sed` — standard POSIX.
@@ -228,13 +226,13 @@ Scans `wiki/` and `plans/` for deprecated tool/pattern names. Checks each line a
 **Blind spot — Draft plans:** The Stop hook full scan covers `wiki/` only — `plans/` is excluded (historical record). Pre-existing stale refs in Draft plans are not proactively detected; they surface only when the plan file is edited (PostToolUse fires on write). To audit all Draft plans manually: `bash scripts/check-stale-refs.sh` does not cover plans/ — use `grep -rn "<pattern>" plans/` directly.
 
 ### `scripts/check-conclusions-alignment.sh`
-Finds all `output/*.md` files with `**Status:** Complete` and checks each for a dated `**Alignment verified:** YYYY-MM-DD` field. Exits 0 always (warning, not blocking). Prints a named list of unverified files and a reminder to run `/conclusions-review`.
+Finds all `conclusions/*.md` files with `**Status:** Complete` and checks each for a dated `**Alignment verified:** YYYY-MM-DD` field. Exits 0 always (warning, not blocking). Prints a named list of unverified files and a reminder to run `/conclusions-review`.
 
 **Dependencies:** `grep`, `find` — standard POSIX.
 **Used by:** Stop hook.
 
 ### `scripts/post-write-check.sh`
-PostToolUse hook wrapper. Reads the tool-use JSON payload from stdin, extracts `file_path` from `tool_input`. For `wiki/` and `plans/` files: calls `check-stale-refs.sh --file` and returns `{"decision":"block"}` if a deprecated pattern is found. For `findings/` and `output/` files: emits ⚠ warning if the file is not yet in CONTENT_INDEX.md (advisory, non-blocking). Requires `python3` for JSON parsing.
+PostToolUse hook wrapper. Reads the tool-use JSON payload from stdin, extracts `file_path` from `tool_input`. For `wiki/` and `plans/` files: calls `check-stale-refs.sh --file` and returns `{"decision":"block"}` if a deprecated pattern is found. For `findings/` and `conclusions/` files: emits ⚠ warning if the file is not yet in CONTENT_INDEX.md (advisory, non-blocking). Requires `python3` for JSON parsing.
 
 **Dependencies:** `python3`, `bash` — standard on macOS.
 **Used by:** PostToolUse hook (matcher: `Write|Edit`).
@@ -273,17 +271,17 @@ Named `[process-type].[file-type]-template.md`. Full map → `templates/template
 |----------|---------|---------|
 | `poc.plan-template.md` | POC session plan | `plans/` |
 | `poc.results-template.md` | POC execution log | `findings/` |
-| `poc.conclusions-template.md` | POC synthesized output | `output/` |
+| `poc.conclusions-template.md` | POC synthesized output | `conclusions/` |
 | `addendum.plan-template.md` | Addendum plan (extends a closed POC) | `plans/` |
 | `addendum.results-template.md` | Addendum execution log (new hypotheses only) | `findings/` |
-| `addendum.conclusions-template.md` | Addendum verdicts + revised decisions | `output/` |
+| `addendum.conclusions-template.md` | Addendum verdicts + revised decisions | `conclusions/` |
 | `signal.results-template.md` | Signal assessment (no parent doc — routes to action) | `findings/` |
 | `research.plan-template.md` | Research plan | `plans/` |
 | `research.results-template.md` | Research findings | `findings/` |
-| `research.conclusions-template.md` | Research synthesized output (only when closes a decision) | `output/` |
+| `research.conclusions-template.md` | Research synthesized output (only when closes a decision) | `conclusions/` |
 | `session.field-notes-template.md` | Human personal notes | `findings/` |
 | `session.results-template.md` | AI-structured session analysis | `findings/` |
-| `session.conclusions-template.md` | Session synthesized output | `output/` |
+| `session.conclusions-template.md` | Session synthesized output | `conclusions/` |
 | `handoff.results-template.md` | Transitional context-transfer between phases/POCs | `findings/` |
 | `tmp.working-file-template.md` | Transient working files | `tmp/` |
 
@@ -365,14 +363,44 @@ Functional test → Invoke the changed mechanism against a controlled case. Obse
 
 ## 8. Cloud / GitHub Migration Path
 
-When the project moves to a GitHub repository, the scripts stay unchanged. Only the invocation changes:
+### Multi-repo workflow
 
-| Current | GitHub equivalent |
-|---------|------------------|
-| Stop hook → `scripts/check-index.sh` | Pre-commit hook or CI step on push |
+The consumer project and framework package are separate repositories. The framework lives in `node_modules/` — updated via `npm update` + `canon sync`. User content (`plans/`, `findings/`, `conclusions/`, `raw/`, `wiki/project/`, etc.) lives in the consumer repo and is never written by framework tooling. This boundary is enforced by `manifest.json` and checked by `canon doctor`.
+
+### Script migration — local to CI
+
+When moving to CI, the governance scripts stay unchanged. Only the invocation changes:
+
+| Current (local) | CI equivalent |
+|----------------|--------------|
+| Stop hook → `scripts/check-index.sh` | CI step on push to `wiki/` or `plans/` |
 | Stop hook → `scripts/check-links.sh` | Same CI step |
-| `scripts/watch-project.sh` | Replaced by a GitHub Actions trigger on any `.md` push to monitored paths |
+| Stop hook → `scripts/check-stale-refs.sh` | Same CI step |
+| `scripts/watch-project.sh` | GitHub Actions trigger on any `.md` push to monitored paths |
 | `scripts/phase-transition.sh` | Called manually or as a workflow dispatch action |
-| `scripts/project/*` (project deliverable scripts) | Called manually or as a workflow dispatch action |
+| `scripts/project/*` | Called manually or as a workflow dispatch action |
 
-No documentation architecture changes needed at migration time.
+Recommended CI trigger: push to `wiki/` or `plans/`. The `check-conclusions-alignment.sh` check can stay local (advisory only — exit 0).
+
+### Branching
+
+- `main` is always publishable (consumer) or publishable to npm (package repo).
+- Feature branches for structural changes (new folder layout, naming convention changes).
+- Package repo: tag `v0.1.x` on publish; never push directly to `main` without a passing test run.
+
+### CD pipeline (package repo)
+
+`npm publish` is triggered manually after `npm test` passes. No automatic publish on push. The publish step:
+1. `npm test` — runs update-safety test and any unit tests
+2. `npm version patch|minor|major` — bumps version, creates git tag
+3. `npm publish` — publishes to npm registry
+
+### Consumer `.gitignore` for CI
+
+```
+tmp/                  # never commit transient working files
+node_modules/
+.framework-version    # DO commit — version pinning contract between init and doctor
+```
+
+`raw/` may be gitignored for client confidentiality. If gitignored, CI checks that scan `raw/` will silently pass (no files to scan). Document this if the project uses CI link-checking.

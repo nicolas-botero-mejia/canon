@@ -11,7 +11,7 @@ These are primary source notes. Do NOT synthesize or clean up. Write as you obse
 **Author:** Human
 **Session:** `plans/phase-NN-session-NN-[topic]-plan.md`
 **Results:** `findings/phase-NN-session-NN-[topic]-results.md` *(AI-structured, from transcript — written separately)*
-**Conclusions:** `output/phase-NN-session-NN-[topic]-conclusions.md` *(written after results)*
+**Conclusions:** `conclusions/phase-NN-session-NN-[topic]-conclusions.md` *(written after results)*
 
 > Raw personal observations only. What you heard, felt, noticed, or found surprising.
 > These are NOT conclusions — they are the input that feeds analysis.

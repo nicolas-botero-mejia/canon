@@ -159,6 +159,26 @@ Update the "When to use each tier" entry for `conclusions/` to read "synthesized
 
 **`lib/wiki/system-index.md` Activity Lifecycle table** — all Destination entries that said `output/` now read `conclusions/`.
 
+**`lib/wiki/system-index.md` — add conceptual layer framing block** above the Activity Lifecycle table:
+
+```
+## Conceptual Layers
+
+The folder structure maps to five conceptual layers. Read this before the activity table below.
+
+| Layer | Folders | What lives there |
+|-------|---------|-----------------|
+| **Input** | `raw/` | Received materials — immutable, never edited |
+| **Process** | `plans/` · `findings/` · `conclusions/` | Engagement work: plan → execute → synthesize |
+| **Knowledge** | `wiki/` | Accumulated stable reference knowledge |
+| **Output** | `deliverables/` | Client-facing formal artifacts |
+| **Transient** | `tmp/` | Lifecycle-limited working files |
+
+The Process layer stays three folders — not one — because the folders enforce the pipeline direction
+and separate living documents (`plans/`) from immutable artifacts (`findings/`, `conclusions/`).
+Full rationale → `system-architecture.md §1.3`
+```
+
 **`lib/templates/template-index.md`** — all `Destination folder` entries from `output/` → `conclusions/`.
 
 ---
@@ -179,7 +199,57 @@ Files: `lib/wiki/system-architecture.md`, `system-decisions.md`, `system-index.m
 
 Add one ADR entry to `system-decisions.md` noting that verbose headers were removed and that `system-decisions.md` is now the canonical changelog.
 
-### 1b. Expand §8 in system-architecture.md
+### 1b. Add §1.3 to system-architecture.md — Knowledge Layer Model
+
+Insert as a new section after §1.2 (Session Lifecycle). This is the structural rationale layer: why the folders are shaped the way they are. The intellectual lineage (Karpathy comparison) stays in `system-operations.md §3` — this section cross-references it rather than duplicating it.
+
+**Content:**
+
+```markdown
+### §1.3 — Knowledge Layer Model
+
+The folder structure maps to five conceptual layers. Each layer has a distinct role and a
+distinct immutability contract:
+
+**Input** (`raw/`) — What you receive. Authored by others, arrived from outside.
+Immutable — never edited, never generated, never synthesized. Transcripts, client documents,
+third-party source material. The "raw" name is intentional: it signals the no-touch contract.
+
+**Process** (`plans/` · `findings/` · `conclusions/`) — What you do.
+Three folders, not one, because they have different lifecycles and different roles in the pipeline:
+
+| Folder | Content | Lifecycle | Direction |
+|--------|---------|-----------|-----------|
+| `plans/` | Session guides, decisions tracker, roadmaps | Living — edited continuously | Prospective (what will happen) |
+| `findings/` | Field notes, results files, signals, handoffs | Append-only — created during activity, not edited after | Retrospective (what was observed) |
+| `conclusions/` | Synthesized verdicts, decisions closed, wiki triggers | Immutable after synthesis | Retrospective (what it means) |
+
+The folders enforce the pipeline direction: `plans/` precedes work, `findings/` captures work,
+`conclusions/` synthesizes work. Collapsing them would remove structural enforcement — the
+scripts (check-conclusions-alignment, session-start-report) and skills (/activity-conclude,
+/conclusions-review) use folder location as a pipeline stage signal, not just the filename suffix.
+
+**Knowledge** (`wiki/`) — What compounds.
+Stable reference that persists and grows across the engagement. Sourced from `conclusions/` (and
+from `raw/` for wiki/client/, wiki/user/, wiki/standards/ — with human approval).
+Not raw, not findings, not output — the layer that makes each session more productive than the last.
+
+**Output** (`deliverables/`) — What the client receives.
+Packaged formal artifacts derived from conclusions. Different audience, different polish, different
+confidentiality than conclusions. Not part of the knowledge synthesis chain — a presentation
+created from conclusions stays in `deliverables/` and does not feed wiki.
+
+**Transient** (`tmp/`) — What gets cleaned up.
+Lifecycle-limited working files. Each has a `**Closes when:**` condition. Not indexed, not linked,
+not permanent knowledge. Cleaned when the condition is met.
+
+For intellectual lineage (how this maps to Karpathy's model and ResearchOps patterns) →
+`system-operations.md §3`. For content rules (what belongs in each folder) → `system-operations.md §4`.
+```
+
+---
+
+### 1c. Expand §8 in system-architecture.md
 
 Current §8 is four rows in a table. Expand to cover:
 
@@ -646,17 +716,33 @@ grep -r "\boutput/" . \
 ```
 Must return 0 results.
 
-**Template check:** `lib/templates/template-index.md` has `session.plan-template.md` row, and all destination folder entries say `conclusions/` (not `output/`).
+**Directory rename check:**
+```bash
+ls examples/consumer/conclusions/ && ! ls examples/consumer/output/ 2>/dev/null
+```
+`conclusions/` must exist; `output/` must not.
 
-**System index check:** `lib/wiki/system-index.md` has `system-tool-integration.md` row. Three-Tier diagram reads `conclusions/` and `deliverables/`.
+**Template check:** `lib/templates/template-index.md` has `session.plan-template.md` row, and all destination folder entries say `conclusions/` (not `output/`). `lib/templates/session.plan-template.md` file exists. `lib/templates/signal.results-template.md` contains "Discovery type" (internal/external distinction added).
 
-**Wiki layers check:** `lib/wiki/system-operations.md` has `wiki/client/`, `wiki/user/`, and `deliverables/` in §4, each with raw/ source notes.
+**System index check:** `lib/wiki/system-index.md` has `system-tool-integration.md` row, Three-Tier diagram reads `conclusions/` and `deliverables/`, and has a `## Conceptual Layers` section above the Activity Lifecycle table.
+
+**Architecture check:** `lib/wiki/system-architecture.md` has a `§1.3` section (Knowledge Layer Model).
+
+**Wiki layers check:** `lib/wiki/system-operations.md` has `wiki/client/`, `wiki/user/`, and `deliverables/` in §4, each with raw/ source notes. `lib/wiki/system-tool-integration.md` file exists.
 
 **Init check:** `bin/commands/init.mjs` USER_DIRS includes `conclusions`, `deliverables`, `wiki/client`, `wiki/user`.
 
-**Dimension coverage check:** `lib/.claude/skills/knowledge-audit/SKILL.md` Dimension 1 lists all four wiki layers. Dimension 14 has layer-specific rules for all four. Dimension 15 exists and scans all four layers for ⚡.
+**Skill checks:**
+- `lib/.claude/skills/signal/SKILL.md` exists
+- `lib/.claude/skills/wiki-manage/SKILL.md` contains "promote" sub-command
+- `lib/.claude/skills/activity-conclude/SKILL.md` contains "Signal check"
+- `lib/.claude/skills/knowledge-audit/SKILL.md` Dimension 1 lists all four wiki layers; Dimension 14 has layer-specific rules for all four; Dimension 15 exists
 
 **Librarian coverage check:** `lib/.claude/agents/librarian.md` Dimensions 1 and 8 list all four wiki layers.
+
+**Rules and base check:**
+- `lib/.claude/rules/behavioral.md` Rule 6 contains `wiki/client/` and `deliverables/`
+- `lib/CLAUDE.base.md` folder map contains `deliverables/` and `wiki/client`
 
 **Trigger events check:** `lib/wiki/system-operations.md` §14 has rows for: wiki/client/ updates, wiki/user/ updates, deliverables/ artifact creation.
 
@@ -672,8 +758,8 @@ Must return 0 results.
 | `examples/consumer/output/` directory | Rename to `examples/consumer/conclusions/` |
 | `lib/wiki/system-decisions.md` | Add ADR for `output/` rename; add ADR for verbose-header removal |
 | All `lib/wiki/*.md` `**Last updated:**` | Strip to date only (coordinate with §2 edit in system-architecture.md) |
-| `lib/wiki/system-architecture.md` | Strip tool details from §2; expand §8 |
-| `lib/wiki/system-index.md` | Add system-tool-integration.md row; update Three-Tier diagram (conclusions/, deliverables/); update Three-Tier note; update Activity Lifecycle table |
+| `lib/wiki/system-architecture.md` | Add §1.3 (Knowledge Layer Model); strip tool details from §2; expand §8 |
+| `lib/wiki/system-index.md` | Add Conceptual Layers table; add system-tool-integration.md row; update Three-Tier diagram (conclusions/, deliverables/); update Three-Tier note; update Activity Lifecycle table |
 | `lib/wiki/system-operations.md` | Add client/user/deliverables §4 entries with raw/ source notes; add §14 trigger event rows; strip tool-specific language |
 | `lib/wiki/system-tool-integration.md` | **Create (new)** |
 | `lib/templates/session.plan-template.md` | **Create (new)** — header does NOT include `**Source plan:**` field |

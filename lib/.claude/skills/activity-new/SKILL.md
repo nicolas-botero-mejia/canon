@@ -23,7 +23,7 @@ Activities are bounded units of work inside a phase. Four types share the same l
 
 **Step 0 — Pre-flight guard**
 - `poc` and `session`: check whether artifacts for this number already exist:
-  - `poc`: `plans/phase-NN-poc-NN-*-plan.md`, `findings/phase-NN-poc-NN-*-results.md`, `output/phase-NN-poc-NN-*-conclusions.md`
+  - `poc`: `plans/phase-NN-poc-NN-*-plan.md`, `findings/phase-NN-poc-NN-*-results.md`, `conclusions/phase-NN-poc-NN-*-conclusions.md`
   - `session`: `plans/phase-NN-session-NN-*-plan.md`
   - If any exist: **STOP and ask the user** (Rule 13). Report which files exist. Ask whether the user intended a different number, an addendum, or an explicit overwrite. Do not proceed until intent is clear.
 - `addendum`: check `plans/discovery-backlog.md` — does an entry exist for this trigger? If not: *"Is this addendum triggered by a backlog entry? If not, should it be added first?"*
@@ -52,7 +52,7 @@ Using the template for the activity type:
 - `poc`: `poc.plan-template.md` → `plans/phase-NN-poc-NN-[name]-plan.md`
 - `addendum`: `addendum.plan-template.md` → `plans/phase-NN-[parent-id]-addendum-NN-[slug]-plan.md`
 - `research`: `research.plan-template.md` → `plans/phase-NN-research-[topic]-plan.md`
-- `session`: `poc.plan-template.md` (adapted for sessions per `system-operations.md (framework wiki, in node_modules) §9`) → `plans/phase-NN-session-NN-[topic]-plan.md`
+- `session`: `session.plan-template.md` → `plans/phase-NN-session-NN-[topic]-plan.md`
 
 Pre-populate with:
 - `**Project root:**` — absolute path to this project (fill at creation time)

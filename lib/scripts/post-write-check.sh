@@ -37,8 +37,8 @@ if [[ -z "$FILE_PATH" ]]; then
     exit 0
 fi
 
-# For findings/ and output/ files: warn if not yet in CONTENT_INDEX (advisory, non-blocking)
-if [[ "$FILE_PATH" == *"/findings/"* || "$FILE_PATH" == *"/output/"* ]]; then
+# For findings/ and conclusions/ files: warn if not yet in CONTENT_INDEX (advisory, non-blocking)
+if [[ "$FILE_PATH" == *"/findings/"* || "$FILE_PATH" == *"/conclusions/"* ]]; then
     FILENAME=$(basename "$FILE_PATH")
     if [[ -f "$INDEX" ]] && ! grep -qF "$FILENAME" "$INDEX"; then
         python3 -c "

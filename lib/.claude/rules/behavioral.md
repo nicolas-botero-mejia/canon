@@ -27,7 +27,13 @@ For background → `system-principles.md (framework wiki, in node_modules)`
 For system maintenance rules → `system-operations.md (framework wiki, in node_modules)`
 
 ### 6. File Routing
-Observations → `findings/`, synthesized conclusions → `output/`, plans → `plans/`, transient working files → `tmp/`. Use skills (`/activity-conclude session`, `/activity-conclude poc`) for routing. Do not synthesize directly into `plans/` or `wiki/`.
+Observations → `findings/`, synthesized conclusions → `conclusions/`, plans → `plans/`, transient working files → `tmp/`, client-facing formal artifacts → `deliverables/`. Use skills (`/activity-conclude session`, `/activity-conclude poc`) for routing. Do not synthesize directly into `plans/` or `wiki/`.
+
+Wiki layers:
+- `wiki/project/` → client decisions (what was chosen)
+- `wiki/client/` → org knowledge (who the client is, how they operate)
+- `wiki/user/` → user research (who end users are, what they need)
+- `wiki/standards/` → industry patterns (true of any project)
 
 ### 7. Wiki Context
 Wiki updates use conclusions as the primary source and findings as supplementary context. If a finding isn't reflected in conclusions, surface it — don't drop it silently. Use `/wiki-manage` for all wiki lifecycle work (add / update / deprecate). The Librarian proposes changes; human approves before execution.
@@ -48,7 +54,7 @@ Updating means two things — both required:
 The Librarian flags this inline when structural work is done. The `/knowledge-audit` skill detects drift after the fact.
 
 ### 11. External Discovery Routing
-When an external source (article, video, tool release, community post) extends an existing closed POC or research finding → it is an **addendum**. Create a plan using `addendum.plan-template.md`. Numbered per parent and sequential (addendum-01, -02, …). When there is no clear parent document → it is a **signal**. Create a results file using `signal.results-template.md`. Both route to `findings/` for results and `output/` for conclusions (addendum only). Add an entry to `plans/discovery-backlog.md`. Validate with human before any wiki updates.
+When an external source (article, video, tool release, community post) extends an existing closed POC or research finding → it is an **addendum**. Create a plan using `addendum.plan-template.md`. Numbered per parent and sequential (addendum-01, -02, …). When there is no clear parent document → it is a **signal**. Create a results file using `signal.results-template.md`. Both route to `findings/` for results and `conclusions/` for conclusions (addendum only). Add an entry to `plans/discovery-backlog.md`. Validate with human before any wiki updates.
 
 ### 12. Conclusions Alignment Check
 Before creating any downstream plan (addendum, POC, or session) that depends on prior concluded work, check whether those conclusions carry an `**Alignment verified:**` date. If the field is absent or empty → run `/conclusions-review` on that file first (it will set the field after producing a patch list). If the field is set → proceed without re-running.

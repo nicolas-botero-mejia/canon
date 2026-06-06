@@ -2,7 +2,7 @@
 
 <!--
 TEMPLATE — copy this file, rename it, fill in the brackets.
-Naming convention: output/phase-NN-session-NN-[topic]-conclusions.md
+Naming convention: conclusions/phase-NN-session-NN-[topic]-conclusions.md
 Author: AI — synthesized from field notes + results.
 Written AFTER results are reviewed. Target: within 24h of session.
 -->

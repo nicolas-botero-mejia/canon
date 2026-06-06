@@ -1,9 +1,10 @@
 # Phase N — Signal NN: [Slug]
 
 <!--
-TEMPLATE — fill when an external discovery has no clear parent document.
+TEMPLATE — fill when a discovery has no clear parent document.
 Naming convention: findings/phase-NN-signal-NN-[slug]-results.md
 Signal numbering is global per phase (not per parent), since signals have no parent.
+Capture via /signal — 2-minute fast path, no active activity required.
 
 If this discovery clearly extends an existing closed POC or research finding,
 use addendum.plan-template.md instead — not this template.
@@ -12,15 +13,25 @@ use addendum.plan-template.md instead — not this template.
 **Date:** YYYY-MM-DD
 **Status:** Draft
 **Author:** AI
+**Discovery type:** External (article / tool / community / documentation) | Internal (mid-activity insight / cross-activity pattern / synthesis realization)
 
 ---
 
 ## Source
 
+**If External:**
 - **URL or reference:** [Full URL, document title, or tool release link]
 - **Author / publisher:** [Name or organization]
 - **Date:** YYYY-MM-DD
 - **Type:** Article | Video | Tool release | Community post | Other
+
+**If Internal:**
+
+## Source — Internal Discovery
+- **Discovered during:** [Phase NN, Activity type NN, step/moment when it surfaced]
+- **What triggered it:** [1–2 sentences on what you were working on when this appeared]
+- **Related activity:** [phase-NN-poc/session-NN — in progress / concluded]
+- **Cross-references:** [Other conclusions/POCs/wiki files this connects to]
 
 ---
 
@@ -55,6 +66,7 @@ addendum.plan-template.md instead — this signal file becomes a trigger artifac
 - [ ] **New POC needed** — new territory with a testable hypothesis. Describe the hypothesis and recommended POC scope below.
 - [ ] **New research needed** — new territory with an open question. Describe the question and recommended research scope below.
 - [ ] **Backlog** — interesting but no immediate action. Add to `plans/discovery-backlog.md` with a note on when to revisit.
+- [ ] **Wiki update** — this insight directly corrects or enriches a wiki file without needing a full activity. Use `/wiki-manage promote` after completing this assessment.
 - [ ] **Discard** — not relevant to current scope. State why.
 
 **Reason:** [1–2 sentences explaining the assessment choice]

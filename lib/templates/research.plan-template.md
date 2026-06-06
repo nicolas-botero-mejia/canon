@@ -15,7 +15,7 @@ Use this when the question space is unclear before starting a POC or session.
 **Project root:** `/absolute/path/to/project` ← fill with the absolute path to the knowledge-base project at creation time
 
 > Results file (to be written after research): `findings/phase-NN-research-[topic]-results.md`
-> Conclusions (only if research closes a decision): `output/phase-NN-research-[topic]-conclusions.md`
+> Conclusions (only if research closes a decision): `conclusions/phase-NN-research-[topic]-conclusions.md`
 > All file paths are relative to **Project root**.
 
 ---

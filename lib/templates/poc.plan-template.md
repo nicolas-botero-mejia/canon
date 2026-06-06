@@ -14,9 +14,9 @@ Status values: Draft | Planned | In Progress | Complete
 **Project root:** `/absolute/path/to/project` ← fill with the absolute path to the knowledge-base project at creation time
 
 > Roadmap + dependency graph → `plans/phase-NN-poc-roadmap.md`
-> Conclusions (stub created by `/activity-new poc`; fill via `/activity-conclude poc`) → `output/phase-NN-poc-NN-[name]-conclusions.md`
+> Conclusions (stub created by `/activity-new poc`; fill via `/activity-conclude poc`) → `conclusions/phase-NN-poc-NN-[name]-conclusions.md`
 > **Skill origin:** `/activity-new poc`, `/activity-conclude poc`, and all other `/skill-name` references in this plan are **project-local skills** — they live in `[project-root]/.claude/skills/`. Do not add a namespace prefix (e.g. `anthropic-skills:`). See Rule 14 in `.claude/rules/behavioral.md`.
-> Prior POC context → `output/phase-NN-poc-0[N-1]-[prev-name]-conclusions.md`
+> Prior POC context → `conclusions/phase-NN-poc-0[N-1]-[prev-name]-conclusions.md`
 > All file paths in this plan are relative to **Project root**. If executing from a different working directory, resolve against the absolute path above.
 
 ---
@@ -156,7 +156,7 @@ If executing from a different working directory, prefix each path with that abso
 
 > **Path anchor:** All files in this step live under `[Project root]`. Resolve against the absolute path in the plan header if running from outside that directory.
 
-**Conclusions file (stub already exists):** `[Project root]/output/phase-NN-poc-NN-[name]-conclusions.md`
+**Conclusions file (stub already exists):** `[Project root]/conclusions/phase-NN-poc-NN-[name]-conclusions.md`
 
 For each hypothesis (H1–HN): status (CONFIRMED / REFUTED / PARTIAL), finding, decision, wiki update.
 
@@ -185,7 +185,7 @@ The last two rows are always the conclusions doc and decisions tracker update.
 |---|-----------|-------|
 | 1 | [Specific measurable outcome] | [Any clarifying notes] |
 | 2 | [Specific measurable outcome] | |
-| 3 | Conclusions document complete with all N hypotheses resolved | `output/phase-NN-poc-NN-[name]-conclusions.md` |
+| 3 | Conclusions document complete with all N hypotheses resolved | `conclusions/phase-NN-poc-NN-[name]-conclusions.md` |
 | 4 | Relevant decisions closed in tracker | `plans/phase-NN-index.md §Decisions Tracker` |
 
 ---

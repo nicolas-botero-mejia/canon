@@ -19,7 +19,7 @@ Reads `plans/phase-NN-index.md §Decisions Tracker`. Reports:
 - **Pause here.** Human reviews and confirms: close each remaining decision or approve deferral with reason.
 
 **Step 1b — Alignment verification sweep**
-Before the knowledge audit: scan all Complete conclusions files in `output/` for the `**Alignment verified:**` field.
+Before the knowledge audit: scan all Complete conclusions files in `conclusions/` for the `**Alignment verified:**` field.
 - Any file with an empty or absent field → surface it: *"[file] has not been alignment-verified. Run `/activity-conclude [type]` or `/conclusions-review [file]` to set the field before concluding the phase."*
 - This is a pre-wrap gate: unverified conclusions carry forward unknown drift into the next phase. Human decides whether to verify now or explicitly accept the risk and proceed.
 
@@ -30,7 +30,7 @@ Flags anything blocking the transition (especially meta-doc drift, contradiction
 
 **Step 3 — Writer: phase summary**
 Using `session.conclusions-template.md` as structural reference:
-- File: `output/phase-NN-summary.md`
+- File: `conclusions/phase-NN-summary.md`
 - Author: AI
 - Content: full Phase 1 synthesis — what was proven (POC 01, 02), what was confirmed (client decisions), what was learned (session findings), what goes into Phase 2 (open items, deferred observations, first POCs/sessions)
 - Derived from: all session conclusions, POC conclusions, and the decisions tracker state
@@ -51,7 +51,7 @@ Confirms `system-architecture.md (framework wiki)` and `system-operations.md (fr
 - Final log.md entry: *"Phase 1 → Phase 2 transition complete. [N] decisions closed. [M] deferred. Phase summary written."*
 
 ## Output
-- `output/phase-01-summary.md` — full phase synthesis
+- `conclusions/phase-01-summary.md` — full phase synthesis
 - `tmp/phase-01-knowledge-audit-pre-wrap-YYYY-MM-DD.md` — final audit
 - Decisions tracker fully resolved (all Open → Closed or Deferred)
 - Phase transition executed (archive + new phase scaffolded)

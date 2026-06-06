@@ -2,7 +2,7 @@
 
 <!--
 TEMPLATE — fill after addendum results are complete.
-Naming convention: output/phase-NN-[parent-identifier]-addendum-NN-[slug]-conclusions.md
+Naming convention: conclusions/phase-NN-[parent-identifier]-addendum-NN-[slug]-conclusions.md
 This file covers NEW hypotheses only — starting from the next H-number after the parent's last.
 For parent hypothesis verdicts, see the parent conclusions file.
 Parent decisions are NOT modified in this file — only decisions that CHANGE are listed below.
@@ -10,7 +10,7 @@ Parent decisions are NOT modified in this file — only decisions that CHANGE ar
 
 **Status:** Complete
 **Author:** AI
-**Parent conclusions:** `output/phase-NN-[parent-identifier]-conclusions.md`
+**Parent conclusions:** `conclusions/phase-NN-[parent-identifier]-conclusions.md`
 **Source:** `findings/phase-NN-[parent-identifier]-addendum-NN-[slug]-results.md`
 **Plan:** `plans/phase-NN-[parent-identifier]-addendum-NN-[slug]-plan.md`
 **Synthesis date:** YYYY-MM-DD
@@ -119,7 +119,7 @@ Include the parent conclusions backlink as the first row.
 
 | File | Section | Change summary |
 |------|---------|---------------|
-| `output/phase-NN-[parent-identifier]-conclusions.md` | §Addendums (new/updated) | Backlink to this addendum added |
+| `conclusions/phase-NN-[parent-identifier]-conclusions.md` | §Addendums (new/updated) | Backlink to this addendum added |
 | `wiki/project/[file].md` | §N [Section name] | [What changed in one line] |
 | `plans/phase-NN-index.md` | §Decisions Tracker | [N] decisions revised |
 

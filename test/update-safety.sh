@@ -45,7 +45,7 @@ pass "doctor green after init"
 echo "[3] Write user content"
 echo "my plans" > "${WORK_DIR}/plans/my-plan.md"
 echo "my findings" > "${WORK_DIR}/findings/finding-01.md"
-echo "my conclusions" > "${WORK_DIR}/output/conclusions.md"
+echo "my conclusions" > "${WORK_DIR}/conclusions/conclusions.md"
 
 # Append user content to CLAUDE.md body (the @import line must survive untouched)
 echo "" >> "${WORK_DIR}/CLAUDE.md"
@@ -55,7 +55,7 @@ echo "Client: Acme Corp" >> "${WORK_DIR}/CLAUDE.md"
 # Snapshot user file checksums
 USER_PLAN_SUM="$(md5 -q "${WORK_DIR}/plans/my-plan.md")"
 USER_FIND_SUM="$(md5 -q "${WORK_DIR}/findings/finding-01.md")"
-USER_OUT_SUM="$(md5 -q "${WORK_DIR}/output/conclusions.md")"
+USER_OUT_SUM="$(md5 -q "${WORK_DIR}/conclusions/conclusions.md")"
 USER_CLAUDE_SUM="$(md5 -q "${WORK_DIR}/CLAUDE.md")"
 
 # Snapshot a framework skill file before the "update"
@@ -103,9 +103,9 @@ echo "[6] Assert user files byte-identical"
   && pass "findings/finding-01.md unchanged" \
   || fail "findings/finding-01.md was modified by sync"
 
-[ "$(md5 -q "${WORK_DIR}/output/conclusions.md")" = "$USER_OUT_SUM" ] \
-  && pass "output/conclusions.md unchanged" \
-  || fail "output/conclusions.md was modified by sync"
+[ "$(md5 -q "${WORK_DIR}/conclusions/conclusions.md")" = "$USER_OUT_SUM" ] \
+  && pass "conclusions/conclusions.md unchanged" \
+  || fail "conclusions/conclusions.md was modified by sync"
 
 [ "$(md5 -q "${WORK_DIR}/CLAUDE.md")" = "$USER_CLAUDE_SUM" ] \
   && pass "CLAUDE.md body unchanged" \

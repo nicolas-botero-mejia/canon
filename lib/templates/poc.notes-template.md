@@ -50,4 +50,4 @@ Temporary code snippets, partial outputs, URL dumps. Cleared when POC closes.
 
 ---
 
-*Tier: tmp scratch → **this file (findings/poc-NN-[name]-notes.md)** → findings/poc-NN-[name]-results.md → output/poc-NN-[name]-conclusions.md*
+*Tier: tmp scratch → **this file (findings/poc-NN-[name]-notes.md)** → findings/poc-NN-[name]-results.md → conclusions/poc-NN-[name]-conclusions.md*

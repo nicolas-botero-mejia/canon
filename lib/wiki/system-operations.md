@@ -1,7 +1,7 @@
 # System Maintenance — CLAUDE.md and the Knowledge Base
 
-**Last updated:** 2026-06-02 (session 2 — content rules, move action type, Rule 15 functional test note; §4 wiki-manage sub-commands aligned + hook-surface bullet added via meta-doc currency check)
-**Scope:** How to maintain the CLAUDE.md, wiki, plans, findings, output, and index over the life of the project. This is the implementation; CLAUDE.md is the interface.
+**Last updated:** 2026-06-06
+**Scope:** How to maintain the CLAUDE.md, wiki, plans, findings, conclusions, and index over the life of the project. This is the implementation; CLAUDE.md is the interface.
 
 > **Why this exists:** CLAUDE.md needs to stay lean (under 200 lines) to avoid burdening the context window every session. The rules for maintaining it, the decisions about what belongs where, and the principles for pruning stale content live here — not there.
 
@@ -10,7 +10,7 @@
 ## Table of Contents
 
 1. [The Knowledge Architecture](#1-the-knowledge-architecture)
-2. [The Three-Layer Model — raw → findings → output](#2-the-three-layer-model)
+2. [The Three-Layer Model — raw → findings → conclusions](#2-the-three-layer-model)
 3. [Comparison with Karpathy's LLM Wiki Pattern](#3-comparison-with-karpathys-llm-wiki-pattern)
 4. [What Lives Where — Full Reference](#4-what-lives-where--full-reference)
 5. [Naming Convention](#5-naming-convention)
@@ -18,7 +18,7 @@
 7. [How to Maintain the Wiki](#7-how-to-maintain-the-wiki)
 8. [How to Maintain the Index](#8-how-to-maintain-the-index)
 9. [How to Maintain Plans](#9-how-to-maintain-plans)
-10. [How to Use findings/ and output/](#10-how-to-use-findings-and-output)
+10. [How to Use findings/ and conclusions/](#10-how-to-use-findings-and-conclusions)
 11. [How to Maintain log.md](#11-how-to-maintain-logmd)
 12. [Pruning Stale Content](#12-pruning-stale-content)
 13. [The 6-Month Horizon Test](#13-the-6-month-horizon-test)
@@ -36,7 +36,7 @@ CLAUDE.md  (the interface)
 ├── Points to other files — never duplicates content
 └── Updated only when confirmed facts change
 
-wiki/ plans/ findings/ output/ raw/ log.md  (the implementation)
+wiki/ plans/ findings/ conclusions/ raw/ log.md  (the implementation)
 ├── Not read every session — read on demand
 ├── Contains: depth, synthesis, research, maintenance rules (this file)
 └── Organized by type — see the three-layer model below
@@ -44,7 +44,7 @@ wiki/ plans/ findings/ output/ raw/ log.md  (the implementation)
 
 ---
 
-## 2. The Three-Layer Model
+## 2. The Three-Layer Model — raw → findings → conclusions
 
 Validated against Karpathy's LLM Wiki pattern (2026) and ResearchOps / Atomic Research best practices. Every project file belongs to one of three knowledge layers:
 
@@ -57,9 +57,9 @@ findings/
   What you DISCOVER through your own work. Authored by the team. Can be refined.
   → Four types: poc-results, research-results, field-notes, handoff (see §4 and §10).
   → Different from raw: you generated it.
-  → Different from output: not yet synthesized.
+  → Different from conclusions: not yet synthesized.
 
-output/
+conclusions/
   What you SYNTHESIZE from findings. Conclusions and deliverables.
   → Session conclusions, discovery synthesis, phase deliverables, component specs.
 
@@ -67,7 +67,7 @@ tmp/
   Transient project management files. NOT a knowledge layer.
   → Audits, status trackers, coverage checks — anything with a lifecycle condition.
   → Each file has a "Closes when:" condition. Librarian monitors; human approves deletion.
-  → Not indexed by check-index.sh. Not referenced from wiki/, findings/, or output/.
+  → Not indexed by check-index.sh. Not referenced from wiki/, findings/, or conclusions/.
 ```
 
 **The key distinction:** "Unanalyzed" ≠ "raw." Session notes are unanalyzed but they are not raw — you authored them, they reflect your judgment, they can be cleaned up. A transcript is raw. A client document is raw. Your observations from watching someone use a product are *findings*.
@@ -78,7 +78,7 @@ tmp/
 
 ```
 wiki/       → Stable reference knowledge — synthesized and persistent across sessions.
-              Not raw, not findings, not output — it's the knowledge base that compounds.
+              Not raw, not findings, not conclusions — it's the knowledge base that compounds.
 
 plans/      → Engagement planning — agendas, question lists, decisions tracker, risk register.
               Living documents, updated continuously as the engagement progresses.
@@ -113,9 +113,9 @@ outputs/    → Query responses, synthesized reports, analysis results.
 | Karpathy | Us | Why we differ |
 |----------|----|--------------|
 | Meeting notes → `raw/` | Team notes → `findings/` | We're a team, not a solo user. Team-generated observations are a distinct artifact class — authored, revisable, accountable. Mixing them with immutable source material creates ambiguity. |
-| No `findings/` layer | `findings/` between raw and output | ResearchOps and Atomic Research validate this distinction. The "observed" layer (team-generated data) is genuinely different from both received material and synthesized conclusions. |
+| No `findings/` layer | `findings/` between raw and conclusions | ResearchOps and Atomic Research validate this distinction. The "observed" layer (team-generated data) is genuinely different from both received material and synthesized conclusions. |
 | No `plans/` | `plans/` alongside wiki | Karpathy has no client engagement to plan for. |
-| `outputs/` covers all synthesis | `output/` for conclusions; `wiki/` for stable reference | We distinguish between session conclusions (temporary, phase-specific) and stable reference knowledge (permanent, reusable across projects). |
+| `outputs/` covers all synthesis | `conclusions/` for conclusions; `wiki/` for stable reference | We distinguish between session conclusions (temporary, phase-specific) and stable reference knowledge (permanent, reusable across projects). |
 
 Karpathy's model is optimized for a **personal knowledge base** — one person ingests, one LLM synthesizes. Our model is a **team engagement** — multiple contributors, client-facing accountability, multiple design process phases that need distinct artifact types.
 
@@ -130,7 +130,8 @@ Karpathy's model is optimized for a **personal knowledge base** — one person i
 
 ### wiki/standards/
 ✅ Belongs: Industry-wide best practices, non-client-specific research, patterns reusable across any engagement.
-❌ Never: Client decisions, session-specific findings, living engagement artifacts.
+Valid sources: industry standards documents, published research, authoritative external references arriving via `raw/`. Human approval required before populating from raw/.
+❌ Never: Client decisions (→ wiki/project/), client-specific constraints (→ wiki/project/), session-specific findings.
 
 ### wiki/project/
 ✅ Belongs: Client-specific decisions — what was chosen, what version, what the constraint is, and what it means for the build. Decisions reference findings/ or standards/ for rationale; they do not contain it.
@@ -147,8 +148,26 @@ Karpathy's model is optimized for a **personal knowledge base** — one person i
 
 The clean pattern: a `wiki/project/` decision file where each section is a decision + status + pointer — no research history, no justification paragraphs, no duplication.
 
-### wiki/meta/
-✅ Belongs: How we work (prompting, AI workflow), how we maintain this system (this file).
+### wiki/client/
+✅ Belongs: Org knowledge — stakeholders, communication preferences, decision-making dynamics,
+   political constraints, engagement context. True of the client regardless of project decisions.
+   Valid sources: `raw/` documents (org charts, client briefs), session results files, field notes —
+   with human approval. No conclusions file required.
+❌ Never: Project decisions (→ wiki/project/), session-specific observations (→ findings/),
+   sensitive personal or commercial information.
+
+### wiki/user/
+✅ Belongs: End user knowledge synthesized across activities — personas, behavioral patterns,
+   pain points, accessibility requirements, mental models.
+   Valid sources: `raw/` documents (user research reports, usability study outputs), research results,
+   session results — with human approval. No conclusions file required.
+❌ Never: Session-specific observations (→ findings/field-notes.md),
+   client org information (→ wiki/client/), unverified hypotheses (→ plans/).
+
+### Framework methodology docs (node_modules)
+The framework's own system documentation (`system-architecture.md`, `system-operations.md`, etc.)
+lives in `node_modules/@nicolas-botero-mejia/canon/lib/wiki/` — not in the consumer project's `wiki/`.
+Do not copy or recreate these files in your project wiki. Reference them from node_modules.
 
 ### plans/
 ✅ Belongs: Session guides, question lists, decisions tracker, risk register, corrections log, session notes placeholder.
@@ -169,33 +188,40 @@ The clean pattern: a `wiki/project/` decision file where each section is a decis
 
 All files carry `**Author:** Human | AI | Mixed`
 
-❌ Never: Transcripts (→ raw/), synthesized conclusions (→ output/), transient working files (→ tmp/).
+❌ Never: Transcripts (→ raw/), synthesized conclusions (→ conclusions/), transient working files (→ tmp/).
 
 ### raw/
 ✅ Belongs: Client/manager documents, session transcripts (verbatim), third-party source material received.
 ❌ Never: Anything the team authored — even if unanalyzed, team-generated content goes to findings/.
 **Never edit files in raw/.**
 
-### output/
-✅ Belongs: Session conclusions, phase synthesis, formal deliverables (component specs, architecture briefs, design system docs, final recommendations).
-❌ Never: Raw observations (→ findings/), received material (→ raw/).
+### conclusions/
+✅ Belongs: Synthesized activity conclusions — team-internal. POC verdicts, session conclusions, phase synthesis, research conclusions.
+❌ Never: Client-facing formal artifacts (→ deliverables/), raw observations (→ findings/), received material (→ raw/).
+
+### deliverables/
+✅ Belongs: Client-facing formal artifacts — what the client receives as a packaged document.
+   Slide decks, formal recommendations, design system specs for handoff, architecture briefs
+   addressed to the client, accessibility audit reports delivered to the client.
+❌ Never: Team-internal synthesis (→ conclusions/), findings or evidence (→ findings/),
+   source material received (→ raw/).
 
 ### tmp/
 ✅ Belongs: Transient project management files — audits, status trackers, coverage checks, working notes with a defined lifecycle.
 Each file requires: `**Created:** YYYY-MM-DD` and `**Closes when:** [specific condition]`
-❌ Never: Knowledge resources, content referenced from wiki/, findings/, or output/.
+❌ Never: Knowledge resources, content referenced from wiki/, findings/, or conclusions/.
 ❌ Never: Files without a Closes When condition — every tmp file must have an exit.
 Not indexed by check-index.sh. Not linked from other project files.
 
 ### .claude/
 ✅ Belongs: Project-level agent definitions (`agents/`), skill definitions (`skills/[name]/SKILL.md`), behavioral rules (`rules/`), hook configuration (`settings.json`), out-of-session change sentinel (`pending-updates.log`).
-❌ Never: Knowledge content, findings, plans, or output files — nothing that belongs in the monitored knowledge layers.
+❌ Never: Knowledge content, findings, plans, or conclusions files — nothing that belongs in the monitored knowledge layers.
 
 **Separation of concerns within `.claude/`:**
 - `agents/` → specialized subagent definitions (Librarian, PM, Writer)
 - `skills/` → invocable skills (`/skill-name`); each skill lives in its own `[name]/SKILL.md` subdirectory; **Phase:** `/phase-new`, `/phase-conclude` | **Activity:** `/activity-new [type]`, `/activity-conclude [type]` | **System:** `/wiki-manage` (add/update/deprecate/move), `/knowledge-audit`, `/conclusions-review`
 - `rules/` → behavioral rules that load automatically each session; currently one file (`behavioral.md`)
-- `settings.json` → hook configuration spanning SessionStart, PostToolUse (stale-ref pre-check on Write/Edit), and Stop (4-script consistency chain) — full detail in `architecture.md §2`
+- `settings.json` → hook configuration — delegates to the tool integration layer (see `system-tool-integration.md`)
 - `CLAUDE.md` → confirmed project facts, folder map, navigation guide, session table only — no rules
 
 **When to add a rule vs. update CLAUDE.md:** If the content governs *how Claude should act*, it belongs in `.claude/rules/`. If it is a confirmed project *fact*, it belongs in `CLAUDE.md`.
@@ -222,7 +248,7 @@ Process types:  poc-NN          Proof of concept (numbered, sequential)
 File types:     plan            Session/POC/addendum/research guide (→ plans/)
                 results         Structured execution log (→ findings/)
                 field-notes     Human personal observations (→ findings/)
-                conclusions     Synthesized output (→ output/)
+                conclusions     Synthesized output (→ conclusions/)
                 handoff         Transitional synthesis (→ findings/)
 ```
 
@@ -237,7 +263,7 @@ findings/
 raw/
   phase-01-session-01-kickoff-transcript.md       ← verbatim, immutable
 
-output/
+conclusions/
   phase-01-poc-01-token-pipeline-conclusions.md
   phase-01-session-01-kickoff-conclusions.md
   phase-01-research-platform-overview-conclusions.md  ← only when closes a decision
@@ -252,7 +278,7 @@ plans/
 
 **Template naming:** `[process-type].[file-type]-template.md` — process-first. Full map → `templates/template-index.md (framework templates, in node_modules)`.
 
-**Subdirectories vs. prefixes:** Use prefixes (flat) for findings/, output/, plans/. Use subdirectories only for wiki/ where content types are genuinely different.
+**Subdirectories vs. prefixes:** Use prefixes (flat) for findings/, conclusions/, plans/. Use subdirectories only for wiki/ where content types are genuinely different.
 
 ---
 
@@ -339,10 +365,10 @@ When transcript available:
                  raw/phase-NN-session-NN-[topic]-transcript.md         ← verbatim, immutable
                  findings/phase-NN-session-NN-[topic]-results.md       ← AI-structured from transcript
 
-Within 24h:      output/phase-NN-session-NN-[topic]-conclusions.md
+Within 24h:      conclusions/phase-NN-session-NN-[topic]-conclusions.md
 
 After final session of phase:
-                 output/phase-NN-conclusions.md  (full phase synthesis)
+                 conclusions/phase-NN-conclusions.md  (full phase synthesis)
 ```
 
 **Note:** Sessions produce TWO findings files — field-notes (human, during session) and results (AI, from transcript). They are different documents with different authorship and different roles in synthesis.
@@ -362,8 +388,8 @@ Before addendum:  plans/discovery-backlog.md entry exists (from signal or extern
                   plans/phase-NN-[parent-identifier]-addendum-NN-[slug]-plan.md  ← load parent context first
                   findings/phase-NN-[parent-identifier]-addendum-NN-[slug]-results.md  ← stub, AI fills during execution
 
-After execution:  output/phase-NN-[parent-identifier]-addendum-NN-[slug]-conclusions.md
-                  output/phase-NN-[parent-identifier]-conclusions.md  ← ## Addendums section updated
+After execution:  conclusions/phase-NN-[parent-identifier]-addendum-NN-[slug]-conclusions.md
+                  conclusions/phase-NN-[parent-identifier]-conclusions.md  ← ## Addendums section updated
                   plans/discovery-backlog.md  ← entry marked Complete
 ```
 
@@ -425,7 +451,7 @@ Every session file — regardless of type — must follow this structure. Copy t
 - Field notes (during session) → `findings/phase-0N-session-0N-[topic]-field-notes.md`
 - Results (from transcript, when available) → `findings/phase-0N-session-0N-[topic]-results.md`
 - Transcript (if recorded) → `raw/phase-0N-session-0N-[topic]-transcript.md`
-- Conclusions (within 24h) → `output/phase-0N-session-0N-[topic]-conclusions.md`
+- Conclusions (within 24h) → `conclusions/phase-0N-session-0N-[topic]-conclusions.md`
 - Update decisions tracker in [phase-0N-index.md](./phase-0N-index.md)
 ```
 
@@ -441,7 +467,7 @@ Internal sessions (no client attendance) omit the transcript line. Sessions that
 
 ---
 
-## 10. How to Use findings/ and output/
+## 10. How to Use findings/ and conclusions/
 
 ### findings/ — four types, two authorship rules
 
@@ -459,7 +485,7 @@ Internal sessions (no client attendance) omit the transcript line. Sessions that
 
 **Authorship rule:** Field notes are primary source — interpret them, don't cite them directly. Results are structured evidence — cite them in conclusions. This distinction matters for agent behavior: the Librarian prioritizes results over field-notes when surfacing prior context.
 
-### output/ workflow
+### conclusions/ workflow
 - Created after synthesis — never during raw observation
 - Session conclusions: field-notes + results (when available) → what we learned, what it means, what decisions it closes
 - POC conclusions: poc-results → verdict, evidence summary, deferred observations, decisions closed, **addendum candidates** (forward signals — PARTIAL verdicts, proxy-tested items, deferred hypotheses, new questions)
@@ -477,7 +503,7 @@ Rule 12 (`.claude/rules/behavioral.md`) checks this field before any downstream 
 Client/manager → raw/                (transcript, documents — immutable)
 Human observes → findings/*-field-notes.md    (personal, primary source)
 Team executes  → findings/*-results.md        (structured evidence — POC or research)
-Team synthesizes → output/           (conclusions, deliverables)
+Team synthesizes → conclusions/           (conclusions, deliverables)
 Stable knowledge → wiki/             (reference that compounds)
 Active decisions → plans/            (tracker, updated in real time)
 Working files  → tmp/               (audits, trackers — lifecycle-limited)
@@ -541,32 +567,35 @@ Every wiki file should pass: could someone use it in 6 months, without having be
 
 ## 14. Trigger Events — When to Update What
 
-| Event | CLAUDE.md | wiki/meta | wiki/project | plans | findings | output | log.md |
-|-------|-----------|-----------|-------------|-------|----------|--------|--------|
-| New confirmed fact from session | ✅ | ❌ | ✅ project/ | ✅ decisions | ❌ | ❌ | ✅ |
-| Session completed — field notes | ❌ | ❌ | ❌ | ✅ decisions | ✅ field-notes | ❌ | ✅ |
-| Session completed — transcript available | ❌ | ❌ | ❌ | ❌ | ✅ results | ❌ | ✅ |
-| Session conclusions written | ✅ maybe | ❌ | ✅ if decisions | ✅ decisions | ❌ | ✅ | ✅ |
-| Research plan started | ❌ | ❌ | ❌ | ✅ new plan | ✅ results stub | ❌ | ✅ |
-| Research results complete | ❌ | ❌ | ❌ | ❌ | ✅ results | ❌ | ✅ |
-| Research conclusions written (closes decision) | ✅ maybe | ❌ | ✅ if decisions | ✅ decisions | ❌ | ✅ | ✅ |
-| POC plan started | ❌ | ❌ | ❌ | ✅ new plan | ✅ results stub | ❌ | ✅ |
-| POC results complete | ❌ | ❌ | ❌ | ❌ | ✅ results | ❌ | ✅ |
-| POC conclusions written | ✅ maybe | ❌ | ✅ if decisions | ✅ decisions | ❌ | ✅ | ✅ |
-| Addendum plan started | ❌ | ❌ | ❌ | ✅ new plan + backlog update | ✅ results stub | ❌ | ✅ |
-| Addendum results complete | ❌ | ❌ | ❌ | ❌ | ✅ results | ❌ | ✅ |
-| Addendum conclusions written | ✅ maybe | ❌ | ✅ if decisions revised | ✅ decisions if revised | ❌ | ✅ + parent backlink | ✅ |
-| Signal assessed (external discovery, no parent) | ❌ | ❌ | ❌ | ✅ backlog entry | ✅ signal results | ❌ | ✅ |
-| **Structural change** (new folder, naming convention, template type, process type, behavioral rule) | ✅ Rule 10 | ✅ **both meta docs** | ❌ | ❌ | ❌ | ❌ | ✅ |
-| New wiki file created | ❌ | ❌ | ✅ new + index | ❌ | ❌ | ❌ | ✅ |
-| New plan or phase starts | ✅ pointer | ❌ | ❌ | ✅ new index | ❌ | ❌ | ✅ |
-| Phase synthesis complete | ❌ | ❌ | ❌ | ✅ maybe | ❌ | ✅ | ✅ |
-| Scope change | ✅ | ❌ | ✅ maybe | ✅ | ❌ | ❌ | ✅ |
-| /knowledge-audit run | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (tmp/ file created) |
-| /conclusions-review run | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ sets **Alignment verified:** on target file | ✅ (tmp/ file if persistent copy requested) |
-| Monthly audit | ✅ if needed | ✅ currency check | ✅ prune | ✅ archive closed | ❌ | ❌ | ✅ |
+| Event | CLAUDE.md | wiki/project | wiki/client | wiki/user | plans | findings | conclusions | deliverables | log.md |
+|-------|-----------|-------------|------------|----------|-------|----------|-------------|--------------|--------|
+| New confirmed fact from session | ✅ | ✅ project/ | ❌ | ❌ | ✅ decisions | ❌ | ❌ | ❌ | ✅ |
+| Session completed — field notes | ❌ | ❌ | ❌ | ❌ | ✅ decisions | ✅ field-notes | ❌ | ❌ | ✅ |
+| Session completed — transcript available | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ results | ❌ | ❌ | ✅ |
+| Session conclusions written | ✅ maybe | ✅ if decisions | ❌ | ❌ | ✅ decisions | ❌ | ✅ | ❌ | ✅ |
+| Research plan started | ❌ | ❌ | ❌ | ❌ | ✅ new plan | ✅ results stub | ❌ | ❌ | ✅ |
+| Research results complete | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ results | ❌ | ❌ | ✅ |
+| Research conclusions written (closes decision) | ✅ maybe | ✅ if decisions | ❌ | ❌ | ✅ decisions | ❌ | ✅ | ❌ | ✅ |
+| POC plan started | ❌ | ❌ | ❌ | ❌ | ✅ new plan | ✅ results stub | ❌ | ❌ | ✅ |
+| POC results complete | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ results | ❌ | ❌ | ✅ |
+| POC conclusions written | ✅ maybe | ✅ if decisions | ❌ | ❌ | ✅ decisions | ❌ | ✅ | ❌ | ✅ |
+| Addendum plan started | ❌ | ❌ | ❌ | ❌ | ✅ new plan + backlog update | ✅ results stub | ❌ | ❌ | ✅ |
+| Addendum results complete | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ results | ❌ | ❌ | ✅ |
+| Addendum conclusions written | ✅ maybe | ✅ if decisions revised | ❌ | ❌ | ✅ decisions if revised | ❌ | ✅ + parent backlink | ❌ | ✅ |
+| Signal assessed (external discovery, no parent) | ❌ | ❌ | ❌ | ❌ | ✅ backlog entry | ✅ signal results | ❌ | ❌ | ✅ |
+| Client relationship event or org change (new stakeholder, scope revision, decision-making shift) | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Research or session produces synthesized user insights | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Deliverable created or updated for client | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **Structural change** (new folder, naming convention, template type, process type, behavioral rule) | ✅ Rule 10 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (+ both meta docs) |
+| New wiki file created | ❌ | ✅ new + index | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| New plan or phase starts | ✅ pointer | ❌ | ❌ | ❌ | ✅ new index | ❌ | ❌ | ❌ | ✅ |
+| Phase synthesis complete | ❌ | ❌ | ❌ | ❌ | ✅ maybe | ❌ | ✅ | ❌ | ✅ |
+| Scope change | ✅ | ✅ maybe | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ |
+| /knowledge-audit run | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (tmp/ file created) |
+| /conclusions-review run | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ sets **Alignment verified:** | ❌ | ✅ (tmp/ file if copy requested) |
+| Monthly audit | ✅ if needed | ✅ prune | ✅ prune | ✅ prune | ✅ archive closed | ❌ | ❌ | ❌ | ✅ |
 
-> **⚠️ Structural changes that modify a skill, agent, or hook:** functional test also required (Rule 15) — confirm actual behavior, not just that the text is correct. See `system-architecture.md (framework wiki, in node_modules) §7` for what counts as a functional test.
+> **⚠️ Structural changes that modify a skill, agent, or hook:** functional test also required (Rule 15) — confirm actual behavior, not just that the text is correct. See `system-verification.md (framework wiki, in node_modules) §2` for what counts as a functional test.
 
 ---
 
@@ -591,7 +620,7 @@ Common mistake: writing directly into results while the activity is in progress.
 Use `/activity-conclude [type]`. It:
 1. Synthesizes notes → results (if notes exist and results don't)
 2. Reviews results → proposes conclusions
-3. Routes conclusions to `output/`
+3. Routes conclusions to `conclusions/`
 4. Sets the `**Alignment verified:**` date
 5. Prompts wiki updates
 6. Appends to `log.md`

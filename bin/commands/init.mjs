@@ -6,8 +6,9 @@ import { PKG_NAME, packageRoot, readManifest } from '../lib/paths.mjs'
 
 const PACKAGE_ROOT = packageRoot()
 const USER_DIRS = [
-  'plans', 'findings', 'output', 'raw', 'tmp',
-  'wiki/project', 'wiki/standards', 'scripts/project',
+  'plans', 'findings', 'conclusions', 'raw', 'tmp', 'deliverables',
+  'wiki/project', 'wiki/standards', 'wiki/client', 'wiki/user',
+  'scripts/project',
 ]
 
 async function ask(rl, question) {

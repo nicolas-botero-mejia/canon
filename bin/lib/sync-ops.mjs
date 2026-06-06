@@ -10,17 +10,48 @@ function hashFile(p) {
   return createHash('sha256').update(readFileSync(p)).digest('hex')
 }
 
-function findModified(srcDir, destDir, rel = '') {
+const SYNC_MANIFEST = '.canon-sync-manifest.json'
+
+function loadSyncManifest(consumerRoot) {
+  const p = join(consumerRoot, SYNC_MANIFEST)
+  if (!existsSync(p)) return {}
+  try { return JSON.parse(readFileSync(p, 'utf8')) } catch { return {} }
+}
+
+function saveSyncManifest(consumerRoot, hashes) {
+  writeFileSync(join(consumerRoot, SYNC_MANIFEST), JSON.stringify(hashes, null, 2))
+}
+
+// Collect hashes of all files under dir, keyed by path relative to dir
+function collectHashes(dir, rel = '', out = {}) {
+  const entries = readdirSync(join(dir, rel), { withFileTypes: true })
+  for (const entry of entries) {
+    const relPath = rel ? `${rel}/${entry.name}` : entry.name
+    if (entry.isDirectory()) collectHashes(dir, relPath, out)
+    else out[relPath] = hashFile(join(dir, relPath))
+  }
+  return out
+}
+
+// A file is user-modified when its current hash differs from the last-synced hash.
+// If no record exists for the file, fall back to comparing against src (conservative).
+function findModified(srcDir, destDir, storedHashes, vendorRel, rel = '') {
   const modified = []
   const entries = readdirSync(join(srcDir, rel), { withFileTypes: true })
   for (const entry of entries) {
     const relPath = rel ? `${rel}/${entry.name}` : entry.name
+    const destFile = join(destDir, relPath)
     if (entry.isDirectory()) {
-      modified.push(...findModified(srcDir, destDir, relPath))
-    } else {
-      const destFile = join(destDir, relPath)
-      if (existsSync(destFile) && hashFile(join(srcDir, relPath)) !== hashFile(destFile)) {
-        modified.push(relPath)
+      modified.push(...findModified(srcDir, destDir, storedHashes, vendorRel, relPath))
+    } else if (existsSync(destFile)) {
+      const destHash = hashFile(destFile)
+      const manifestKey = `${vendorRel}/${relPath}`
+      if (storedHashes[manifestKey] !== undefined) {
+        // Known baseline: user-modified iff dest drifted from last-synced hash
+        if (destHash !== storedHashes[manifestKey]) modified.push(relPath)
+      } else {
+        // No baseline: fall back to comparing dest against src (original behaviour)
+        if (hashFile(join(srcDir, relPath)) !== destHash) modified.push(relPath)
       }
     }
   }
@@ -36,6 +67,9 @@ function findModified(srcDir, destDir, rel = '') {
  * Skips dirs that contain user-modified files unless { force: true } is passed.
  */
 export function vendorDirs(manifest, pkgRoot, consumerRoot, { force = false } = {}) {
+  const storedHashes = loadSyncManifest(consumerRoot)
+  const updatedHashes = { ...storedHashes }
+
   for (const rel of manifest.vendored) {
     const src  = join(pkgRoot, 'lib', rel)
     const dest = join(consumerRoot, rel)
@@ -43,7 +77,7 @@ export function vendorDirs(manifest, pkgRoot, consumerRoot, { force = false } = 
     if (!existsSync(src)) continue
 
     if (!force && existsSync(dest)) {
-      const modified = findModified(src, dest)
+      const modified = findModified(src, dest, storedHashes, rel)
       if (modified.length > 0) {
         console.warn(`  ⚠  Skipping ${rel} — ${modified.length} user-modified file(s):`)
         modified.forEach(f => console.warn(`     ${f}`))
@@ -55,7 +89,15 @@ export function vendorDirs(manifest, pkgRoot, consumerRoot, { force = false } = 
     mkdirSync(dirname(dest), { recursive: true })
     cpSync(src, dest, { recursive: true, force: true })
     console.log(`  ✓  vendored ${rel}`)
+
+    // Record the just-synced hashes as the new baseline
+    const synced = collectHashes(src)
+    for (const [relPath, hash] of Object.entries(synced)) {
+      updatedHashes[`${rel}/${relPath}`] = hash
+    }
   }
+
+  saveSyncManifest(consumerRoot, updatedHashes)
 }
 
 /**

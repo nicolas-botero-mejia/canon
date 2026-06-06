@@ -24,7 +24,7 @@ Six finding types, each with distinct authorship and purpose:
 ### Prior Context Priority Order
 
 When loading context for a topic, read in this order (highest fidelity first):
-1. `output/` — conclusions files (most synthesized, decisions already made)
+1. `conclusions/` — conclusions files (most synthesized, decisions already made)
 2. `findings/*-results.md` — structured evidence (POC or research)
 3. `findings/*-field-notes.md` — human observations (primary but informal)
 
@@ -50,13 +50,18 @@ Always verify a template exists before the Writer creates a new file type.
 ### The Knowledge Base Structure
 
 ```
-raw/       → immutable client materials (never touch)
-findings/  → team-generated evidence (4 types above)
-output/    → synthesized conclusions and deliverables
-wiki/      → stable reference knowledge
-plans/     → engagement plans and decisions tracker
-tmp/       → transient working files (lifecycle-limited)
-log.md     → append-only ledger of all structural changes
+raw/           → immutable client materials (never touch)
+findings/      → team-generated evidence (4 types above)
+conclusions/   → synthesized conclusions (team-internal)
+deliverables/  → client-facing formal artifacts (what the client receives)
+wiki/          → stable reference knowledge
+  project/     → client decisions (what was chosen)
+  client/      → org knowledge (who the client is, how they operate)
+  user/        → user research (who end users are, what they need)
+  standards/   → industry patterns (true of any project)
+plans/         → engagement plans and decisions tracker
+tmp/           → transient working files (lifecycle-limited)
+log.md         → append-only ledger of all structural changes
 ```
 
 ### Meta-Doc Currency (Rule 10)
@@ -65,21 +70,37 @@ log.md     → append-only ledger of all structural changes
 
 ### Consistency Dimensions (8 total)
 
-1. **Contradictions** — two files state different things about the same fact or decision
+1. **Contradictions** — two files state different things about the same fact or decision. Scope: all four active wiki layers (`wiki/project/`, `wiki/standards/`, `wiki/client/`, `wiki/user/`). Contradictions can occur across any combination — e.g., a stakeholder described differently in `wiki/client/` and `wiki/project/`, or a user persona that conflicts between `wiki/user/` and a research finding.
 2. **Stale content** — references a decision as open that has since closed, or version that has changed
 3. **Orphans** — file exists in CONTENT_INDEX.md but nothing links to it
 4. **Missing coverage** — confirmed fact from plans/phase-NN-index.md not reflected in wiki/project/
 5. **Structural inconsistency** — heading hierarchy, metadata format, link style differs from the majority
 6. **Meta-doc drift** — system-architecture.md or system-operations.md predate the last structural entry in log.md
-7. **Parent-backlink integrity** — for every addendum conclusions file in `output/`, its parent conclusions file must have an `## Addendums` section with a link back to it. If the parent is missing the section or the specific link: flag as drift.
-8. **Content-type boundary drift** — a `wiki/project/` file contains content that belongs elsewhere:
+7. **Parent-backlink integrity** — for every addendum conclusions file in `conclusions/`, its parent conclusions file must have an `## Addendums` section with a link back to it. If the parent is missing the section or the specific link: flag as drift.
+8. **Content-type boundary drift** — applies to all four active wiki layers. Scope: `wiki/project/`, `wiki/standards/`, `wiki/client/`, `wiki/user/`.
+
+   **`wiki/project/` violations:**
    (a) Research history or API documentation for removed tools — more than a one-line pointer with a deprecation marker
    (b) Standards-level justification paragraphs arguing correctness by industry patterns rather than project-specific reasons (signature phrases: "this is the standard for…", "[a major library] does it this way…", "[the framework] uses…")
    (c) POC Findings Summary sections with session-specific data (dates, step logs, delta lists) that already exist in `findings/`
    (d) Planning stubs — ⏳ sections with no decided content beyond "pending" or "TBD"
    (e) Intra-wiki duplication — the same sub-topic covered with overlapping detail in two `wiki/project/` files
 
-   For each instance: file, section (§N), violation type (a–e), recommended destination. Reference `system-operations.md (framework wiki) §4` for the content rules table.
+   **`wiki/standards/` violations:**
+   (f) Project-specific decisions embedded (→ `wiki/project/`)
+   (g) Client-specific constraints that only apply to this engagement (→ `wiki/project/`)
+
+   **`wiki/client/` violations:**
+   (h) Project decisions embedded (→ `wiki/project/`)
+   (i) Session-specific observations (→ `findings/`)
+   (j) Sensitive personal or commercial information — flag for human review before any action
+
+   **`wiki/user/` violations:**
+   (k) Session-specific observations (→ `findings/field-notes.md`)
+   (l) Client org info (→ `wiki/client/`)
+   (m) Unverified hypotheses (→ `plans/`)
+
+   For each instance: file, section (§N), violation type (a–m), recommended destination. Reference `system-operations.md (framework wiki) §4` for the content rules table.
 
 ---
 

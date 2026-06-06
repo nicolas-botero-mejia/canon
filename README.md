@@ -21,7 +21,7 @@ npx canon init
 `init` asks which AI layers to enable (Claude Code / Cursor), then scaffolds:
 
 ```
-plans/          findings/       output/         raw/
+plans/          findings/       conclusions/         raw/
 wiki/project/   wiki/standards/ scripts/project/
 CLAUDE.md       CONTENT_INDEX.md  log.md
 .claude/        .cursor/
@@ -37,7 +37,7 @@ npm update @nicolas-botero-mejia/canon
 npx canon sync
 ```
 
-`sync` re-vendors the framework dirs (`.claude/skills`, `.claude/agents`, `.claude/rules`, `.cursor/rules`, `.cursor/hooks`) from the updated package. It **never** writes to `plans/`, `findings/`, `output/`, `raw/`, `CLAUDE.md` body, or any other file you own.
+`sync` re-vendors the framework dirs (`.claude/skills`, `.claude/agents`, `.claude/rules`, `.cursor/rules`, `.cursor/hooks`) from the updated package. It **never** writes to `plans/`, `findings/`, `conclusions/`, `raw/`, `CLAUDE.md` body, or any other file you own.
 
 If any vendored file was modified by hand, `sync` warns and skips it. Pass `--force` to overwrite.
 

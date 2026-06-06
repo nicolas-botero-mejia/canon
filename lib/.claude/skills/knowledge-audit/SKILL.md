@@ -14,10 +14,10 @@ Run a full consistency and currency check on the knowledge base. Produces an act
 
 ## What happens
 
-The Librarian runs all 14 audit dimensions and produces a single structured report.
+The Librarian runs all 15 audit dimensions and produces a single structured report.
 
 **Dimension 1 — Contradictions**
-Reads all wiki/project/ and wiki/standards/ files. Identifies incompatible claims about the same fact, version, or decision.
+Reads all four active wiki layers: `wiki/project/`, `wiki/standards/`, `wiki/client/`, `wiki/user/`. Identifies incompatible claims about the same fact, version, or decision across or within any combination of layers — e.g., a stakeholder described differently in `wiki/client/` and `wiki/project/`, or a user persona that conflicts between `wiki/user/` and a research finding.
 
 Two scopes — both required:
 - **Cross-file:** any two files make incompatible claims. *Example: a wiki file says a library is at version 8; CLAUDE.md says the same library is at version 10.*
@@ -53,13 +53,13 @@ Reads each file in `tmp/`. For each: reads its `**Closes when:**` condition and 
 Reads `templates/template-index.md (framework templates, in node_modules)`. For each file type that exists in the project, confirms a template entry exists. Flags any file types without templates.
 
 **Dimension 10 — Parent-backlink integrity**
-For every addendum conclusions file in `output/` (filename contains `addendum-NN`):
-- Finds the parent conclusions file (e.g., `output/phase-NN-poc-NN-[parent]-conclusions.md`)
+For every addendum conclusions file in `conclusions/` (filename contains `addendum-NN`):
+- Finds the parent conclusions file (e.g., `conclusions/phase-NN-poc-NN-[parent]-conclusions.md`)
 - Confirms the parent has an `## Addendums` section with a link to this addendum
 - If the section is missing or the link is absent → flags: *"Parent-backlink missing: [parent file] has no link to [addendum file]"*
 
 **Dimension 11 — Alignment verification coverage**
-For every Complete conclusions file in `output/` (`**Status:** Complete`):
+For every Complete conclusions file in `conclusions/` (`**Status:** Complete`):
 - Reads the `**Alignment verified:**` field
 - If the field is absent or empty → flags: *"Alignment unverified: [file] — run `/conclusions-review` or confirm inline alignment and set the field manually."*
 - If the field is present with a date → passes
@@ -89,15 +89,41 @@ For each flagged section, recommend one of:
 *Rationale:* As POC conclusions are incorporated, targeted sections inside general files grow disproportionately. Over multiple sessions this accumulates into files where one section dominates. The section becomes the real reference doc and the parent file becomes an awkward wrapper. Dimension 13 catches this pattern before it requires a large restructure.
 
 **Dimension 14 — Content-type boundary audit**
-For each `wiki/project/` file, scan every H2/H3 section against the content rules in `system-operations.md (framework wiki, in node_modules) §4`. Flag any section matching these patterns:
+Applies to all four active wiki layers. Scan every H2/H3 section against the content rules in `system-operations.md (framework wiki, in node_modules) §4`.
 
+**`wiki/project/` violations:**
 (a) **Removed-tool documentation**: section documents API inventory, output schema, or session discipline for a tool explicitly marked ⚠️ removed — more than a one-line pointer with a deprecation marker
 (b) **Standards-level justification**: section contains paragraphs arguing a choice is correct by appeal to industry patterns, external comparisons, or general best practices rather than project-specific reasons. Signature phrases: "this is the standard for…", "[a major library] does it this way…", "[the framework] itself uses…"
 (c) **POC findings embedded**: section is titled "POC Findings", "Summary", or equivalent and contains session-specific data (dates, step logs, delta items) that already exists in `findings/`
 (d) **Planning stubs**: section has only ⏳ status markers, "pending", or "TBD" with no decided content — no specifications, no configurations, no operational guidance
 (e) **Intra-wiki duplication**: the exact same sub-topic (named artifact + description) appears in two `wiki/project/` files with overlapping or contradictory detail
 
-For each flagged section: file path, section heading, violation type (a–e), recommended action (delete / collapse to pointer / move to findings/ / move to wiki/standards/).
+**`wiki/standards/` violations:**
+(f) **Project-specific decisions embedded**: section describes a decision specific to this client's engagement (→ `wiki/project/`)
+(g) **Client-specific constraints**: constraints that apply only to this engagement, not the industry (→ `wiki/project/`)
+
+**`wiki/client/` violations:**
+(h) **Project decisions embedded**: section describes a project decision rather than client org knowledge (→ `wiki/project/`)
+(i) **Session-specific observations**: section contains observations from a specific session rather than synthesized org knowledge (→ `findings/`)
+(j) **Sensitive personal/commercial information**: flag for human review before any action
+
+**`wiki/user/` violations:**
+(k) **Session-specific observations**: section contains raw session observations rather than synthesized user insights (→ `findings/field-notes.md`)
+(l) **Client org info**: section describes client org rather than end users (→ `wiki/client/`)
+(m) **Unverified hypotheses**: section describes hypotheses not yet validated (→ `plans/`)
+
+For each flagged section: file path, section heading, violation type (a–m), recommended action.
+
+**Dimension 15 — Finding-sourced wiki entries pending confirmation**
+
+Scans all `wiki/project/`, `wiki/client/`, `wiki/user/`, `wiki/standards/` files for the ⚡ marker (entries promoted via `/wiki-manage promote` from findings, pending formal conclusions confirmation).
+
+For each found:
+- Identify: file, section heading, source findings file referenced in the marker
+- Check: has the source activity since concluded? If yes → the marker should have been cleared at `/activity-conclude` or `/conclusions-review` time
+- Flag: *"⚡ Unconfirmed wiki entry — [file §section]. Source: [findings-file]. Activity concluded: [Yes/No]. Action: run `/conclusions-review [conclusions-file]` to confirm and clear the marker, or manually verify and remove ⚡."*
+
+No auto-removal. Human confirms before marker is cleared.
 
 ---
 
@@ -132,4 +158,4 @@ Which fixes must happen before others
 
 - No auto-execution on any finding
 - All proposed actions require human review before implementation
-- Output goes to tmp/ — not findings/ or output/
+- Output goes to tmp/ — not findings/ or conclusions/

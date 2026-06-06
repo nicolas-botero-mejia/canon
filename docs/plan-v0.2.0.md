@@ -30,17 +30,17 @@
 
 ---
 
-## TBD — Adjust after v0.1.4
+## TBD — resolved after v0.1.4
 
-These decisions cannot be finalized until v0.1.4 is complete. Do not lock them before running that plan.
+These were open pending v0.1.4 completion. All are now decided.
 
-| Item | Depends on |
-|------|-----------|
-| Frontmatter schema for `wiki/client/` and `wiki/user/` | Final structure of those layers from v0.1.4 |
-| MCP query surface for signals | Final `signal.results-template.md` structure from v0.1.4 |
-| MCP query for ⚡ wiki entries | Final `/wiki-manage promote` confidence marker format from v0.1.4 |
-| `check-contracts.sh` scope | Which parsing contracts actually exist after v0.1.4 |
-| Which test fixtures to create | Final template outputs from v0.1.4 |
+| Item | Decision |
+|------|----------|
+| Frontmatter schema for `wiki/client/` and `wiki/user/` | **No frontmatter.** These files are exposed as full-content MCP resources. No cross-file filtering queries target them — adding frontmatter creates maintenance cost with zero query benefit. |
+| MCP query surface for signals | **Handled by findings frontmatter** (`type: signal-results`). Add `discovery_type: external \| internal` field (see C2) — enables `query_findings(type: "signal-results", discovery_type: "internal")` without reading every signal file. Internal signals (cross-POC patterns, mid-activity insights) are preferentially surfaced by `surface_context`. |
+| MCP query for ⚡ wiki entries | **Confirmed format.** Inline marker: `⚡ *Source: [path] — pending formal conclusions. Clear when /conclusions-review confirms.*` + wiki file frontmatter `pending_confirmation: [{section, source}]`. C2 wiki ⚡ schema is correctly specified — no change needed. |
+| `check-contracts.sh` scope | **Finalized.** Contracts: phase-index decisions tracker columns + status values, poc-roadmap status emoji set, CONTENT_INDEX entry four-part format, header fields on findings and `conclusions/` files. Scope includes `session.plan-template.md` and updated `signal.results-template.md` from v0.1.4. See B3. |
+| Which test fixtures to create | **Resolvable now.** Template outputs are known from the final v0.1.4 template set. Fixtures are created during Track A execution. |
 
 ---
 
@@ -63,6 +63,8 @@ Add `node:test` and `node:assert` — both built-in, no new `dependencies` or `d
 
 Create `test/unit/`, `test/integration/`, `test/hooks/` directories. Move existing `test/update-safety.sh` → `test/integration/update-safety.sh`. Update any references.
 
+> **Cleanup note:** `test/update-safety.sh` contains comment text using "payload" (e.g., `# Bump payload version`, `# revert payload marker`) — these are comment-only remnants from the v0.1.3 era, not path references. Clean them up when moving the file: replace "payload" in comments with "package" or "lib" as appropriate. No functional impact, but keeps the file consistent with the current naming.
+
 ### A2. Unit tests — bin/commands/
 
 **`test/unit/init.test.mjs`**
@@ -70,7 +72,7 @@ Create `test/unit/`, `test/integration/`, `test/hooks/` directories. Move existi
 Each test runs `init` against a temp directory and asserts file system state.
 
 ```
-✅ Creates all USER_DIRS from init.mjs (including wiki/client, wiki/user from v0.1.4)
+✅ Creates all USER_DIRS from init.mjs (including wiki/client, wiki/user, deliverables from v0.1.4)
 ✅ Creates .gitignore with canon entries (node_modules/, tmp/, .DS_Store, Thumbs.db)
 ✅ Creates .framework-version containing the correct version string
 ✅ Creates log.md and CONTENT_INDEX.md when absent
@@ -90,8 +92,9 @@ Each test runs `init` against a temp directory and asserts file system state.
 ✅ Vendors all manifest.vendored dirs to consumer
 ✅ Skips user-modified files (warns to stderr) — no --force
 ✅ --force overwrites user-modified files without warning
-✅ findModified returns [] when source and dest files are identical (same bytes)
-✅ findModified returns modified path when consumer file differs from source
+✅ findModified returns [] when dest bytes match the stored manifest baseline
+✅ findModified returns modified path when dest bytes differ from stored baseline
+✅ findModified falls back to comparing against src when no manifest entry exists
 ✅ findModified handles nested dirs correctly (recurses)
 ✅ Updates .framework-version to current version
 ✅ Does not touch USER_DIRS (wiki/, plans/, findings/, etc.)
@@ -133,10 +136,11 @@ These are the most critical tests — they protect the update-safety contract.
 ✅ findModified: one byte different → [relative path]
 ✅ findModified: nested dir, one file modified → ['subdir/file.md']
 ✅ findModified: dest file absent → not included (absent = unmodified, sync will create it)
-✅ vendorDirs: unmodified files → synced silently
+✅ vendorDirs: unmodified files → synced silently; manifest updated with new hashes
 ✅ vendorDirs: modified file, no --force → skipped + stderr warning with count
-✅ vendorDirs: modified file, --force → synced + no warning
+✅ vendorDirs: modified file, --force → synced + no warning; manifest updated
 ✅ Warning format: "⚠  Skipping [dir] — N user-modified file(s):" + list of paths
+✅ vendorDirs: framework version update (dest ≠ new src, but dest == manifest) → synced without warning
 ```
 
 ### A5. Expand test/integration/update-safety.sh
@@ -146,6 +150,8 @@ After v0.1.4, update the integration test to cover:
 ```
 ✅ wiki/client/ and wiki/user/ are created on init
 ✅ wiki/client/ and wiki/user/ are NOT overwritten by sync (user-owned)
+✅ deliverables/ is created on init
+✅ deliverables/ is NOT overwritten by sync (user-owned — same contract as wiki/client/)
 ✅ /signal skill is vendored to .claude/skills/signal/SKILL.md
 ✅ session.plan-template.md is accessible in node_modules at the correct path
 ✅ system-tool-integration.md is accessible in node_modules
@@ -177,7 +183,7 @@ For each template-generated file type, document what is structurally guaranteed:
 - Required format: `### [filename](./path/to/file)`, `**What it is:** [one sentence]`, `**Key facts:**` list, `**Questions it answers:**` list
 - Contract: every entry has all four parts; `**What it is:**` is always a single sentence
 
-**`findings/*.results.md` and `output/*.conclusions.md`**
+**`findings/*.results.md` and `conclusions/*.conclusions.md`**
 - Required header fields: `**Author:**`, `**Date:**`, `**Status:**`
 - Conclusions additionally: `**Alignment verified:**`
 - Contract: these fields appear in the first 10 lines of every file
@@ -224,6 +230,7 @@ Initial candidate queries — review and prune after v0.1.4:
 | Conclusions pending alignment verification | `type: conclusions`, `alignment_verified` (empty vs date) |
 | Wiki entries sourced from findings (⚡ marker) | `source_type: finding`, `source_file` |
 | Signals by assessment type | `type: signal-results`, `assessment` field |
+| Signals by discovery type | `type: signal-results`, `discovery_type: external \| internal` field |
 
 **Rule:** if a query can be answered by reading one well-known file (e.g., the phase index), don't add frontmatter — just expose the file as an MCP resource. Only add frontmatter where you need to filter across many files.
 
@@ -240,10 +247,12 @@ topic: "[slug]"
 status: in-progress | complete
 author: AI | Human | Mixed
 date: YYYY-MM-DD
+# for type: signal-results only
+discovery_type: external | internal
 ---
 ```
 
-**`output/*.conclusions.md`**:
+**`conclusions/*.conclusions.md`**:
 ```yaml
 ---
 type: poc-conclusions | research-conclusions | session-conclusions | addendum-conclusions
@@ -253,6 +262,7 @@ status: in-progress | complete
 alignment_verified: "" | YYYY-MM-DD
 ---
 ```
+*(Note: `conclusions/` is the correct path as of v0.1.4. Do not use `output/`.)*
 
 **`plans/phase-NN-index.md`**:
 ```yaml
@@ -313,12 +323,15 @@ Resources expose raw file content — the AI reads the file and reasons about it
 ```
 wiki/{layer}/{filename}     → full file content (layer: project, client, user, standards)
 findings/{filename}         → full file content
-output/{filename}           → full file content
+conclusions/{filename}      → full file content
+deliverables/{filename}     → full file content
 plans/{filename}            → full file content
 CONTENT_INDEX.md            → full index file
 ```
 
-Resource URIs: `canon://wiki/project/tech-stack.md`, `canon://findings/phase-01-poc-01-results.md`, etc.
+Resource URIs: `canon://wiki/project/tech-stack.md`, `canon://findings/phase-01-poc-01-results.md`, `canon://conclusions/phase-01-poc-01-conclusions.md`, `canon://deliverables/report-v1.md`, etc.
+
+`deliverables/` is user-owned (client-facing formal artifacts). No frontmatter needed — exposed as full-content resources. An AI writing next-phase conclusions or session plans needs to know what was already delivered to the client.
 
 ### D3. MCP tools
 
@@ -334,7 +347,7 @@ query_findings(phase?, type?, topic?)
   → returns: [{filename, type, phase, topic, status, date}]
 
 query_conclusions(phase?, alignment_verified?)
-  → reads output/ frontmatter
+  → reads conclusions/ frontmatter
   → returns: [{filename, type, phase, topic, alignment_verified}]
 
 get_project_state()
@@ -369,6 +382,8 @@ If yes, writes to `.claude/settings.json`:
 `canon doctor` — adds a check: if `mcpServers.canon` is present, verify `bin/mcp-server.mjs` resolves.
 
 ### D5. Update system-tool-integration.md
+
+**Note:** `system-tool-integration.md` was created in v0.1.4 Step 5a with the full `## Claude Code` section already filled. This step adds a new `## MCP Server` section only — do not recreate or overwrite the existing file.
 
 Add `## MCP Server` section:
 - What queries are available (tools list)
