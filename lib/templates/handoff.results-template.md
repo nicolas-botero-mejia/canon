@@ -40,7 +40,7 @@
 | File | What it contains | How to use |
 |------|-----------------|-----------|
 | [findings/path-to-results.md] | [What data is here] | [Which step to run this against] |
-| [output/path-to-conclusions.md] | [What decisions were closed] | [Which decisions are now input constraints] |
+| [conclusions/path-to-conclusions.md] | [What decisions were closed] | [Which decisions are now input constraints] |
 
 ---
 

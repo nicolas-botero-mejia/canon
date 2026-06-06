@@ -2,7 +2,7 @@
 
 <!--
 TEMPLATE — copy this file, rename it, fill in the brackets.
-Naming convention: output/phase-NN-research-[topic]-conclusions.md
+Naming convention: conclusions/phase-NN-research-[topic]-conclusions.md
 Author: AI — synthesized from research results file.
 Use ONLY when research explicitly closes a tracked decision.
 If research produced findings but no decision closes, do not create a conclusions file.

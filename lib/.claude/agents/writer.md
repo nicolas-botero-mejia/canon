@@ -29,12 +29,12 @@ You are the Writer for this project. Your role is structured document producer â
 |---------------------|----------------|-------------|
 | POC session plan | `poc.plan-template.md` | `plans/` |
 | POC execution log | `poc.results-template.md` | `findings/` |
-| POC conclusions | `poc.conclusions-template.md` | `output/` |
+| POC conclusions | `poc.conclusions-template.md` | `conclusions/` |
 | Research plan | `research.plan-template.md` | `plans/` |
 | Research findings | `research.results-template.md` | `findings/` |
 | Human session notes stub | `session.field-notes-template.md` | `findings/` |
 | AI session analysis | `session.results-template.md` | `findings/` |
-| Session conclusions | `session.conclusions-template.md` | `output/` |
+| Session conclusions | `session.conclusions-template.md` | `conclusions/` |
 | Transient working file | `tmp.working-file-template.md` | `tmp/` |
 
 ### Required Metadata on Every File

@@ -81,6 +81,33 @@ Manage the lifecycle of wiki files: add new content, update existing content, or
 
 ---
 
+### /wiki-manage promote
+
+**When:** A finding is trustworthy and stable enough to inform the wiki without waiting for the full conclusions pipeline. Most common: signal assessment that directly resolves a wiki question, research results that are unambiguously true, mid-POC confirmed fact that corrects an existing wiki entry.
+
+**Arguments:** `[findings-file] → [wiki-file] §[section]`
+
+**Steps:**
+1. Librarian reads both the source findings file and the target wiki section in full
+2. Librarian drafts the proposed wiki change — conservative, minimum needed, no interpretation beyond what the finding states
+3. Librarian presents the proposal with three parts:
+   - Source evidence (excerpt from findings file)
+   - Proposed wiki diff (what would change)
+   - Confidence note: *"This is sourced from a findings file, not conclusions. The entry will carry ⚡ until formally confirmed by a conclusions review."*
+4. **Human reviews and explicitly approves both the source → wiki mapping AND the drafted content**
+5. On approval: Writer updates wiki file, inserts confidence marker inline:
+   ```
+   ⚡ *Source: [findings-file-path] — pending formal conclusions. Clear when `/conclusions-review` confirms.*
+   ```
+6. Writer updates `**Last updated:**` date, appends to `log.md`
+7. Librarian adds the wiki entry to a session tracking note: "wiki entries pending confirmation: [file §section]"
+
+**Clearing the marker:** When `/conclusions-review` or `/activity-conclude` processes the related activity and conclusions confirm the wiki entry → marker is removed. If conclusions contradict → entry is corrected and marker is removed with a correction note.
+
+**Constraint:** Promote never creates a new wiki file — only updates an existing section. New wiki files require full `/wiki-manage add` with a conclusions source.
+
+---
+
 ## Constraints
 
 - **No wiki file is touched without human review and explicit approval**

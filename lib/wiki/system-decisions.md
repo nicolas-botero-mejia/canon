@@ -7,6 +7,36 @@ Newest first. One entry per decision.
 
 ---
 
+## ADR-009 — `**Last updated:**` verbose changelogs removed from wiki headers
+
+**Date:** 2026-06-06
+**Status:** Accepted
+
+**Context:** Wiki file headers carried inline changelogs like `**Last updated:** 2026-06-06 (v0.1.3 restructure — ...)`. These changelogs duplicated information that belongs in `system-decisions.md` and burdened the header with history that decays quickly.
+
+**Decision:** Strip changelogs from all `**Last updated:**` fields — date only.
+
+**Rationale:** `system-decisions.md` is the canonical changelog. The date in the header is for meta-doc currency auditing (Dimension 2). The context belongs here, not in the header.
+
+**Consequences:** All `lib/wiki/` file headers now carry only the date. Any changelog context was already in this file or in git history.
+
+---
+
+## ADR-008 — `output/` renamed to `conclusions/`
+
+**Date:** 2026-06-06
+**Status:** Accepted
+
+**Context:** `output/` was the folder for synthesized activity conclusions and deliverables. The name was semantically empty — "output" could mean anything the system produces.
+
+**Decision:** Rename `output/` → `conclusions/`. Add `deliverables/` as a new user-owned folder for client-facing formal artifacts.
+
+**Rationale:** `conclusions/` is precise: it holds synthesized decisions and verdicts from activities. The rename also creates the explicit three-tier model: `findings/ → conclusions/ → deliverables/`. Before this rename, both team-internal synthesis and client-facing artifacts lived in `output/` — ambiguous about what was shareable. No consumers existed at rename time — the change was safe.
+
+**Consequences:** 38 lib/ files updated. `examples/consumer/output/` renamed. `init.mjs` USER_DIRS updated. `deliverables/` added as a new scaffolded user dir.
+
+---
+
 ## ADR-007 — `wiki/meta/` subdirectory kept in consumer; flattened in package
 
 **Date:** 2026-06-06

@@ -54,4 +54,4 @@ Temporary excerpts, partial quotes, raw data to process later.
 
 ---
 
-*Tier: tmp scratch → **this file (findings/research-[topic]-notes.md)** → findings/research-[topic]-results.md → output/research-[topic]-conclusions.md*
+*Tier: tmp scratch → **this file (findings/research-[topic]-notes.md)** → findings/research-[topic]-results.md → conclusions/research-[topic]-conclusions.md*

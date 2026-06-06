@@ -169,7 +169,7 @@ We're running this pattern for a design/client engagement context:
 
 | Karpathy's Pattern | Our Implementation |
 |-------------------|-------------------|
-| Raw sources | `raw/` + `output/` folders |
+| Raw sources | `raw/` + `conclusions/` folders |
 | Wiki core | `wiki/` — LLM-maintained markdown |
 | Schema | `CLAUDE.md` |
 | index.md | `CONTENT_INDEX.md` (project root) |

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # check-conclusions-alignment.sh — warns if Complete conclusions are missing alignment dates.
 #
-# Finds all output/*.md files with "**Status:** Complete" and checks that each one
+# Finds all conclusions/*.md files with "**Status:** Complete" and checks that each one
 # has a non-empty "**Alignment verified:** YYYY-MM-DD" date.
 #
 # Exits 0 always — this is a warning, not a hard block.

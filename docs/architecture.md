@@ -21,6 +21,8 @@ A user's working repo contains **only their content plus thin references.** All 
 | **Package repo** (this one) | What we author and publish to npm | `bin/` (CLI), framework payload, `package.json`, `docs/` |
 | **Consumer project** | What `init` produces for a user | user content dirs + thin wiring + `node_modules/` |
 
+> **`examples/consumer/`** in this repo is folder documentation — it shows framework users what each directory is for (via README stubs and CONTENT_INDEX). It is not a test fixture for what `init` produces structurally. Structural correctness of `init` is validated by running `init` directly or via integration tests, not by keeping this directory in sync.
+
 > The current clean-slate folder is shaped like a *consumer's* framework-owned files. To become the package, the payload must be re-homed (see §10). The clean slate is the reference for *what gets shipped*, not the package itself.
 
 ---
@@ -32,7 +34,7 @@ There are no "mixed" files under this model — only three clean categories:
 | Bucket | Lives in | Mutated by update? | Examples |
 |--------|----------|--------------------|----------|
 | **Framework** | `node_modules/` (the package) | Yes — that's the point | `lib/wiki/`, `lib/scripts/`, `lib/templates/`, agent/skill/rule definitions, hooks |
-| **User** | the repo, never written by tooling | **Never** | `plans/`, `findings/`, `output/`, `raw/`, `wiki/project/`, `wiki/standards/`, `tmp/`, the body of `CLAUDE.md`, the user's `CONTENT_INDEX.md` entries |
+| **User** | the repo, never written by tooling | **Never** | `plans/`, `findings/`, `conclusions/`, `raw/`, `wiki/project/`, `wiki/standards/`, `tmp/`, the body of `CLAUDE.md`, the user's `CONTENT_INDEX.md` entries |
 | **Wiring** | the repo, thin & reference-only | Only by explicit `sync` | `CLAUDE.md` `@import` line, `settings.json` hook delegation, the discovered dirs (`.claude/skills` etc.), `.framework-version` |
 
 The whole design problem reduces to: **keep the wiring bucket as small and as pure-framework as possible**, so `sync` only ever writes files with no user content in them.
@@ -50,7 +52,7 @@ The whole design problem reduces to: **keep the wiring bucket as small and as pu
 | `.cursor/rules`, `.cursor/hooks` | the package | same as above | Framework (discovered) | overwrite — safe |
 | `lib/scripts/` | `node_modules` | referenced by the hook dispatcher | Framework | not present in repo |
 | `lib/wiki/., .lib/templates/, templates | `node_modules` | referenced by skills + index links | Framework | not present in repo |
-| `plans/ findings/ output/ raw/ wiki/project/ wiki/standards/ tmp/` | the repo | n/a | **User** | **never touched** |
+| `plans/ findings/ conclusions/ raw/ wiki/project/ wiki/standards/ tmp/` | the repo | n/a | **User** | **never touched** |
 
 The rule of thumb a human can verify at a glance: **anything pointing into `node_modules/` is framework; everything else in the repo is yours.**
 
@@ -102,7 +104,7 @@ Why npm over the alternatives, given the "update the core later" requirement:
 
 ## 9. The update-safety contract (the guarantee)
 
-> `npm update` + `npx @nicolas-botero-mejia/canon sync` will **only** write to the **wiring bucket** (discovered dirs + `settings.json` dispatcher + `.framework-version`). It will **never** write to `plans/`, `findings/`, `output/`, `raw/`, `wiki/project/`, `wiki/standards/`, `tmp/`, the body of `CLAUDE.md`, or the user's `CONTENT_INDEX.md` entries. `doctor` enforces and reports.
+> `npm update` + `npx @nicolas-botero-mejia/canon sync` will **only** write to the **wiring bucket** (discovered dirs + `settings.json` dispatcher + `.framework-version`). It will **never** write to `plans/`, `findings/`, `conclusions/`, `raw/`, `wiki/project/`, `wiki/standards/`, `tmp/`, the body of `CLAUDE.md`, or the user's `CONTENT_INDEX.md` entries. `doctor` enforces and reports.
 
 This is the headline promise; every design choice above exists to make it true by construction.
 

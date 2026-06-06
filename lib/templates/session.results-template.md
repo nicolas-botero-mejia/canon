@@ -13,7 +13,7 @@ Source: raw/phase-NN-session-NN-[topic]-transcript.md (or recording)
 **Source material:** `raw/phase-NN-session-NN-[topic]-transcript.md`
 **Field notes:** `findings/phase-NN-session-NN-[topic]-field-notes.md`
 **Session plan:** `plans/phase-NN-session-NN-[topic]-plan.md`
-**Conclusions:** `output/phase-NN-session-NN-[topic]-conclusions.md` *(written after this file)*
+**Conclusions:** `conclusions/phase-NN-session-NN-[topic]-conclusions.md` *(written after this file)*
 
 > Structured analysis from transcript. Not raw observations — those are in field notes.
 > Do not edit after conclusions are written — this is the permanent structured record.
@@ -95,9 +95,9 @@ Session conclusions are NOT written in this file.
 This file is raw structured analysis. Conclusions go in a separate output file.
 
 When this file is complete:
-  Target: output/phase-NN-session-NN-[topic]-conclusions.md
+  Target: conclusions/phase-NN-session-NN-[topic]-conclusions.md
   Source: this file + findings/phase-NN-session-NN-[topic]-field-notes.md
-  Template: output/session.conclusions-template.md
+  Template: conclusions/session.conclusions-template.md
 
 There is no dedicated /session-conclude skill yet. Create the conclusions file directly
 from the template, using Decisions Confirmed and Key Observations as the primary inputs.

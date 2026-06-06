@@ -56,7 +56,7 @@
 
 Before this phase can close:
 - [ ] All ★ decisions in the tracker are closed
-- [ ] Output file exists: `output/phase-{{PHASE_NUMBER}}-synthesis-conclusions.md`
+- [ ] Output file exists: `conclusions/phase-{{PHASE_NUMBER}}-synthesis-conclusions.md`
 - [ ] CLAUDE.md updated with any new confirmed facts
 - [ ] CONTENT_INDEX.md updated with all new files
 

@@ -17,7 +17,7 @@ Phases are the engagement container. `/phase-new` opens the container; `/phase-c
 
 **Step 1 — Confirm prerequisite**
 Check: is the prior phase fully concluded?
-- Does `output/phase-[N-1]-summary.md` exist? (written by `/phase-conclude`)
+- Does `conclusions/phase-[N-1]-summary.md` exist? (written by `/phase-conclude`)
 - Is the prior phase's POC roadmap fully ✅ Complete or explicitly deferred?
 - Are all prior phase decisions Closed or Deferred in `plans/phase-[N-1]-index.md §Decisions Tracker`?
 

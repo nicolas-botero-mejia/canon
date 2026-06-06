@@ -46,7 +46,7 @@ fi
 
 # --- Build report ---
 report="Project state — $TODAY:"
-report="$report\n  wiki/: $wiki_count files | findings/: $findings_count files | plans/: $plans_count files | output/: $output_count files"
+report="$report\n  wiki/: $wiki_count files | findings/: $findings_count files | plans/: $plans_count files | conclusions/: $output_count files"
 
 if [[ -n "$pending_lines" ]]; then
   count=$(echo -e "$pending_lines" | grep -c '\S')

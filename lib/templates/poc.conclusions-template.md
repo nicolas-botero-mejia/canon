@@ -2,7 +2,7 @@
 
 <!--
 TEMPLATE — copy this file, rename it, fill in the brackets.
-Naming convention: output/phase-NN-poc-NN-[short-name]-conclusions.md
+Naming convention: conclusions/phase-NN-poc-NN-[short-name]-conclusions.md
 This file is written AFTER the session notes are complete.
 Source of truth: findings/phase-NN-poc-NN-[name]-notes.md
 -->

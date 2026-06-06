@@ -4,7 +4,7 @@
 TEMPLATE — copy this file, rename it, fill in the brackets.
 Destination: tmp/[descriptive-name].md
 Use for: audits, status trackers, coverage checks, any transient project management file.
-These files are NOT knowledge resources — they do not belong in findings/, wiki/, or output/.
+These files are NOT knowledge resources — they do not belong in findings/, wiki/, or conclusions/.
 -->
 
 **Created:** YYYY-MM-DD
@@ -14,7 +14,7 @@ These files are NOT knowledge resources — they do not belong in findings/, wik
 
 > This is a working file, not a knowledge resource.
 > Once the close condition is met, flag for deletion via the Librarian agent.
-> Do not reference this file from wiki/, findings/, or output/ files.
+> Do not reference this file from wiki/, findings/, or conclusions/ files.
 
 ---
 

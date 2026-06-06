@@ -10,7 +10,7 @@ Analytically review one or more concluded documents to verify system alignment, 
 - Narrow alternative to `/knowledge-audit` when scoping review to a specific document
 
 ## Arguments
-- File path(s) relative to project root, space-separated — OR `"recent"` to target the most recently completed conclusions file (latest `**Synthesis date:**` with `**Status:** Complete` in `output/`)
+- File path(s) relative to project root, space-separated — OR `"recent"` to target the most recently completed conclusions file (latest `**Synthesis date:**` with `**Status:** Complete` in `conclusions/`)
 - `--parent` (optional): also load and cross-check the parent conclusions file (auto-applied when target is an addendum)
 
 ## What happens

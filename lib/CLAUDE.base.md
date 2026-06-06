@@ -22,6 +22,8 @@ wiki/               → Reference documentation. Stable. Start here.
   (index moved to CONTENT_INDEX.md at project root)
   standards/        → Industry-wide reference (domain, brand, accessibility)
   project/          → Client-specific reference (tech stack — living, updates as decisions close)
+  client/           → Org knowledge (stakeholders, decision-making, engagement context)
+  user/             → End-user research synthesized across the engagement
   (framework methodology docs are in node_modules — loaded via @import, not in this folder)
 
 plans/              → Engagement planning. Client-specific, living documents.
@@ -40,8 +42,11 @@ findings/           → Team-generated observations. Authored by us, pre-synthes
 raw/                → Source materials received. Immutable. Do not edit.
                       Client docs, transcripts, manager briefs.
 
-output/             → Synthesized conclusions and formal deliverables.
-                      Session conclusions, phase synthesis, component specs.
+conclusions/        → Synthesized conclusions (team-internal). Session conclusions,
+                      phase synthesis, POC verdicts, research conclusions.
+
+deliverables/       → Client-facing formal artifacts (slide decks, formal recommendations,
+                      design specs for handoff). Distinct from conclusions/ (team-internal).
 
 tmp/                → Transient working files (auto-cleaned). Never commit.
 scripts/
@@ -70,7 +75,7 @@ log.md              → Append-only project ledger. Every significant change log
 **Step 4:** For individual session guides → `plans/phase-NN-session-NN-[name]-plan.md`.
 **Step 5:** For tech stack details → `wiki/project/tech-stack.md`.
 
-Do not re-read `raw/` or `output/` source docs unless something specific needs verification.
+Do not re-read `raw/` or `conclusions/` source docs unless something specific needs verification.
 
 ---
 
