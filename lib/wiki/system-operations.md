@@ -164,8 +164,10 @@ The clean pattern: a `wiki/project/` decision file where each section is a decis
 ❌ Never: Session-specific observations (→ findings/field-notes.md),
    client org information (→ wiki/client/), unverified hypotheses (→ plans/).
 
-### wiki/meta/
-✅ Belongs: How we work (prompting, AI workflow), how we maintain this system (this file).
+### Framework methodology docs (node_modules)
+The framework's own system documentation (`system-architecture.md`, `system-operations.md`, etc.)
+lives in `node_modules/@nicolas-botero-mejia/canon/lib/wiki/` — not in the consumer project's `wiki/`.
+Do not copy or recreate these files in your project wiki. Reference them from node_modules.
 
 ### plans/
 ✅ Belongs: Session guides, question lists, decisions tracker, risk register, corrections log, session notes placeholder.

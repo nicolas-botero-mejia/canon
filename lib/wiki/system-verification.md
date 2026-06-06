@@ -1,5 +1,7 @@
 # System Verification
 
+**Last updated:** 2026-06-06
+
 **Scope:** How to confirm the framework is healthy — after changes, after a sync, or when something behaves unexpectedly.
 
 > For what the checks do and how they're wired → [`system-architecture.md §2–3`](./system-architecture.md)

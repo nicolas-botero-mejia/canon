@@ -1,5 +1,7 @@
 # System Index — Framework Meta-Documentation
 
+**Last updated:** 2026-06-06
+
 This file is the entry point for the framework's own documentation. Read it first when navigating the meta layer.
 
 ---

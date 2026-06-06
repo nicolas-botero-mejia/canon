@@ -1,5 +1,7 @@
 # System — Tool Integration
 
+**Last updated:** 2026-06-06
+
 **Scope:** How each supported tool consumes the framework — lifecycle events, configuration
 format, hook output format, known limitations. Add a new section here when adding a new tool.
 The architecture (system-architecture.md) and methodology (system-operations.md) do not change

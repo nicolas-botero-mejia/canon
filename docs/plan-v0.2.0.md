@@ -63,6 +63,8 @@ Add `node:test` and `node:assert` — both built-in, no new `dependencies` or `d
 
 Create `test/unit/`, `test/integration/`, `test/hooks/` directories. Move existing `test/update-safety.sh` → `test/integration/update-safety.sh`. Update any references.
 
+> **Cleanup note:** `test/update-safety.sh` contains comment text using "payload" (e.g., `# Bump payload version`, `# revert payload marker`) — these are comment-only remnants from the v0.1.3 era, not path references. Clean them up when moving the file: replace "payload" in comments with "package" or "lib" as appropriate. No functional impact, but keeps the file consistent with the current naming.
+
 ### A2. Unit tests — bin/commands/
 
 **`test/unit/init.test.mjs`**

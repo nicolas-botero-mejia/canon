@@ -1,5 +1,7 @@
 # System Decisions
 
+**Last updated:** 2026-06-06
+
 Architectural and methodology decisions for the Canon framework.
 Newest first. One entry per decision.
 
