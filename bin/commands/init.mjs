@@ -1,8 +1,7 @@
 import { createInterface } from 'readline'
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
-import { vendorDirs, writeClaudeMd, writeClaudeSettings, writeCursorHooks } from '../lib/sync-ops.mjs'
+import { join } from 'path'
+import { vendorDirs, writeClaudeMd, writeClaudeSettings, writeCursorHooks, writeGitignore } from '../lib/sync-ops.mjs'
 import { PKG_NAME, packageRoot, readManifest } from '../lib/paths.mjs'
 
 const PACKAGE_ROOT = packageRoot()
@@ -16,11 +15,12 @@ async function ask(rl, question) {
 }
 
 export async function run(args) {
-  const yes = args.includes('--yes')
+  const yes   = args.includes('--yes')
+  const force = args.includes('--force')
   const consumerRoot = process.cwd()
 
-  if (existsSync(join(consumerRoot, '.framework-version')) && !args.includes('--force')) {
-    console.error('framework init: already initialized. Run with --force to re-init.')
+  if (existsSync(join(consumerRoot, '.framework-version')) && !force) {
+    console.error('canon init: already initialized. Run with --force to re-init.')
     process.exit(1)
   }
 
@@ -35,6 +35,9 @@ export async function run(args) {
     rl.close()
   }
 
+  // .gitignore — create or append missing entries
+  writeGitignore(consumerRoot)
+
   // Create user dirs
   for (const dir of USER_DIRS) {
     const target = join(consumerRoot, dir)
@@ -47,7 +50,7 @@ export async function run(args) {
   const version = JSON.parse(readFileSync(join(PACKAGE_ROOT, 'package.json'), 'utf8')).version
 
   // Vendor framework dirs and write wiring
-  vendorDirs(manifest, PACKAGE_ROOT, consumerRoot)
+  vendorDirs(manifest, PACKAGE_ROOT, consumerRoot, { force })
 
   if (layers.claude) {
     writeClaudeMd(consumerRoot, PKG_NAME)
@@ -67,7 +70,7 @@ export async function run(args) {
 
   writeFileSync(join(consumerRoot, '.framework-version'), version)
 
-  console.log(`✓ framework ${version} initialized`)
+  console.log(`✓ canon ${version} initialized`)
   console.log(`  Layers: ${[layers.claude && 'claude', layers.cursor && 'cursor'].filter(Boolean).join(', ')}`)
-  console.log(`  Run 'framework doctor' to verify.`)
+  console.log(`  Run 'canon doctor' to verify.`)
 }

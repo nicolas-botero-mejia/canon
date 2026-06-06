@@ -1,9 +1,10 @@
 {
   "_comment": "Single source of truth for what sync may write. 'referenced' = stays in node_modules, never copied. 'vendored' = copied into consumer on init/sync, overwritten on update.",
   "referenced": [
-    "node_modules/@nicolas-botero-mejia/canon/payload/CLAUDE.base.md",
-    "node_modules/@nicolas-botero-mejia/canon/payload/scripts/meta/",
-    "node_modules/@nicolas-botero-mejia/canon/payload/wiki/meta/"
+    "node_modules/@nicolas-botero-mejia/canon/lib/CLAUDE.base.md",
+    "node_modules/@nicolas-botero-mejia/canon/lib/scripts/",
+    "node_modules/@nicolas-botero-mejia/canon/lib/wiki/",
+    "node_modules/@nicolas-botero-mejia/canon/lib/templates/"
   ],
   "vendored": [
     ".claude/agents",
@@ -16,6 +17,7 @@
     "CLAUDE.md",
     ".claude/settings.json",
     ".cursor/hooks.json",
-    ".framework-version"
+    ".framework-version",
+    ".gitignore"
   ]
 }

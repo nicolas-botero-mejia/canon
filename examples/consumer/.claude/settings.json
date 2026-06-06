@@ -10,7 +10,7 @@
           },
           {
             "type": "command",
-            "command": "bash scripts/meta/session-start-report.sh",
+            "command": "bash node_modules/@nicolas-botero-mejia/canon/bin/hook.sh SessionStart",
             "statusMessage": "Loading project state..."
           }
         ]
@@ -22,7 +22,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash scripts/meta/post-write-check.sh",
+            "command": "bash node_modules/@nicolas-botero-mejia/canon/bin/hook.sh PostToolUse",
             "timeout": 30,
             "statusMessage": "Checking for stale references..."
           }
@@ -34,7 +34,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash scripts/meta/check-index.sh && bash scripts/meta/check-links.sh && bash scripts/meta/check-stale-refs.sh && bash scripts/meta/check-conclusions-alignment.sh",
+            "command": "bash node_modules/@nicolas-botero-mejia/canon/bin/hook.sh Stop",
             "statusMessage": "Verifying knowledge base consistency..."
           }
         ]

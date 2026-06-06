@@ -16,7 +16,7 @@ How we work and how we maintain this knowledge system.
 
 ---
 
-### [meta/system-principles.md](./wiki/meta/system-principles.md)
+### system-principles.md (framework wiki — node_modules/.../lib/wiki/)
 **What it is:** Prompting best practices and AI workflow methodology — based on Karpathy's analysis of LLM failure modes, extended to design and research work.
 
 **Key facts:**
@@ -34,7 +34,7 @@ How we work and how we maintain this knowledge system.
 
 ---
 
-### [meta/system-operations.md](./wiki/meta/system-operations.md)
+### system-operations.md (framework wiki — node_modules/.../lib/wiki/)
 **What it is:** Maintenance guide for CLAUDE.md and the entire knowledge system — folder structure rationale, what belongs where, naming conventions, update triggers, and pruning.
 
 **Key facts:**
@@ -55,7 +55,7 @@ How we work and how we maintain this knowledge system.
 
 ---
 
-### [meta/templates/template-index.md](./wiki/meta/templates/template-index.md)
+### template-index.md (framework templates — node_modules/.../lib/templates/)
 **What it is:** Template map and index for all project templates. Naming convention: `[process-type].[file-type]-template.md`. Full template listing in the Templates section below.
 
 **Mandatory sections in every POC session plan:** Prerequisites (with roadmap link), Context, Validation table, Hypotheses table, External Validation step (second-to-last), Conclusion Synthesis + Wiki Update step (last), Success Criteria, POC Roadmap Position.
@@ -64,17 +64,17 @@ How we work and how we maintain this knowledge system.
 
 ---
 
-### [meta/architecture.md](./wiki/meta/architecture.md)
+### system-architecture.md (framework wiki — node_modules/.../lib/wiki/)
 **What it is:** Technical reference for the self-maintaining knowledge system — Phase vs. Activity skill model, session lifecycle, knowledge layer relationships, hooks, scripts (meta/ vs. project/), templates, file watcher, dependency requirements, and verification.
 
 **Key facts:**
 - **Phase vs. Activity model (§1.1):** Two skill layers — `/phase-new` + `/phase-conclude` manage the engagement container; `/activity-new [type]` + `/activity-conclude [type]` manage work inside phases (poc | addendum | research | session)
 - **§1.2 Session lifecycle diagram**: BACKGROUND → SESSION START → PRE-WORK SETUP → WORK PHASE → CLOSE → SESSION STOP → PERIODIC
-- **§1.3 Knowledge layer diagram**: raw/ → findings/ → output/ feeds wiki/project/; standards/ from external knowledge; wiki/meta/ + .claude/ are the system layer
-- **Scripts split:** `scripts/meta/` (8 governance scripts) | `scripts/project/` (empty extension point — projects add deliverable scripts)
+- **§1.3 Knowledge layer diagram**: raw/ → findings/ → output/ feeds wiki/project/; standards/ from external knowledge; node_modules/.../lib/wiki/ + .claude/ are the system layer
+- **Scripts split:** `node_modules/@nicolas-botero-mejia/canon/lib/scripts/` (8 governance scripts) | `scripts/project/` (empty extension point — projects add deliverable scripts)
 - Stop hook (exit 2) blocks session close if index is stale, links are broken, or deprecated patterns found. Also warns on unverified conclusions.
 - PostToolUse hook covers wiki/ and plans/ (stale-ref block) AND findings/ and output/ (CONTENT_INDEX advisory warning)
-- Stop hook chain: `scripts/meta/check-index.sh` → `check-links.sh` → `check-stale-refs.sh` → `check-conclusions-alignment.sh`
+- Stop hook chain: `node_modules/@nicolas-botero-mejia/canon/lib/scripts/check-index.sh` → `check-links.sh` → `check-stale-refs.sh` → `check-conclusions-alignment.sh`
 - `watch-project.sh` requires `fswatch` (`brew install fswatch`); `check-links.sh` requires python3 (pre-installed macOS)
 - `/knowledge-audit` runs 14 dimensions; Librarian runs 8 consistency dimensions
 - **§7 Verification:** two levels required for governance changes — content check (text correct) + functional test (behavior correct). See Rule 15.
@@ -89,31 +89,31 @@ How we work and how we maintain this knowledge system.
 
 ---
 
-## wiki/meta/templates/ — Templates
+## Framework Templates (node_modules/.../lib/templates/)
 
-> Full map → `wiki/meta/templates/template-index.md`
+> Full map → `node_modules/@nicolas-botero-mejia/canon/lib/templates/template-index.md`
 
 | Template | Destination | Output naming |
 |----------|-------------|---------------|
-| [poc.plan-template.md](./wiki/meta/templates/poc.plan-template.md) | `plans/` | `phase-NN-poc-NN-[name]-plan.md` |
-| [poc.results-template.md](./wiki/meta/templates/poc.results-template.md) | `findings/` | `phase-NN-poc-NN-[name]-results.md` |
-| [poc.conclusions-template.md](./wiki/meta/templates/poc.conclusions-template.md) | `output/` | `phase-NN-poc-NN-[name]-conclusions.md` — includes **Addendum Candidates** section for forward signals |
-| [addendum.plan-template.md](./wiki/meta/templates/addendum.plan-template.md) | `plans/` | `phase-NN-poc-NN-addendum-NN-[slug]-plan.md` |
-| [addendum.results-template.md](./wiki/meta/templates/addendum.results-template.md) | `findings/` | `phase-NN-poc-NN-addendum-NN-[slug]-results.md` |
-| [addendum.conclusions-template.md](./wiki/meta/templates/addendum.conclusions-template.md) | `output/` | `phase-NN-poc-NN-addendum-NN-[slug]-conclusions.md` |
-| [signal.results-template.md](./wiki/meta/templates/signal.results-template.md) | `findings/` | `phase-NN-signal-NN-[slug]-results.md` |
-| [research.plan-template.md](./wiki/meta/templates/research.plan-template.md) | `plans/` | `phase-NN-research-[topic]-plan.md` |
-| [research.results-template.md](./wiki/meta/templates/research.results-template.md) | `findings/` | `phase-NN-research-[topic]-results.md` |
-| [research.conclusions-template.md](./wiki/meta/templates/research.conclusions-template.md) | `output/` | `phase-NN-research-[topic]-conclusions.md` — only when research closes a tracked decision |
-| [session.field-notes-template.md](./wiki/meta/templates/session.field-notes-template.md) | `findings/` | `phase-NN-session-NN-[topic]-field-notes.md` |
-| [session.results-template.md](./wiki/meta/templates/session.results-template.md) | `findings/` | `phase-NN-session-NN-[topic]-results.md` |
-| [session.conclusions-template.md](./wiki/meta/templates/session.conclusions-template.md) | `output/` | `phase-NN-session-NN-[topic]-conclusions.md` |
-| [handoff.results-template.md](./wiki/meta/templates/handoff.results-template.md) | `findings/` | `phase-NN-handoff-[source]-to-[dest]-handoff.md` |
-| [tmp.working-file-template.md](./wiki/meta/templates/tmp.working-file-template.md) | `tmp/` | `[descriptive-name].md` |
+| [poc.plan-template.md(node_modules/.../lib/templates/poc.plan-template.md) | `plans/` | `phase-NN-poc-NN-[name]-plan.md` |
+| [poc.results-template.md(node_modules/.../lib/templates/poc.results-template.md) | `findings/` | `phase-NN-poc-NN-[name]-results.md` |
+| [poc.conclusions-template.md(node_modules/.../lib/templates/poc.conclusions-template.md) | `output/` | `phase-NN-poc-NN-[name]-conclusions.md` — includes **Addendum Candidates** section for forward signals |
+| [addendum.plan-template.md(node_modules/.../lib/templates/addendum.plan-template.md) | `plans/` | `phase-NN-poc-NN-addendum-NN-[slug]-plan.md` |
+| [addendum.results-template.md(node_modules/.../lib/templates/addendum.results-template.md) | `findings/` | `phase-NN-poc-NN-addendum-NN-[slug]-results.md` |
+| [addendum.conclusions-template.md(node_modules/.../lib/templates/addendum.conclusions-template.md) | `output/` | `phase-NN-poc-NN-addendum-NN-[slug]-conclusions.md` |
+| [signal.results-template.md(node_modules/.../lib/templates/signal.results-template.md) | `findings/` | `phase-NN-signal-NN-[slug]-results.md` |
+| [research.plan-template.md(node_modules/.../lib/templates/research.plan-template.md) | `plans/` | `phase-NN-research-[topic]-plan.md` |
+| [research.results-template.md(node_modules/.../lib/templates/research.results-template.md) | `findings/` | `phase-NN-research-[topic]-results.md` |
+| [research.conclusions-template.md(node_modules/.../lib/templates/research.conclusions-template.md) | `output/` | `phase-NN-research-[topic]-conclusions.md` — only when research closes a tracked decision |
+| [session.field-notes-template.md(node_modules/.../lib/templates/session.field-notes-template.md) | `findings/` | `phase-NN-session-NN-[topic]-field-notes.md` |
+| [session.results-template.md(node_modules/.../lib/templates/session.results-template.md) | `findings/` | `phase-NN-session-NN-[topic]-results.md` |
+| [session.conclusions-template.md(node_modules/.../lib/templates/session.conclusions-template.md) | `output/` | `phase-NN-session-NN-[topic]-conclusions.md` |
+| [handoff.results-template.md(node_modules/.../lib/templates/handoff.results-template.md) | `findings/` | `phase-NN-handoff-[source]-to-[dest]-handoff.md` |
+| [tmp.working-file-template.md(node_modules/.../lib/templates/tmp.working-file-template.md) | `tmp/` | `[descriptive-name].md` |
 
 ---
 
-## scripts/meta/ — Governance Scripts
+## Framework Governance Scripts (node_modules/.../lib/scripts/)
 
 Framework scripts that power the hooks and consistency checks. Invoked by `.claude/settings.json` and `.cursor/hooks.json`.
 
@@ -135,7 +135,7 @@ Framework scripts that power the hooks and consistency checks. Invoked by `.clau
 Mirrors the Claude hook + rule layer for the Cursor editor.
 
 - `.cursor/hooks.json` — sessionStart / postToolUse / stop hooks pointing at `.cursor/hooks/`
-- `.cursor/hooks/` — `session-start.sh`, `post-write-check.sh`, `stop-check.sh` (wrap the same `scripts/meta/` checks; advisory, not hard-blocking)
+- `.cursor/hooks/` — `session-start.sh`, `post-write-check.sh`, `stop-check.sh` (wrap the same `node_modules/@nicolas-botero-mejia/canon/lib/scripts/` checks; advisory, not hard-blocking)
 - `.cursor/rules/behavioral.mdc` — Cursor translation of the behavioral rules (alwaysApply)
 
 ---
@@ -164,10 +164,10 @@ Skills are Markdown instruction files invoked as slash commands (`/skill-name`).
 ### Phase-level skills
 
 ### [.claude/skills/phase-new/SKILL.md](./.claude/skills/phase-new/SKILL.md)
-Scaffolds a new engagement phase. Confirms prior phase is concluded → runs `scripts/meta/phase-transition.sh` if needed → updates CLAUDE.md and CONTENT_INDEX.
+Scaffolds a new engagement phase. Confirms prior phase is concluded → runs `node_modules/@nicolas-botero-mejia/canon/lib/scripts/phase-transition.sh` if needed → updates CLAUDE.md and CONTENT_INDEX.
 
 ### [.claude/skills/phase-conclude/SKILL.md](./.claude/skills/phase-conclude/SKILL.md)
-Concludes a phase: decisions audit → alignment verification sweep → knowledge audit → phase summary → `scripts/meta/phase-transition.sh` → meta-doc currency check.
+Concludes a phase: decisions audit → alignment verification sweep → knowledge audit → phase summary → `node_modules/@nicolas-botero-mejia/canon/lib/scripts/phase-transition.sh` → meta-doc currency check.
 
 ### Activity-level skills
 

@@ -1,32 +1,74 @@
-import { cpSync, mkdirSync, writeFileSync, existsSync } from 'fs'
+import { cpSync, mkdirSync, writeFileSync, appendFileSync, readFileSync, existsSync, readdirSync } from 'fs'
 import { join, dirname } from 'path'
+import { createHash } from 'crypto'
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function hashFile(p) {
+  return createHash('sha256').update(readFileSync(p)).digest('hex')
+}
+
+function findModified(srcDir, destDir, rel = '') {
+  const modified = []
+  const entries = readdirSync(join(srcDir, rel), { withFileTypes: true })
+  for (const entry of entries) {
+    const relPath = rel ? `${rel}/${entry.name}` : entry.name
+    if (entry.isDirectory()) {
+      modified.push(...findModified(srcDir, destDir, relPath))
+    } else {
+      const destFile = join(destDir, relPath)
+      if (existsSync(destFile) && hashFile(join(srcDir, relPath)) !== hashFile(destFile)) {
+        modified.push(relPath)
+      }
+    }
+  }
+  return modified
+}
+
+// ---------------------------------------------------------------------------
+// Exports
+// ---------------------------------------------------------------------------
 
 /**
- * Vendor all manifest.vendored dirs from payload into the consumer project.
- * Each dir is overwritten entirely — safe because vendored dirs are 100% framework.
+ * Vendor all manifest.vendored dirs from lib/ into the consumer project.
+ * Skips dirs that contain user-modified files unless { force: true } is passed.
  */
-export function vendorDirs(manifest, pkgRoot, consumerRoot) {
+export function vendorDirs(manifest, pkgRoot, consumerRoot, { force = false } = {}) {
   for (const rel of manifest.vendored) {
-    const src = join(pkgRoot, 'payload', rel)
+    const src  = join(pkgRoot, 'lib', rel)
     const dest = join(consumerRoot, rel)
+
     if (!existsSync(src)) continue
+
+    if (!force && existsSync(dest)) {
+      const modified = findModified(src, dest)
+      if (modified.length > 0) {
+        console.warn(`  ⚠  Skipping ${rel} — ${modified.length} user-modified file(s):`)
+        modified.forEach(f => console.warn(`     ${f}`))
+        console.warn(`     Run with --force to overwrite.`)
+        continue
+      }
+    }
+
     mkdirSync(dirname(dest), { recursive: true })
     cpSync(src, dest, { recursive: true, force: true })
+    console.log(`  ✓  vendored ${rel}`)
   }
 }
 
 /**
  * Write the consumer CLAUDE.md skeleton with the @import line.
- * Only writes if CLAUDE.md is absent or contains the @import sentinel — never
- * overwrites a user-authored body.
+ * Only writes if CLAUDE.md is absent — never overwrites a user-authored body.
  */
 export function writeClaudeMd(consumerRoot, pkgName) {
   const path = join(consumerRoot, 'CLAUDE.md')
-  if (existsSync(path)) return  // user owns this file after first init
+  if (existsSync(path)) return
   writeFileSync(path, [
     '# [Project Name] — Project Context',
     '',
-    `@node_modules/${pkgName}/payload/CLAUDE.base.md`,
+    `@node_modules/${pkgName}/lib/CLAUDE.base.md`,
     '',
     '---',
     '',
@@ -45,6 +87,26 @@ export function writeClaudeMd(consumerRoot, pkgName) {
     '| 1 | [name] | [date] | [time] | Client / Internal |',
     '',
   ].join('\n'))
+}
+
+/**
+ * Create or append Canon entries to .gitignore.
+ */
+export function writeGitignore(consumerRoot) {
+  const ENTRIES = ['node_modules/', 'tmp/', '.DS_Store', 'Thumbs.db']
+  const gitignorePath = join(consumerRoot, '.gitignore')
+
+  if (!existsSync(gitignorePath)) {
+    writeFileSync(gitignorePath, '# Canon\n' + ENTRIES.join('\n') + '\n')
+    console.log('  ✓  .gitignore created')
+  } else {
+    const existing = readFileSync(gitignorePath, 'utf8')
+    const missing = ENTRIES.filter(e => !existing.includes(e))
+    if (missing.length > 0) {
+      appendFileSync(gitignorePath, '\n# Canon\n' + missing.join('\n') + '\n')
+      console.log(`  ✓  .gitignore — added ${missing.length} Canon entries`)
+    }
+  }
 }
 
 /**

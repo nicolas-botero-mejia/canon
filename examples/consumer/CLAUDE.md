@@ -1,6 +1,6 @@
 # [Project Name] — Project Context
 
-@node_modules/@nicolas-botero-mejia/canon/CLAUDE.base.md
+@node_modules/@nicolas-botero-mejia/canon/lib/CLAUDE.base.md
 
 ---
 

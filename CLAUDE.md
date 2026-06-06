@@ -8,24 +8,27 @@ See `docs/architecture.md §2` for the two-repo distinction.
 ## Layout
 
 ```
-payload/            → Framework IP shipped inside the package
+lib/                → Framework IP shipped inside the package
   CLAUDE.base.md    → Imported by consumer CLAUDE.md via @import
   .claude/          → agents/, skills/, rules/ — vendored into consumer on sync
   .cursor/          → rules/, hooks/ — vendored into consumer on sync
-  scripts/meta/     → Hook scripts dispatched by consumer settings.json
-  scripts/templates/→ File templates (phase index, etc.)
-  wiki/meta/        → Methodology docs referenced by skills and indexes
+  scripts/          → Hook scripts dispatched by bin/hook.sh
+  templates/        → All templates (knowledge + script-generated)
+  wiki/             → Methodology docs (system-*.md) referenced by AI layer
 
 bin/                → CLI entry points (init, sync, doctor, hook dispatcher)
+  commands/         → init.mjs, sync.mjs, doctor.mjs
+  lib/              → CLI shared helpers (paths.mjs, sync-ops.mjs)
+  hook.sh           → Hook dispatcher called by consumer settings.json
 examples/consumer/  → Reference consumer project — what `init` produces
-docs/               → architecture.md, transformation-plan.md
-manifest.json       → Framework-owned paths: referenced | vendored
+docs/               → Contributor-only docs (not shipped). architecture.md is the canonical design reference.
+manifest.json       → Framework-owned paths: referenced | vendored | wiring
 package.json        → bin, files, version, scope/name
 ```
 
 ## Key docs
 
 - Design spec: `docs/architecture.md`
-- Roadmap: `docs/transformation-plan.md`
 - What ships in the package: `manifest.json`
 - Consumer reference: `examples/consumer/`
+- Framework methodology: `lib/wiki/system-index.md`

@@ -22,13 +22,13 @@ export async function run(_args) {
     : null
 
   if (!existsSync(versionFile)) {
-    errors.push('.framework-version missing — run `framework sync`')
+    errors.push('.framework-version missing — run `canon sync`')
   } else {
     const recorded = readFileSync(versionFile, 'utf8').trim()
     if (recorded === pkgVersion) {
       ok.push(`.framework-version matches package (${pkgVersion})`)
     } else {
-      errors.push(`.framework-version (${recorded}) ≠ package (${pkgVersion}) — run \`framework sync\``)
+      errors.push(`.framework-version (${recorded}) ≠ package (${pkgVersion}) — run \`canon sync\``)
     }
   }
 
@@ -52,7 +52,7 @@ export async function run(_args) {
     if (existsSync(target)) {
       ok.push(`vendored: ${dir}`)
     } else {
-      errors.push(`vendored dir missing: ${dir} — run \`framework sync\``)
+      errors.push(`vendored dir missing: ${dir} — run \`canon sync\``)
     }
   }
 
@@ -69,9 +69,9 @@ export async function run(_args) {
   for (const msg of errors) console.log(`  ✗ ${msg}`)
 
   if (errors.length > 0) {
-    console.log(`\nframework doctor: ${errors.length} issue(s) found`)
+    console.log(`\ncanon doctor: ${errors.length} issue(s) found`)
     process.exit(1)
   } else {
-    console.log(`\nframework doctor: all checks passed`)
+    console.log(`\ncanon doctor: all checks passed`)
   }
 }

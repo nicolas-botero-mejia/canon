@@ -68,7 +68,7 @@ echo "[4] Bump payload version and re-install"
 
 # Inject a marker into a framework file to confirm it gets refreshed
 MARKER="# UPDATED-BY-TEST"
-echo "$MARKER" >> "${PKG_ROOT}/payload/.claude/skills/wiki-manage/SKILL.md"
+echo "$MARKER" >> "${PKG_ROOT}/lib/.claude/skills/wiki-manage/SKILL.md"
 
 # Bump the version
 node -e "
@@ -126,7 +126,7 @@ pass "doctor green after sync"
 cd "$PKG_ROOT"
 # Remove the injected marker line
 node -e "
-const fs = require('fs'), p = 'payload/.claude/skills/wiki-manage/SKILL.md';
+const fs = require('fs'), p = 'lib/.claude/skills/wiki-manage/SKILL.md';
 const lines = fs.readFileSync(p,'utf8').split('\n').filter(l => l !== '# UPDATED-BY-TEST');
 fs.writeFileSync(p, lines.join('\n'));
 "

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Dispatcher called by consumer settings.json / hooks.json.
-# Routes hook events to the framework scripts in payload/scripts/meta/.
+# Routes hook events to the framework scripts in lib/scripts/.
 # Usage: bash node_modules/@nicolas-botero-mejia/canon/bin/hook.sh <EventName>
 
 set -euo pipefail
 
 EVENT="${1:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-META="${SCRIPT_DIR}/../payload/scripts/meta"
+META="${SCRIPT_DIR}/../lib/scripts"
 
 case "$EVENT" in
   SessionStart)

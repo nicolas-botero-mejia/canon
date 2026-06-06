@@ -1,7 +1,7 @@
 # Framework Packaging & Distribution Architecture
 
 **Status:** Draft — design spec for how this framework ships, installs, and updates.
-**Scope:** The *package* layer (how the framework is distributed and updated safely). This is distinct from `wiki/meta/architecture.md`, which documents the *knowledge system* itself.
+**Scope:** The *package* layer (how the framework is distributed and updated safely). This is distinct from `system-architecture.md (framework wiki, in node_modules)`, which documents the *knowledge system* itself.
 **Decided so far:** npm + reference model (§6); discovered-dirs = thin-vendor (§5, Phase 0). Open decisions tracked in §10.
 
 ---
@@ -31,7 +31,7 @@ There are no "mixed" files under this model — only three clean categories:
 
 | Bucket | Lives in | Mutated by update? | Examples |
 |--------|----------|--------------------|----------|
-| **Framework** | `node_modules/` (the package) | Yes — that's the point | `wiki/meta/`, `scripts/meta/`, templates, agent/skill/rule definitions, hooks |
+| **Framework** | `node_modules/` (the package) | Yes — that's the point | `lib/wiki/`, `lib/scripts/`, `lib/templates/`, agent/skill/rule definitions, hooks |
 | **User** | the repo, never written by tooling | **Never** | `plans/`, `findings/`, `output/`, `raw/`, `wiki/project/`, `wiki/standards/`, `tmp/`, the body of `CLAUDE.md`, the user's `CONTENT_INDEX.md` entries |
 | **Wiring** | the repo, thin & reference-only | Only by explicit `sync` | `CLAUDE.md` `@import` line, `settings.json` hook delegation, the discovered dirs (`.claude/skills` etc.), `.framework-version` |
 
@@ -48,8 +48,8 @@ The whole design problem reduces to: **keep the wiring bucket as small and as pu
 | `.claude/settings.json` | hook logic in `node_modules` | hooks call `bin/hook.sh <event>` dispatcher | Wiring | optional re-sync if the dispatcher contract changes |
 | `.claude/skills`, `.claude/agents`, `.claude/rules` | the package | **symlink → node_modules** *or* **thin-vendor** (see §5) | Framework (discovered) | overwrite — safe, no user content |
 | `.cursor/rules`, `.cursor/hooks` | the package | same as above | Framework (discovered) | overwrite — safe |
-| `scripts/meta/` | `node_modules` | referenced by the hook dispatcher | Framework | not present in repo |
-| `wiki/meta/`, templates | `node_modules` | referenced by skills + index links | Framework | not present in repo |
+| `lib/scripts/` | `node_modules` | referenced by the hook dispatcher | Framework | not present in repo |
+| `lib/wiki/., .lib/templates/, templates | `node_modules` | referenced by skills + index links | Framework | not present in repo |
 | `plans/ findings/ output/ raw/ wiki/project/ wiki/standards/ tmp/` | the repo | n/a | **User** | **never touched** |
 
 The rule of thumb a human can verify at a glance: **anything pointing into `node_modules/` is framework; everything else in the repo is yours.**

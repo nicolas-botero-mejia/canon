@@ -25,7 +25,7 @@ plans/          findings/       output/         raw/
 wiki/project/   wiki/standards/ scripts/project/
 CLAUDE.md       CONTENT_INDEX.md  log.md
 .claude/        .cursor/
-.framework-version
+.framework-version  .gitignore
 ```
 
 ---
@@ -39,23 +39,13 @@ npx canon sync
 
 `sync` re-vendors the framework dirs (`.claude/skills`, `.claude/agents`, `.claude/rules`, `.cursor/rules`, `.cursor/hooks`) from the updated package. It **never** writes to `plans/`, `findings/`, `output/`, `raw/`, `CLAUDE.md` body, or any other file you own.
 
+If any vendored file was modified by hand, `sync` warns and skips it. Pass `--force` to overwrite.
+
 Verify at any time:
 
 ```bash
 npx canon doctor
 ```
-
----
-
-## Migrating an existing project
-
-```bash
-npx canon init                      # set up the consumer first
-npx canon migrate --source /path/to/old-project --dry-run
-npx canon migrate --source /path/to/old-project
-```
-
-`migrate` copies your project-layer dirs, merges `CONTENT_INDEX` user entries, fills `CLAUDE.md` facts, and appends `log.md` — leaving the framework layer untouched.
 
 ---
 
@@ -77,12 +67,14 @@ After `init`, the framework methodology is available inside your `node_modules/`
 
 | Doc | Path |
 |-----|------|
-| System index | `node_modules/@nicolas-botero-mejia/canon/payload/wiki/meta/system-index.md` |
-| Knowledge architecture | `node_modules/@nicolas-botero-mejia/canon/payload/wiki/meta/system-architecture.md` |
-| Operations guide | `node_modules/@nicolas-botero-mejia/canon/payload/wiki/meta/system-operations.md` |
-| Prompting principles | `node_modules/@nicolas-botero-mejia/canon/payload/wiki/meta/system-principles.md` |
-| Verification guide | `node_modules/@nicolas-botero-mejia/canon/payload/wiki/meta/system-verification.md` |
-| Template index | `node_modules/@nicolas-botero-mejia/canon/payload/wiki/meta/templates/template-index.md` |
+| System index | `node_modules/@nicolas-botero-mejia/canon/lib/wiki/system-index.md` |
+| Knowledge architecture | `node_modules/@nicolas-botero-mejia/canon/lib/wiki/system-architecture.md` |
+| Design decisions | `node_modules/@nicolas-botero-mejia/canon/lib/wiki/system-decisions.md` |
+| Operations guide | `node_modules/@nicolas-botero-mejia/canon/lib/wiki/system-operations.md` |
+| Prompting principles | `node_modules/@nicolas-botero-mejia/canon/lib/wiki/system-principles.md` |
+| Template standards | `node_modules/@nicolas-botero-mejia/canon/lib/wiki/system-template-standards.md` |
+| Verification guide | `node_modules/@nicolas-botero-mejia/canon/lib/wiki/system-verification.md` |
+| Template index | `node_modules/@nicolas-botero-mejia/canon/lib/templates/template-index.md` |
 
 These update with the package. Your AI session loads `CLAUDE.base.md` automatically via the `@import` line in your `CLAUDE.md`.
 
@@ -113,15 +105,18 @@ Published as **`@nicolas-botero-mejia/canon`**. The canonical name is set in `pa
 ## Package structure
 
 ```
-bin/                → CLI (canon init / sync / doctor / migrate)
-payload/            → Framework IP shipped in the package
+bin/                → CLI (canon init / sync / doctor)
+  commands/         → init.mjs, sync.mjs, doctor.mjs
+  lib/              → CLI shared helpers (paths.mjs, sync-ops.mjs)
+  hook.sh           → Hook dispatcher (called by consumer settings.json)
+lib/                → Framework IP shipped in the package
   CLAUDE.base.md    → @imported by consumer CLAUDE.md
   .claude/          → agents, skills, rules — vendored on sync
   .cursor/          → rules, hooks — vendored on sync
-  scripts/meta/     → hook scripts dispatched by bin/hook.sh
-  wiki/meta/        → methodology docs
-  templates/        → activity file templates
+  scripts/          → hook scripts dispatched by bin/hook.sh
+  templates/        → all templates (knowledge + script-generated)
+  wiki/             → methodology docs (system-*.md)
 manifest.json       → declares every path sync may write
 examples/consumer/  → reference consumer project
-docs/               → architecture.md, transformation-plan.md
+docs/               → contributor docs (not shipped) — architecture.md
 ```

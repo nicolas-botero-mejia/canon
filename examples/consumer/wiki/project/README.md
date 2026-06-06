@@ -4,4 +4,4 @@ Client- and engagement-specific reference documentation. **Empty in the framewor
 
 Populate this folder per project with confirmed client decisions — tech stack, environment setup, token/component architecture, pipelines, quality and accessibility policy, etc. These are *living* documents that update as decisions close.
 
-See `wiki/meta/architecture.md` for how the project layer relates to the framework layer.
+See `system-architecture.md (framework wiki, in node_modules)` for how the project layer relates to the framework layer.
