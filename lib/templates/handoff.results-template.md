@@ -1,3 +1,12 @@
+---
+type: handoff
+phase: "[NN]"
+topic: "[slug]"
+status: in-progress
+author: AI
+date: "YYYY-MM-DD"
+---
+
 # Phase NN — Handoff: [Source] to [Destination]
 
 **Author:** AI

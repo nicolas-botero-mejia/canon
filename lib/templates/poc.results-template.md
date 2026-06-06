@@ -1,3 +1,12 @@
+---
+type: poc-results
+phase: "[NN]"
+topic: "[short-name]"
+status: in-progress
+author: AI
+date: "YYYY-MM-DD"
+---
+
 # Phase N — POC XX: [Title] — Session Notes
 
 <!--
@@ -8,6 +17,7 @@ Conclusions go in conclusions/phase-NN-poc-NN-[name]-conclusions.md (see that te
 -->
 
 **Date:** YYYY-MM-DD
+**Author:** AI
 **Status:** In Progress
 **POC plan:** `plans/phase-NN-poc-NN-[name]-plan.md`
 **Conclusions:** `conclusions/phase-NN-poc-NN-[name]-conclusions.md` *(stub exists; filled via `/activity-conclude poc`)*

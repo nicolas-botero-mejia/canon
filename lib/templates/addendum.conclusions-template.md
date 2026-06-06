@@ -1,3 +1,11 @@
+---
+type: addendum-conclusions
+phase: "[NN]"
+topic: "[slug]"
+status: in-progress
+alignment_verified: ""
+---
+
 # Phase N — [Parent Identifier] Addendum NN: [Title] — Conclusions
 
 <!--

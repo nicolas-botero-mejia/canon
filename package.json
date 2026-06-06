@@ -1,10 +1,11 @@
 {
   "name": "@nicolas-botero-mejia/canon",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Canon — AI-assisted engagement framework",
   "type": "module",
   "bin": {
-    "canon": "./bin/cli.mjs"
+    "canon": "./bin/cli.mjs",
+    "canon-mcp": "./bin/mcp-server.mjs"
   },
   "files": [
     "bin/",
@@ -15,7 +16,13 @@
   ],
   "scripts": {
     "pack-dry": "npm pack --dry-run",
-    "test": "bash test/update-safety.sh"
+    "test": "node --test test/unit/**/*.test.mjs",
+    "test:integration": "bash test/integration/run.sh",
+    "test:hooks": "bash test/hooks/run.sh",
+    "test:all": "npm test && npm run test:integration && npm run test:hooks"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0"
   },
   "engines": {
     "node": ">=18"

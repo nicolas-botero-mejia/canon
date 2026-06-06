@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
-import { vendorDirs, writeClaudeSettings, writeCursorHooks } from '../lib/sync-ops.mjs'
+import { vendorDirs, writeClaudeSettings, writeCursorHooks, writeMcpSettings } from '../lib/sync-ops.mjs'
 import { PKG_NAME, packageRoot, readManifest } from '../lib/paths.mjs'
 
 export async function run(args) {
@@ -24,6 +24,16 @@ export async function run(args) {
 
   const hasCursorHooks = existsSync(join(consumerRoot, '.cursor', 'hooks.json'))
   if (hasCursorHooks) writeCursorHooks(consumerRoot, PKG_NAME)
+
+  // If MCP was previously opted in, keep the mcpServers block pointing to the correct path
+  if (hasClaudeSettings) {
+    try {
+      const settings = JSON.parse(readFileSync(join(consumerRoot, '.claude', 'settings.json'), 'utf8'))
+      if (settings.mcpServers?.canon) {
+        writeMcpSettings(consumerRoot, PKG_NAME)
+      }
+    } catch { /* ignore parse errors */ }
+  }
 
   writeFileSync(join(consumerRoot, '.framework-version'), version)
 

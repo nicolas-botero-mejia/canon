@@ -1,3 +1,11 @@
+---
+type: session-conclusions
+phase: "[NN]"
+topic: "[slug]"
+status: in-progress
+alignment_verified: ""
+---
+
 # Phase N — Session NN: [Topic] — Conclusions
 
 <!--
@@ -8,6 +16,7 @@ Written AFTER results are reviewed. Target: within 24h of session.
 -->
 
 **Status:** Complete
+**Author:** AI
 **Field notes:** `findings/phase-NN-session-NN-[topic]-field-notes.md`
 **Results:** `findings/phase-NN-session-NN-[topic]-results.md`
 **Plan:** `plans/phase-NN-session-NN-[topic]-plan.md`

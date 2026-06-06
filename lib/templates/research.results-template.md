@@ -1,3 +1,12 @@
+---
+type: research-results
+phase: "[NN]"
+topic: "[slug]"
+status: in-progress
+author: AI
+date: "YYYY-MM-DD"
+---
+
 # [Topic] — Research Brief
 
 <!--
@@ -8,6 +17,7 @@ For POC session notes, use: lib/templates/poc.results-template.md (in canon pack
 -->
 
 **Date:** YYYY-MM-DD
+**Author:** AI
 **Status:** Exploratory / Complete
 **Feeds:** [Which session, POC, or decision this research informs — e.g., "Session 7 (Architecture Workshop)"]
 

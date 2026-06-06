@@ -5,11 +5,11 @@
 # framework dirs are refreshed. This is Phase 2's definition of done.
 #
 # Run from the package repo root:
-#   bash test/update-safety.sh
+#   bash test/integration/update-safety.sh
 
 set -euo pipefail
 
-PKG_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PKG_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "$WORK_DIR"' EXIT
 
@@ -41,11 +41,38 @@ pass "init ran"
 node "${WORK_DIR}/node_modules/@nicolas-botero-mejia/canon/bin/cli.mjs" doctor >/dev/null
 pass "doctor green after init"
 
+# ── Step 2b: verify v0.1.4 dirs exist after init ────────────────────────────
+echo "[2b] Verify init created all expected directories"
+[ -d "${WORK_DIR}/wiki/client" ] && pass "wiki/client/ created on init" || fail "wiki/client/ missing after init"
+[ -d "${WORK_DIR}/wiki/user" ]   && pass "wiki/user/ created on init"   || fail "wiki/user/ missing after init"
+[ -d "${WORK_DIR}/deliverables" ] && pass "deliverables/ created on init" || fail "deliverables/ missing after init"
+
+# Verify /signal skill is vendored
+[ -f "${WORK_DIR}/.claude/skills/signal/SKILL.md" ] \
+  && pass "/signal skill vendored to .claude/skills/signal/SKILL.md" \
+  || fail "/signal skill not found at .claude/skills/signal/SKILL.md"
+
+# Verify templates are accessible in node_modules
+[ -f "${WORK_DIR}/node_modules/@nicolas-botero-mejia/canon/lib/templates/session.plan-template.md" ] \
+  && pass "session.plan-template.md accessible in node_modules" \
+  || fail "session.plan-template.md missing from node_modules"
+
+[ -f "${WORK_DIR}/node_modules/@nicolas-botero-mejia/canon/lib/wiki/system-tool-integration.md" ] \
+  && pass "system-tool-integration.md accessible in node_modules" \
+  || fail "system-tool-integration.md missing from node_modules"
+
 # ── Step 3: write junk into user dirs and CLAUDE.md body ────────────────────
 echo "[3] Write user content"
 echo "my plans" > "${WORK_DIR}/plans/my-plan.md"
 echo "my findings" > "${WORK_DIR}/findings/finding-01.md"
 echo "my conclusions" > "${WORK_DIR}/conclusions/conclusions.md"
+
+# Write content into wiki/client and wiki/user (user-owned dirs)
+echo "client info" > "${WORK_DIR}/wiki/client/client-profile.md"
+echo "user info" > "${WORK_DIR}/wiki/user/user-research.md"
+
+# Write content into deliverables (user-owned dir)
+echo "deliverable" > "${WORK_DIR}/deliverables/report-v1.md"
 
 # Append user content to CLAUDE.md body (the @import line must survive untouched)
 echo "" >> "${WORK_DIR}/CLAUDE.md"
@@ -57,14 +84,17 @@ USER_PLAN_SUM="$(md5 -q "${WORK_DIR}/plans/my-plan.md")"
 USER_FIND_SUM="$(md5 -q "${WORK_DIR}/findings/finding-01.md")"
 USER_OUT_SUM="$(md5 -q "${WORK_DIR}/conclusions/conclusions.md")"
 USER_CLAUDE_SUM="$(md5 -q "${WORK_DIR}/CLAUDE.md")"
+USER_CLIENT_SUM="$(md5 -q "${WORK_DIR}/wiki/client/client-profile.md")"
+USER_USER_SUM="$(md5 -q "${WORK_DIR}/wiki/user/user-research.md")"
+USER_DELIV_SUM="$(md5 -q "${WORK_DIR}/deliverables/report-v1.md")"
 
 # Snapshot a framework skill file before the "update"
 SKILL_BEFORE="$(md5 -q "${WORK_DIR}/.claude/skills/wiki-manage/SKILL.md")"
 
 pass "user content written and snapshotted"
 
-# ── Step 4: bump payload and re-pack (simulates npm update) ─────────────────
-echo "[4] Bump payload version and re-install"
+# ── Step 4: bump package version and re-pack (simulates npm update) ──────────
+echo "[4] Bump package version and re-install"
 
 # Inject a marker into a framework file to confirm it gets refreshed
 MARKER="# UPDATED-BY-TEST"
@@ -111,6 +141,19 @@ echo "[6] Assert user files byte-identical"
   && pass "CLAUDE.md body unchanged" \
   || fail "CLAUDE.md was modified by sync"
 
+# Assert wiki/client and wiki/user are NOT overwritten by sync (user-owned)
+[ "$(md5 -q "${WORK_DIR}/wiki/client/client-profile.md")" = "$USER_CLIENT_SUM" ] \
+  && pass "wiki/client/ NOT overwritten by sync" \
+  || fail "wiki/client/client-profile.md was modified by sync"
+
+[ "$(md5 -q "${WORK_DIR}/wiki/user/user-research.md")" = "$USER_USER_SUM" ] \
+  && pass "wiki/user/ NOT overwritten by sync" \
+  || fail "wiki/user/user-research.md was modified by sync"
+
+[ "$(md5 -q "${WORK_DIR}/deliverables/report-v1.md")" = "$USER_DELIV_SUM" ] \
+  && pass "deliverables/ NOT overwritten by sync" \
+  || fail "deliverables/report-v1.md was modified by sync"
+
 # ── Step 7: assert framework dirs refreshed ─────────────────────────────────
 echo "[7] Assert framework dir refreshed"
 grep -q "$MARKER" "${WORK_DIR}/.claude/skills/wiki-manage/SKILL.md" \
@@ -122,7 +165,7 @@ echo "[8] Doctor"
 node "${WORK_DIR}/node_modules/@nicolas-botero-mejia/canon/bin/cli.mjs" doctor >/dev/null
 pass "doctor green after sync"
 
-# ── Cleanup: revert payload marker and version bump ─────────────────────────
+# ── Cleanup: revert marker and version bump ──────────────────────────────────
 cd "$PKG_ROOT"
 # Remove the injected marker line
 node -e "

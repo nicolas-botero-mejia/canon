@@ -87,6 +87,9 @@ Phase lifecycle
 ║  Hook [auto, blocks on exit 2]: scripts/check-links.sh          ║
 ║  Hook [auto, blocks on exit 2]: scripts/check-stale-refs.sh     ║
 ║  Hook [auto, warns]: scripts/check-conclusions-alignment.sh     ║
+║  Hook [auto, warns]: scripts/check-contracts.sh                 ║
+║    → structural contract validation (frontmatter, tracker cols,       ║
+║      roadmap emoji set, findings/conclusions required fields)         ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
@@ -170,7 +173,7 @@ mechanism is tool-specific — see `system-tool-integration.md` for how each too
 The three canonical lifecycle events the framework requires:
 - **Session open** — surface project state (`session-start-report.sh`)
 - **After write/edit** — stale-ref check on wiki/plans, CONTENT_INDEX advisory (`post-write-check.sh`)
-- **Session close** — four-script consistency chain (check-index → check-links → check-stale-refs → check-conclusions-alignment)
+- **Session close** — five-script consistency chain (check-index → check-links → check-stale-refs → check-conclusions-alignment → check-contracts)
 
 The hook dispatcher (`bin/hook.sh`) receives the event name and routes to the correct script.
 Tool-specific configuration (event names, JSON format, exit code behavior) → `system-tool-integration.md`.
@@ -230,6 +233,19 @@ Finds all `conclusions/*.md` files with `**Status:** Complete` and checks each f
 
 **Dependencies:** `grep`, `find` — standard POSIX.
 **Used by:** Stop hook.
+
+### `scripts/check-contracts.sh`
+Validates structural contracts on four file types — required for MCP query reliability. Runs at session close (Stop hook chain) as a warning, not a hard block.
+
+**What it validates:**
+- `CONTENT_INDEX.md` entries: all four parts present (`###`, `**What it is:**`, `**Key facts:**`, `**Questions it answers:**`)
+- `plans/phase-NN-index.md §Decisions Tracker`: all four columns present (`ID`, `Description`, `Status`, `Closed`)
+- `plans/phase-NN-poc-roadmap.md`: status emoji values are from the allowed set (🔜 ⏳ 🔄 ✅ ⏭️)
+- `findings/*.md`: `**Author:**` and `**Date:**` present in first 10 lines
+- `conclusions/*.md`: `**Author:**`, `**Date:**`/`**Synthesis date:**`, and `**Alignment verified:**` present in first 10 lines
+
+**Dependencies:** `grep`, `find`, `head` — standard POSIX.
+**Used by:** Stop hook (after `check-conclusions-alignment.sh`).
 
 ### `scripts/post-write-check.sh`
 PostToolUse hook wrapper. Reads the tool-use JSON payload from stdin, extracts `file_path` from `tool_input`. For `wiki/` and `plans/` files: calls `check-stale-refs.sh --file` and returns `{"decision":"block"}` if a deprecated pattern is found. For `findings/` and `conclusions/` files: emits ⚠ warning if the file is not yet in CONTENT_INDEX.md (advisory, non-blocking). Requires `python3` for JSON parsing.
@@ -361,6 +377,43 @@ Functional test → Invoke the changed mechanism against a controlled case. Obse
 
 ---
 
+## 9. Parsing Contracts
+
+Structural guarantees for template-generated files. Required for MCP query reliability (`check-contracts.sh` enforces these at session close).
+
+### `plans/phase-NN-index.md §Decisions Tracker`
+
+- **Required columns:** `ID` | `Description` | `Status` | `Closed / Deferred` (date + source)
+- **Status values:** `Open` | `Closed — [answer] — [source], YYYY-MM-DD` | `Deferred — [reason] — [trigger]`
+- **Contract:** every row has all four columns; ID column starts with `D-`
+
+### `plans/phase-NN-poc-roadmap.md`
+
+- **Required columns:** `POC` | `Status` | `Prerequisite` | `Description`
+- **Status values:** `🔜 Next` | `⏳ Planned` | `🔄 In Progress` | `✅ Complete` | `⏭️ Deferred`
+- **Contract:** consistent emoji status values across all roadmap files
+
+### `CONTENT_INDEX.md` entries
+
+- **Required format:** `### [filename](./path/to/file)`, `**What it is:** [one sentence]`, `**Key facts:**` list, `**Questions it answers:**` list
+- **Contract:** every entry has all four parts; `**What it is:**` is always a single sentence
+
+### `findings/*.md`
+
+- **Required header fields (first 10 lines):** `**Author:**`, `**Date:**`, `**Status:**`
+- **YAML frontmatter:** `type`, `phase`, `topic`, `status`, `author`, `date` (see `system-template-standards.md`)
+- **Contract:** these fields appear in the first 10 lines of every file
+
+### `conclusions/*.conclusions.md`
+
+- **Required header fields (first 10 lines):** `**Author:**`, `**Date:**` or `**Synthesis date:**`, `**Status:**`, `**Alignment verified:**`
+- **YAML frontmatter:** `type`, `phase`, `topic`, `status`, `alignment_verified`
+- **Contract:** `**Alignment verified:**` must be present somewhere in the file; left empty (``) until verified
+
+These contracts are validated by `lib/scripts/check-contracts.sh` (runs in the Stop hook chain after every session).
+
+---
+
 ## 8. Cloud / GitHub Migration Path
 
 ### Multi-repo workflow
@@ -390,10 +443,18 @@ Recommended CI trigger: push to `wiki/` or `plans/`. The `check-conclusions-alig
 
 ### CD pipeline (package repo)
 
-`npm publish` is triggered manually after `npm test` passes. No automatic publish on push. The publish step:
-1. `npm test` — runs update-safety test and any unit tests
+`npm publish` is triggered manually after the full test suite passes. No automatic publish on push. The publish step:
+1. `npm run test:all` — runs unit tests (node --test), integration test (pack → install → init → sync → doctor), and hook dispatcher tests
 2. `npm version patch|minor|major` — bumps version, creates git tag
 3. `npm publish` — publishes to npm registry
+
+**Test suite structure:**
+```
+npm test              → test/unit/**/*.test.mjs  (node --test, 37 assertions)
+npm run test:integration → test/integration/update-safety.sh
+npm run test:hooks    → test/hooks/run.sh (hook routing + script existence)
+npm run test:all      → all three in sequence
+```
 
 ### Consumer `.gitignore` for CI
 

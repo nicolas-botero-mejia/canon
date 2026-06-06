@@ -1,3 +1,9 @@
+---
+type: phase-index
+phase: "{{PHASE_NUMBER}}"
+status: active
+---
+
 # Phase {{PHASE_NUMBER}} — Index
 
 **Last updated:** {{DATE}}
@@ -36,11 +42,11 @@
 
 ## Decisions Tracker
 
-| # | Decision | Status | Closed in | Answer |
-|---|----------|--------|-----------|--------|
-| 1 | [Decision TBD] | Open | — | — |
+| ID | Description | Status | Closed / Deferred |
+|----|-------------|--------|-------------------|
+| D-1 | [Decision TBD] | Open | — |
 
-**Status values:** `Open` | `Closed — [answer] — Session N, YYYY-MM-DD` | `Deferred`
+**Status values:** `Open` | `Closed — [answer] — [source], YYYY-MM-DD` | `Deferred — [reason] — [trigger]`
 
 ---
 

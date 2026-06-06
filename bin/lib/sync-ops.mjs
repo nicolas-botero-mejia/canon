@@ -205,3 +205,25 @@ export function writeCursorHooks(consumerRoot, pkgName) {
     },
   }, null, 2))
 }
+
+/**
+ * Write the mcpServers block into .claude/settings.json.
+ * Merges into existing settings if the file already exists.
+ */
+export function writeMcpSettings(consumerRoot, pkgName) {
+  const dir = join(consumerRoot, '.claude')
+  mkdirSync(dir, { recursive: true })
+  const settingsPath = join(dir, 'settings.json')
+  let settings = {}
+  if (existsSync(settingsPath)) {
+    try { settings = JSON.parse(readFileSync(settingsPath, 'utf8')) } catch { /* ignore */ }
+  }
+  settings.mcpServers = {
+    ...(settings.mcpServers ?? {}),
+    canon: {
+      command: 'node',
+      args: [`node_modules/${pkgName}/bin/mcp-server.mjs`],
+    },
+  }
+  writeFileSync(settingsPath, JSON.stringify(settings, null, 2))
+}

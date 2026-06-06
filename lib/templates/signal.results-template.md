@@ -1,3 +1,13 @@
+---
+type: signal-results
+phase: "[NN]"
+topic: "[slug]"
+status: in-progress
+author: AI
+date: "YYYY-MM-DD"
+discovery_type: external
+---
+
 # Phase N — Signal NN: [Slug]
 
 <!--

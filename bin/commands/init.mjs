@@ -1,7 +1,7 @@
 import { createInterface } from 'readline'
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs'
 import { join } from 'path'
-import { vendorDirs, writeClaudeMd, writeClaudeSettings, writeCursorHooks, writeGitignore } from '../lib/sync-ops.mjs'
+import { vendorDirs, writeClaudeMd, writeClaudeSettings, writeCursorHooks, writeGitignore, writeMcpSettings } from '../lib/sync-ops.mjs'
 import { PKG_NAME, packageRoot, readManifest } from '../lib/paths.mjs'
 
 const PACKAGE_ROOT = packageRoot()
@@ -25,7 +25,7 @@ export async function run(args) {
     process.exit(1)
   }
 
-  let layers = { claude: true, cursor: false }
+  let layers = { claude: true, cursor: false, mcp: false }
 
   if (!yes) {
     const rl = createInterface({ input: process.stdin, output: process.stdout })
@@ -33,6 +33,8 @@ export async function run(args) {
     layers.claude = claudeAns.trim().toLowerCase() !== 'n'
     const cursorAns = await ask(rl, 'Enable Cursor layer? [y/N] ')
     layers.cursor = cursorAns.trim().toLowerCase() === 'y'
+    const mcpAns = await ask(rl, 'Enable MCP knowledge server? [y/N] ')
+    layers.mcp = mcpAns.trim().toLowerCase() === 'y'
     rl.close()
   }
 
@@ -62,6 +64,10 @@ export async function run(args) {
     writeCursorHooks(consumerRoot, PKG_NAME)
   }
 
+  if (layers.mcp) {
+    writeMcpSettings(consumerRoot, PKG_NAME)
+  }
+
   // Scaffold log and CONTENT_INDEX if absent
   const logPath = join(consumerRoot, 'log.md')
   if (!existsSync(logPath)) writeFileSync(logPath, '# Project Log\n\n')
@@ -71,7 +77,13 @@ export async function run(args) {
 
   writeFileSync(join(consumerRoot, '.framework-version'), version)
 
+  const layerList = [
+    layers.claude && 'claude',
+    layers.cursor && 'cursor',
+    layers.mcp && 'mcp',
+  ].filter(Boolean).join(', ')
+
   console.log(`✓ canon ${version} initialized`)
-  console.log(`  Layers: ${[layers.claude && 'claude', layers.cursor && 'cursor'].filter(Boolean).join(', ')}`)
+  console.log(`  Layers: ${layerList}`)
   console.log(`  Run 'canon doctor' to verify.`)
 }

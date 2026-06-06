@@ -1,3 +1,11 @@
+---
+type: research-conclusions
+phase: "[NN]"
+topic: "[slug]"
+status: in-progress
+alignment_verified: ""
+---
+
 # Phase N — Research: [Topic] — Conclusions
 
 <!--
@@ -10,6 +18,7 @@ Use the results file + a wiki update instead.
 -->
 
 **Status:** Complete
+**Author:** AI
 **Source:** `findings/phase-NN-research-[topic]-results.md`
 **Plan:** `plans/phase-NN-research-[topic]-plan.md`
 **Synthesis date:** YYYY-MM-DD
