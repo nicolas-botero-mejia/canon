@@ -1,3 +1,12 @@
+---
+type: session-results
+phase: "[NN]"
+topic: "[slug]"
+status: in-progress
+author: AI
+date: "YYYY-MM-DD"
+---
+
 # Phase N — Session NN: [Topic] — Results
 
 <!--

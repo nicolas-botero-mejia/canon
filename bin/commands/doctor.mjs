@@ -64,6 +64,22 @@ export async function run(_args) {
     errors.push('hook dispatcher missing: bin/hook.sh')
   }
 
+  // 6. MCP server (if opted in)
+  const claudeSettingsPath = join(consumerRoot, '.claude', 'settings.json')
+  if (existsSync(claudeSettingsPath)) {
+    try {
+      const settings = JSON.parse(readFileSync(claudeSettingsPath, 'utf8'))
+      if (settings.mcpServers?.canon) {
+        const mcpEntry = join(PACKAGE_ROOT, 'bin', 'mcp-server.mjs')
+        if (existsSync(mcpEntry)) {
+          ok.push('MCP server resolves (bin/mcp-server.mjs)')
+        } else {
+          errors.push('MCP server missing: bin/mcp-server.mjs — run `canon sync`')
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
   // Report
   for (const msg of ok) console.log(`  ✓ ${msg}`)
   for (const msg of errors) console.log(`  ✗ ${msg}`)

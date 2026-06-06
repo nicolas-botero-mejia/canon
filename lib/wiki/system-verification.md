@@ -83,20 +83,36 @@ This checks:
 
 If any check fails, `doctor` prints the failing assertion and exits non-zero.
 
+| # | Check | What it verifies |
+|---|-------|-----------------|
+| 1 | Package installed | `PACKAGE_ROOT` exists |
+| 2 | `.framework-version` matches | Recorded version = installed package version |
+| 3 | `@import` in `CLAUDE.md` | Import line points into `node_modules/` |
+| 4 | Vendored dirs present | All `manifest.json` `vendored` entries exist in consumer |
+| 5 | Hook dispatcher resolves | `bin/hook.sh` exists in package root |
+| 6 | MCP server resolves (if opted in) | If `settings.json` has `mcpServers.canon`, `bin/mcp-server.mjs` must exist |
+
 ---
 
-## 4. Update-Safety Contract Test
-
-The full §9 contract (user files never written by sync) is automated:
+## 4. Full Test Suite
 
 ```bash
-bash test/update-safety.sh
+# All tests in sequence
+npm run test:all
+
+# Individual suites
+npm test                  # Unit tests (node --test) — init, sync, doctor
+npm run test:integration  # Update-safety + v0.1.4 contract (pack → install → init → sync → doctor)
+npm run test:hooks        # Hook dispatcher routing + script existence
 ```
 
-Run this whenever the `sync` logic or `manifest.json` changes. It:
+Run `npm run test:all` before every publish and whenever `sync` logic, `manifest.json`, or any CLI command changes.
+
+The integration test (`test/integration/update-safety.sh`) verifies the full §8 update-safety contract:
 1. Packs and installs the package into a temp consumer
-2. Initializes, writes user content, snapshots checksums
-3. Bumps the payload version, re-installs, syncs
-4. Asserts user files byte-identical; framework dirs refreshed; doctor green
+2. Initializes; verifies `wiki/client/`, `wiki/user/`, `deliverables/`, `/signal` skill, and template accessibility
+3. Writes user content in all user-owned dirs; snapshots checksums
+4. Bumps the package version, re-installs, syncs
+5. Asserts all user files byte-identical; framework dirs refreshed; `canon doctor` green
 
 If this test fails, stop — the update-safety contract is broken.

@@ -103,6 +103,67 @@ Script templates follow `[output-name]-template.md`:
 
 ---
 
+## YAML frontmatter convention
+
+### When frontmatter is used
+
+Frontmatter is added to template-generated files where cross-file filtering queries require it — specifically files in `findings/` and `conclusions/` (where many files accumulate over a project), and `plans/phase-NN-index.md` files. Frontmatter is NOT added to wiki files, templates, or plans/scripts.
+
+### Schema
+
+**`findings/*.md`** (results, notes, signal, field-notes):
+```yaml
+---
+type: poc-results | research-results | signal-results | session-results | field-notes | addendum-results | handoff
+phase: "NN"
+topic: "[slug]"
+status: in-progress | complete
+author: AI | Human | Mixed
+date: "YYYY-MM-DD"
+# signal-results only:
+discovery_type: external | internal
+---
+```
+
+**`conclusions/*.conclusions.md`**:
+```yaml
+---
+type: poc-conclusions | research-conclusions | session-conclusions | addendum-conclusions
+phase: "NN"
+topic: "[slug]"
+status: in-progress | complete
+alignment_verified: "" | "YYYY-MM-DD"
+---
+```
+
+**`plans/phase-NN-index.md`**:
+```yaml
+---
+type: phase-index
+phase: "NN"
+status: active | concluded
+---
+```
+
+**Wiki files with ⚡ markers** (added only when `/wiki-manage promote` is used, removed when marker clears):
+```yaml
+---
+pending_confirmation:
+  - section: "§N — Section Title"
+    source: "findings/phase-NN-signal-NN-slug-results.md"
+---
+```
+
+### Key constraints
+
+- All date fields are strings (`"2026-06-06"`) not YAML date type — avoids timezone issues
+- Frontmatter is at the top of the file, before the `#` heading
+- Fields use `snake_case`
+- Only `type` is required — other fields are strongly recommended
+- MCP tools (`query_findings`, `query_conclusions`, etc.) read these fields for filtering
+
+---
+
 ## What does NOT belong in templates
 
 - **Framework docs** — go in `lib/wiki/`

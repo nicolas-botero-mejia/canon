@@ -52,6 +52,65 @@ Agents invoked as subagents from skills using the Agent tool.
 
 ---
 
+## MCP Server
+
+Canon ships an optional MCP knowledge server (`bin/mcp-server.mjs`) that exposes project knowledge as structured resources and query tools. It is read-only — all writes go through the CLI and skills.
+
+### Enabling
+
+During `canon init`, answer **y** to "Enable MCP knowledge server?" — or run `canon init --force` to re-run the prompt. This writes the `mcpServers` block into `.claude/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "canon": {
+      "command": "node",
+      "args": ["node_modules/@nicolas-botero-mejia/canon/bin/mcp-server.mjs"]
+    }
+  }
+}
+```
+
+To start manually: `npx canon-mcp` (from the consumer project root).
+
+### Resources
+
+Resources expose full file content. The AI reads and reasons about them.
+
+| URI pattern | Content |
+|-------------|---------|
+| `canon://wiki/{layer}/{filename}` | Wiki files (project, client, user, standards) |
+| `canon://findings/{filename}` | Findings files |
+| `canon://conclusions/{filename}` | Conclusions files |
+| `canon://deliverables/{filename}` | Client-facing deliverables |
+| `canon://plans/{filename}` | Plan files |
+| `canon://CONTENT_INDEX.md` | Full content index |
+
+### Tools
+
+Tools answer structured queries — use these when filtering across many files.
+
+| Tool | Parameters | Returns |
+|------|-----------|---------|
+| `query_decisions(phase, status?)` | Phase number; optional status filter | `[{id, description, status, closed}]` |
+| `query_findings(phase?, type?, topic?, discovery_type?)` | Any frontmatter field | `[{filename, type, phase, topic, status, date}]` |
+| `query_conclusions(phase?, alignment_verified?)` | Phase; optional verification filter | `[{filename, type, phase, topic, alignment_verified}]` |
+| `get_project_state()` | — | `{active_phase, open_decisions_count, poc_roadmap_summary, unverified_conclusions_count, pending_wiki_confirmations}` |
+| `surface_context(topic)` | Topic slug or keyword | Files ordered by Librarian priority: conclusions > results > field-notes |
+
+### Frontmatter schema
+
+MCP tools read YAML frontmatter from findings and conclusions files. See `system-template-standards.md §YAML frontmatter convention` for the full schema. Key fields:
+
+- `type` — file category (e.g. `poc-results`, `signal-results`, `conclusions`)
+- `phase` — phase number string
+- `topic` — slug for filtering
+- `status` — `in-progress` | `complete`
+- `alignment_verified` — empty string or `YYYY-MM-DD` date (conclusions only)
+- `discovery_type` — `external` | `internal` (signal-results only)
+
+---
+
 ## Adding a new tool integration
 
 When adding support for a new AI tool:

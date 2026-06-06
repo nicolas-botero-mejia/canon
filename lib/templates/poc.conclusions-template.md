@@ -1,3 +1,11 @@
+---
+type: poc-conclusions
+phase: "[NN]"
+topic: "[short-name]"
+status: in-progress
+alignment_verified: ""
+---
+
 # Phase N — POC XX: [Title] — Conclusions
 
 <!--
@@ -8,6 +16,7 @@ Source of truth: findings/phase-NN-poc-NN-[name]-notes.md
 -->
 
 **Status:** Complete
+**Author:** AI
 **Source:** `findings/phase-NN-poc-NN-[name]-results.md`
 **Plan:** `plans/phase-NN-poc-NN-[name]-plan.md`
 **Synthesis date:** YYYY-MM-DD

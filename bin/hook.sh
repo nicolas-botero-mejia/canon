@@ -20,7 +20,8 @@ case "$EVENT" in
     bash "${META}/check-index.sh" \
     && bash "${META}/check-links.sh" \
     && bash "${META}/check-stale-refs.sh" \
-    && bash "${META}/check-conclusions-alignment.sh"
+    && bash "${META}/check-conclusions-alignment.sh" \
+    && bash "${META}/check-contracts.sh"
     ;;
   *)
     echo "hook.sh: unknown event '${EVENT}'" >&2
