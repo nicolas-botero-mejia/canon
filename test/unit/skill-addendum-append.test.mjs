@@ -124,6 +124,36 @@ for (const filePath of BACKLINK_SWEEP_FILES) {
   })
 }
 
+// ── system-architecture.md: mirrors stay in sync ─────────────────────────────
+
+test('system-architecture: template table uses renamed addendum.conclusions-section-template.md', () => {
+  const content = read(join(WIKI_DIR, 'system-architecture.md'))
+  assert.ok(
+    !content.includes('| `addendum.conclusions-template.md`'),
+    'system-architecture.md still lists old addendum.conclusions-template.md in template table'
+  )
+  assert.ok(
+    content.includes('addendum.conclusions-section-template.md'),
+    'system-architecture.md missing renamed addendum.conclusions-section-template.md'
+  )
+})
+
+test('system-architecture: §9 roadmap status values match check-contracts.sh (not old v0.2.0 labels)', () => {
+  const content = read(join(WIKI_DIR, 'system-architecture.md'))
+  assert.ok(
+    !content.includes('🔜 Next') && !content.includes('⏳ Planned') && !content.includes('🔄 In Progress'),
+    'system-architecture.md §9 still has old v0.2.0 roadmap status labels'
+  )
+})
+
+test('system-architecture: knowledge-audit dimension count is 15', () => {
+  const content = read(join(WIKI_DIR, 'system-architecture.md'))
+  assert.ok(
+    !content.includes('14-dimension'),
+    'system-architecture.md still says 14-dimension for /knowledge-audit'
+  )
+})
+
 // ── librarian.md: addendum file-type list updated ─────────────────────────────
 
 test('librarian.md: addendum file-type list does not include conclusions', () => {

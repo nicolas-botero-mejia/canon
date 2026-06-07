@@ -107,7 +107,7 @@ Phase lifecycle
 ╔══════════════════════════════════════════════════════════════════════╗
 ║  PERIODIC (manually triggered, not session-bound)                    ║
 ║  Skill [manual]: /knowledge-audit                                     ║
-║    → 14-dimension consistency check across all files                 ║
+║    → 15-dimension consistency check across all files                 ║
 ║  Phase operations (when phase ends / new phase begins):              ║
 ║    /phase-conclude → /phase-new                                       ║
 ╚══════════════════════════════════════════════════════════════════════╝
@@ -309,7 +309,7 @@ Named `[process-type].[file-type]-template.md`. Full map → `templates/template
 | `poc.conclusions-template.md` | POC synthesized output | `conclusions/` |
 | `addendum.plan-template.md` | Addendum plan (extends a closed POC) | `plans/` |
 | `addendum.results-template.md` | Addendum execution log (new hypotheses only) | `findings/` |
-| `addendum.conclusions-template.md` | Addendum verdicts + revised decisions | `conclusions/` |
+| `addendum.conclusions-section-template.md` | Addendum verdicts + revised decisions (appended section) | parent POC `conclusions/` file `§Addendum NN` |
 | `signal.results-template.md` | Signal assessment (no parent doc — routes to action) | `findings/` |
 | `research.plan-template.md` | Research plan | `plans/` |
 | `research.results-template.md` | Research findings | `findings/` |
@@ -320,7 +320,7 @@ Named `[process-type].[file-type]-template.md`. Full map → `templates/template
 | `handoff.results-template.md` | Transitional context-transfer between phases/POCs | `findings/` |
 | `tmp.working-file-template.md` | Transient working files | `tmp/` |
 
-> **Template updates 2026-06-01:** `addendum.plan-template.md` now includes `§Pre-session Prerequisites` (with escalation protocol) and `§Downstream Dependencies` (declares which future POCs/sessions depend on this addendum's outcome). `addendum.conclusions-template.md` now includes `**Alignment verified:**` metadata field (set by `/conclusions-review`) and `§Downstream Impact` (records verdict impact on each downstream item). `poc.plan-template.md` now includes the escalation protocol in its Prerequisites section. `poc.conclusions-template.md` and `session.conclusions-template.md` now include `**Alignment verified:**` field.
+> **Template updates 2026-06-01:** `addendum.plan-template.md` now includes `§Pre-session Prerequisites` (with escalation protocol) and `§Downstream Dependencies` (declares which future POCs/sessions depend on this addendum's outcome). `poc.plan-template.md` now includes the escalation protocol in its Prerequisites section. `poc.conclusions-template.md` and `session.conclusions-template.md` now include `**Alignment verified:**` field. **2026-06-06:** `addendum.conclusions-template.md` renamed to `addendum.conclusions-section-template.md` — addendum conclusions are now appended as `## Addendum NN` sections into the parent POC conclusions file (ADR-010).
 
 ---
 
@@ -409,7 +409,7 @@ Structural guarantees for template-generated files. Required for MCP query relia
 ### `plans/phase-NN-poc-roadmap.md`
 
 - **Required columns:** `POC` | `Status` | `Prerequisite` | `Description`
-- **Status values:** `🔜 Next` | `⏳ Planned` | `🔄 In Progress` | `✅ Complete` | `⏭️ Deferred`
+- **Status values:** `🔜 Planned` | `⏳ In Progress` | `✅ Complete` | `Deprecated` | `~~In Progress~~ Deprecated` | `Migrated → Phase NN`
 - **Contract:** consistent emoji status values across all roadmap files
 
 ### `CONTENT_INDEX.md` entries
