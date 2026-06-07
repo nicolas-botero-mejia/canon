@@ -1,32 +1,28 @@
----
-type: addendum-conclusions
-phase: "[NN]"
-topic: "[slug]"
-status: in-progress
-alignment_verified: ""
----
-
-# Phase N — [Parent Identifier] Addendum NN: [Title] — Conclusions
-
 <!--
-TEMPLATE — fill after addendum results are complete.
-Naming convention: conclusions/phase-NN-[parent-identifier]-addendum-NN-[slug]-conclusions.md
-This file covers NEW hypotheses only — starting from the next H-number after the parent's last.
-For parent hypothesis verdicts, see the parent conclusions file.
-Parent decisions are NOT modified in this file — only decisions that CHANGE are listed below.
+APPEND-SECTION REFERENCE — not a standalone file.
+When /activity-conclude addendum runs, this structure is appended to the parent POC conclusions file
+as a "## Addendum NN" section. No standalone file is created.
+Destination: conclusions/phase-NN-poc-NN-[parent-name]-conclusions.md §Addendum NN
+
+This template shows the structure that gets appended. H-numbers continue from the parent.
 -->
 
-**Status:** Complete
-**Author:** AI
-**Parent conclusions:** `conclusions/phase-NN-[parent-identifier]-conclusions.md`
-**Source:** `findings/phase-NN-[parent-identifier]-addendum-NN-[slug]-results.md`
-**Plan:** `plans/phase-NN-[parent-identifier]-addendum-NN-[slug]-plan.md`
-**Synthesis date:** YYYY-MM-DD
-**Validated:** [External validation method — e.g., "Step N-1 web search cross-reference confirmed"]
-**Alignment verified:**
+---
 
-> New hypotheses only — H8+.
-> Parent decisions H1–H7 remain valid unless explicitly listed in §Decisions Revised below.
+## Addendum NN — [slug]
+
+<!--
+This section is appended to the parent POC conclusions file by /activity-conclude addendum.
+H-numbers continue from parent (H8+ if parent concluded at H7).
+Parent hypotheses H1–H7 remain valid unless listed in §Decisions Revised below.
+-->
+
+**Source:** `findings/phase-NN-[parent-identifier]-addendum-NN-[slug]-results.md`
+**Synthesis date:** YYYY-MM-DD
+**Addendum alignment verified:**
+
+> H-numbers continue from parent (H8+). Parent hypotheses H1–H7 remain valid unless
+> listed in §Decisions Revised below.
 
 ---
 
@@ -118,16 +114,15 @@ The following decisions from [parent conclusions link] are unaffected by this ad
 
 ---
 
-## Wiki Files Updated
+## Wiki Files Updated — Addendum NN
 
 <!--
 Every file updated as part of this addendum synthesis.
-Include the parent conclusions backlink as the first row.
+The parent POC conclusions file is already updated (this section IS in it) — list other wiki changes only.
 -->
 
 | File | Section | Change summary |
 |------|---------|---------------|
-| `conclusions/phase-NN-[parent-identifier]-conclusions.md` | §Addendums (new/updated) | Backlink to this addendum added |
 | `wiki/project/[file].md` | §N [Section name] | [What changed in one line] |
 | `plans/phase-NN-index.md` | §Decisions Tracker | [N] decisions revised |
 

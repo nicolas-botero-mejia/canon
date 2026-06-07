@@ -21,6 +21,7 @@ Reads `plans/phase-NN-index.md §Decisions Tracker`. Reports:
 **Step 1b — Alignment verification sweep**
 Before the knowledge audit: scan all Complete conclusions files in `conclusions/` for the `**Alignment verified:**` field.
 - Any file with an empty or absent field → surface it: *"[file] has not been alignment-verified. Run `/activity-conclude [type]` or `/conclusions-review [file]` to set the field before concluding the phase."*
+- Also scan every parent POC conclusions file for `## Addendum NN` sections that are missing `**Addendum alignment verified:**` dates. Surface alongside unverified file-level conclusions: *"[file] §Addendum NN has no `**Addendum alignment verified:**` date. Run `/conclusions-review` targeting this section or set the date manually before concluding the phase."*
 - This is a pre-wrap gate: unverified conclusions carry forward unknown drift into the next phase. Human decides whether to verify now or explicitly accept the risk and proceed.
 
 **Step 2 — /knowledge-audit (inline)**

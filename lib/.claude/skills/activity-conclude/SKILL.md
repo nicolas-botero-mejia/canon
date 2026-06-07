@@ -35,11 +35,47 @@ Type-specific output:
 - File: `conclusions/phase-NN-poc-NN-[name]-conclusions.md`
 - Required sections: Verdict (1–2 sentences), H1–HN blocks (Status / Finding / Decision / Wiki update), Evidence Summary (key raw observations per hypothesis), Deferred Observations, Decisions Closed, Wiki Files Updated, Addendum Candidates
 
-**`addendum`** — fill `addendum.conclusions-template.md` (or the stub created by `/activity-new addendum`):
-- File: `conclusions/phase-NN-[parent-id]-addendum-NN-[slug]-conclusions.md`
-- Required sections: same as poc PLUS:
+**`addendum`** — append a new section to the existing parent POC conclusions file:
+- File: `conclusions/phase-NN-poc-NN-[parent-name]-conclusions.md` (the EXISTING parent file — do not create a new file)
+- **Fail-safe:** If parent conclusions file is not found → hard stop: *"Parent conclusions file not found: [path]. Cannot append addendum section to a non-existent file. Conclude the parent POC first."*
+- **Backward compatibility:** If the parent file has a `## Addendums` section: append the block after it. If not: add the `## Addendums` placeholder at end of file first, then append the block.
+
+Append block structure:
+```markdown
+---
+
+## Addendum NN — [slug]
+
+**Source:** `findings/phase-NN-[parent]-addendum-NN-[slug]-results.md`
+**Synthesis date:** YYYY-MM-DD
+**Addendum alignment verified:** YYYY-MM-DD
+
+> H-numbers continue from parent (H8+). Parent hypotheses H1–H7 remain valid unless
+> listed in Decisions Revised below.
+
+### H8 — [Hypothesis Title]
+**Status:** CONFIRMED / REFUTED / PARTIAL REFUTATION
+**Finding:** ...
+**Decision:** ...
+**Wiki update:** ...
+
+### Evidence Summary — Addendum NN
+> [Key evidence per hypothesis]
+
+### Decisions Revised — Addendum NN
+| Decision | Parent verdict | Revised verdict | Reason |
+
+### Deferred Observations — Addendum NN
+- ...
+```
+
+- Required content: same as poc PLUS:
   - **Tracker Delta** — compare tracker state TODAY vs. at the parent's conclusion date. List every decision that opened, closed, or was revised between the parent's synthesis date and now. This is the primary safeguard against context drift when an addendum extends old work through multiple rounds of POCs.
   - Decisions Revised / Decisions Unchanged (replaces Decisions Closed from poc format)
+
+**`alignment_verified` handling:** Section-level `**Addendum alignment verified:**` date is set when `/conclusions-review` or `/activity-conclude addendum` verifies the appended section. The file-level `**Alignment verified:**` date (top of file) reflects the last full top-to-bottom review. Both can exist independently.
+
+**CONTENT_INDEX change:** Parent conclusions entry gains `**Addendums incorporated:** 01, 02, …` field. No separate addendum-conclusions CONTENT_INDEX entries.
 
 **`research`** — fill `research.conclusions-template.md`:
 - File: `conclusions/phase-NN-research-[topic]-conclusions.md`
@@ -81,25 +117,13 @@ If no → proceed to Step 5."
 
 This is advisory, not blocking. Human decides.
 
-**Step 5 — Parent backlink** (`addendum` type only)
-Open the parent conclusions file (`conclusions/phase-NN-poc-NN-[parent-name]-conclusions.md`):
-- If it has a `## Addendums` section: append a new line with a link and one-sentence verdict summary
-- If not: add the `## Addendums` section at the end of the file, then add the entry
-
-Format:
-```
-## Addendums
-
-- [Addendum NN — Title](./phase-NN-poc-NN-addendum-NN-[slug]-conclusions.md) — [one-sentence verdict]
-```
-
-**Step 6 — Register, verify, log**
+**Step 5 — Register, verify, log**
 
 > ✅ Verification gate: Before setting Alignment Verified, confirm:
-> - The conclusions file (poc/addendum/research) OR results stub (session) appears in `CONTENT_INDEX.md`
+> - The conclusions file (poc/research) OR parent §Addendum NN section (addendum) OR results stub (session) appears in `CONTENT_INDEX.md`
 > - All linked plan + results files also appear in `CONTENT_INDEX.md`
 > - The POC roadmap row is updated to ✅ Complete (poc and addendum types)
-> - Parent conclusions `## Addendums` section is updated (addendum type only)
+> - Parent conclusions file has the appended `## Addendum NN` section (addendum type only)
 > Do not set Alignment Verified or close this step until all items are confirmed.
 
 - Update `CONTENT_INDEX.md` — conclusions file entry (update status from In Progress → Complete)
@@ -115,7 +139,7 @@ Format:
 | Type | Primary output | Decisions updated | Alignment Verified |
 |------|---------------|------------------|--------------------|
 | `poc` | `conclusions/.../conclusions.md` | ✅ | ✅ |
-| `addendum` | `conclusions/.../conclusions.md` + parent backlink | ✅ | ✅ |
+| `addendum` | parent POC conclusions file §Addendum NN (appended) | ✅ | ✅ (section-level `**Addendum alignment verified:**`) |
 | `research` | `conclusions/.../conclusions.md` (optional) | ✅ if decisions close | ✅ on conclusions or results |
 | `session` | `findings/.../results.md` (stub) | ✅ | ❌ (set when transcript fills results) |
 

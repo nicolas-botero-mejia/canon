@@ -161,3 +161,8 @@ If nothing was deferred and all hypotheses are fully confirmed, write "None." â€
 | Signal type | Description | Recommended action |
 |-------------|-------------|-------------------|
 | [PARTIAL verdict / proxy-tested / deferred hyp / new question] | [What the signal is and why it matters] | [addendum / new POC / backlog] |
+
+---
+
+## Addendums
+<!-- Populated by /activity-conclude addendum â€” do not edit manually -->

@@ -68,7 +68,7 @@ How we work and how we maintain this knowledge system.
 **What it is:** Technical reference for the self-maintaining knowledge system — Phase vs. Activity skill model, session lifecycle, knowledge layer relationships, hooks, scripts (meta/ vs. project/), templates, file watcher, dependency requirements, and verification.
 
 **Key facts:**
-- **Phase vs. Activity model (§1.1):** Two skill layers — `/phase-new` + `/phase-conclude` manage the engagement container; `/activity-new [type]` + `/activity-conclude [type]` manage work inside phases (poc | addendum | research | session)
+- **Phase vs. Activity model (§1.1):** Two lifecycle levels — Phase: `/phase-new`, `/phase-update`, `/phase-deprecate`, `/phase-reorder`, `/phase-conclude`; Activity: `/activity-new [type]`, `/activity-update`, `/activity-deprecate`, `/activity-migrate`, `/activity-conclude [type]` — four activity types (poc | addendum | research | session)
 - **§1.2 Session lifecycle diagram**: BACKGROUND → SESSION START → PRE-WORK SETUP → WORK PHASE → CLOSE → SESSION STOP → PERIODIC
 - **§1.3 Knowledge layer diagram**: raw/ → findings/ → conclusions/ feeds wiki/project/; standards/ from external knowledge; node_modules/.../lib/wiki/ + .claude/ are the system layer
 - **Scripts split:** `node_modules/@nicolas-botero-mejia/canon/lib/scripts/` (8 governance scripts) | `scripts/project/` (empty extension point — projects add deliverable scripts)
@@ -100,7 +100,7 @@ How we work and how we maintain this knowledge system.
 | [poc.conclusions-template.md(node_modules/.../lib/templates/poc.conclusions-template.md) | `conclusions/` | `phase-NN-poc-NN-[name]-conclusions.md` — includes **Addendum Candidates** section for forward signals |
 | [addendum.plan-template.md(node_modules/.../lib/templates/addendum.plan-template.md) | `plans/` | `phase-NN-poc-NN-addendum-NN-[slug]-plan.md` |
 | [addendum.results-template.md(node_modules/.../lib/templates/addendum.results-template.md) | `findings/` | `phase-NN-poc-NN-addendum-NN-[slug]-results.md` |
-| [addendum.conclusions-template.md(node_modules/.../lib/templates/addendum.conclusions-template.md) | `conclusions/` | `phase-NN-poc-NN-addendum-NN-[slug]-conclusions.md` |
+| [addendum.conclusions-section-template.md(node_modules/.../lib/templates/addendum.conclusions-section-template.md) | `conclusions/phase-NN-poc-NN-[parent-name]-conclusions.md §Addendum NN` | appended section (no standalone file) |
 | [signal.results-template.md(node_modules/.../lib/templates/signal.results-template.md) | `findings/` | `phase-NN-signal-NN-[slug]-results.md` |
 | [research.plan-template.md(node_modules/.../lib/templates/research.plan-template.md) | `plans/` | `phase-NN-research-[topic]-plan.md` |
 | [research.results-template.md(node_modules/.../lib/templates/research.results-template.md) | `findings/` | `phase-NN-research-[topic]-results.md` |
@@ -175,7 +175,7 @@ Concludes a phase: decisions audit → alignment verification sweep → knowledg
 Unified skill for starting any activity. Type argument: `poc | addendum | research | session`. 6 canonical steps: pre-flight guard → PM confirms trigger → prior context check → load context brief → create plan → create stubs → register + verify + log. Creates 2–3 files depending on type. Includes CONTENT_INDEX verification gate in Step 6.
 
 ### [.claude/skills/activity-conclude/SKILL.md](./.claude/skills/activity-conclude/SKILL.md)
-Unified skill for concluding any activity. Type argument: `poc | addendum | research | session`. 6 canonical steps: load context → synthesize conclusions (type-specific: H-blocks for poc/addendum; verdict for research; results stub for session) → close decisions → flag deferred observations + retired tools → parent backlink (addendum only) → register + verify + log + set Alignment Verified. Addendum type includes Tracker Delta check.
+Unified skill for concluding any activity. Type argument: `poc | addendum | research | session`. 5 canonical steps: load context → synthesize conclusions (type-specific: H-blocks for poc; append `## Addendum NN` to parent (addendum only); verdict for research; results stub for session) → close decisions → flag deferred observations + retired tools → register + verify + log + set Alignment Verified. Addendum type includes Tracker Delta check and appends section to parent POC conclusions file.
 
 ### System skills
 
@@ -186,7 +186,7 @@ Wiki lifecycle management. Sub-commands: `add`, `update`, `deprecate`, `move`. A
 Reviews a completed conclusions file across 4 passes: (1) patch list for existing wiki content that is wrong/stale, (2) stub fills — wiki stubs the conclusions data can fill, (3) new coverage — findings with no wiki home, (4) forward signals — Addendum Candidates section processed into addendum/POC/backlog recommendations. Includes CONTENT_INDEX pre-check at Step 1. Sets **Alignment verified:** date. Required by Rule 12 before downstream work.
 
 ### [.claude/skills/knowledge-audit/SKILL.md](./.claude/skills/knowledge-audit/SKILL.md)
-Full 14-dimension knowledge base audit. Dimensions 1–12 cover contradictions (cross-file + intra-file), meta-doc currency, stale content, orphans, missing coverage, structural inconsistency, finding type compliance, tmp/ lifecycle, template coverage, parent-backlink integrity, alignment verification, and partial-update scanning. Dimension 13: concept outgrowth / file splitting detection. Dimension 14: content-type boundary audit. Output goes to tmp/ as a working file. No auto-execution on any finding.
+Full 15-dimension knowledge base audit. Dimensions 1–12 cover contradictions (cross-file + intra-file), meta-doc currency, stale content, orphans, missing coverage, structural inconsistency, finding type compliance, tmp/ lifecycle, template coverage, addendum-section integrity (Dim 10 — checks appended `## Addendum NN` sections in parent files), alignment verification (Dim 11 — file-level + per-addendum-section), and partial-update scanning. Dimension 13: concept outgrowth / file splitting detection. Dimension 14: content-type boundary audit. Dimension 15: finding-sourced wiki entries pending confirmation. Output goes to tmp/ as a working file. No auto-execution on any finding.
 
 ---
 

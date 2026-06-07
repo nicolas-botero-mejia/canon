@@ -219,7 +219,7 @@ Not indexed by check-index.sh. Not linked from other project files.
 
 **Separation of concerns within `.claude/`:**
 - `agents/` → specialized subagent definitions (Librarian, PM, Writer)
-- `skills/` → invocable skills (`/skill-name`); each skill lives in its own `[name]/SKILL.md` subdirectory; **Phase:** `/phase-new`, `/phase-conclude` | **Activity:** `/activity-new [type]`, `/activity-conclude [type]` | **System:** `/wiki-manage` (add/update/deprecate/move), `/knowledge-audit`, `/conclusions-review`
+- `skills/` → invocable skills (`/skill-name`); each skill lives in its own `[name]/SKILL.md` subdirectory; **Phase:** `/phase-new`, `/phase-update`, `/phase-deprecate`, `/phase-reorder`, `/phase-conclude` | **Activity:** `/activity-new [type]`, `/activity-update`, `/activity-deprecate`, `/activity-migrate`, `/activity-conclude [type]` | **System:** `/wiki-manage` (add/update/deprecate/move), `/knowledge-audit`, `/conclusions-review`, `/signal`
 - `rules/` → behavioral rules that load automatically each session; currently one file (`behavioral.md`)
 - `settings.json` → hook configuration — delegates to the tool integration layer (see `system-tool-integration.md`)
 - `CLAUDE.md` → confirmed project facts, folder map, navigation guide, session table only — no rules
@@ -378,7 +378,7 @@ After final session of phase:
 Addendums extend a closed POC or research finding with new hypotheses. They have a full plan → results → conclusions lifecycle, but three rules that differ from POC lifecycle:
 
 1. **Parent reference required in plan header.** Every addendum plan must include a `**Parent conclusions:**` link pointing to the parent conclusions file. Do not start an addendum without loading the parent context first (Rule 8).
-2. **Conclusions trigger a parent backlink.** When addendum conclusions are written (via `/activity-conclude addendum`), the parent conclusions file is updated with an `## Addendums` section linking back to the addendum conclusions. One entry per addendum, in order. This is not optional.
+2. **Conclusions appended to parent file.** When addendum conclusions are written (via `/activity-conclude addendum`), the parent POC conclusions file gains a `## Addendum NN` section appended at the bottom. No standalone addendum conclusions file is created. H-numbers continue sequentially from the parent (e.g., if parent ended at H7, addendum starts at H8). See ADR-010 in `system-decisions.md`.
 3. **Backlog entry updated.** When an addendum is created from a `plans/discovery-backlog.md` entry, update that entry's Status from `Plan created` to `In Progress`, and again to `Complete` when conclusions are written.
 4. **Downstream Dependencies declared at plan creation.** Every addendum plan must populate the `§Downstream Dependencies` table (from the template) at creation time. When addendum conclusions are written, fill the `§Downstream Impact` table in the conclusions file — review each registered downstream item against the verdict. "None identified." is valid; leaving either table empty (beyond the template placeholder) is a completeness error.
 5. **Conclusions alignment verified before downstream work.** Before running `/activity-new [type]` for work that depends on prior addendum conclusions, check that those conclusions carry an `**Alignment verified:**` date (Rule 12). If absent, run `/conclusions-review` first. Plans must carry the escalation protocol note in their prerequisites: if a required tool is unavailable, stop and ask the user — do not attempt workarounds (Rule 13).
@@ -388,8 +388,7 @@ Before addendum:  plans/discovery-backlog.md entry exists (from signal or extern
                   plans/phase-NN-[parent-identifier]-addendum-NN-[slug]-plan.md  ← load parent context first
                   findings/phase-NN-[parent-identifier]-addendum-NN-[slug]-results.md  ← stub, AI fills during execution
 
-After execution:  conclusions/phase-NN-[parent-identifier]-addendum-NN-[slug]-conclusions.md
-                  conclusions/phase-NN-[parent-identifier]-conclusions.md  ← ## Addendums section updated
+After execution:  conclusions/phase-NN-[parent-identifier]-conclusions.md  ← §Addendum NN section appended
                   plans/discovery-backlog.md  ← entry marked Complete
 ```
 
@@ -475,7 +474,7 @@ Internal sessions (no client attendance) omit the transcript line. Sessions that
 
 **POC results** (`-results.md`, process: `poc-NN`) — AI-structured. Filled during POC execution using `poc.results-template.md`. Captures steps, raw output, interpretation, hypothesis resolution. Evidence base for the conclusions file. Citable.
 
-**Addendum results** (`-results.md`, process: `[parent-identifier]-addendum-NN`) — AI-structured. Filled during addendum execution using `addendum.results-template.md`. Covers new hypotheses only — does not re-examine parent hypotheses. Triggered by an external discovery that extends any closed parent document (POC, research, or session). Numbered per parent and sequential. Requires a corresponding addendum conclusions file. When addendum conclusions are written, update the parent conclusions file with an `## Addendums` backlink section (one line per addendum: link + one-sentence verdict summary).
+**Addendum results** (`-results.md`, process: `[parent-identifier]-addendum-NN`) — AI-structured. Filled during addendum execution using `addendum.results-template.md`. Covers new hypotheses only — does not re-examine parent hypotheses. Triggered by an external discovery that extends any closed parent document (POC, research, or session). Numbered per parent and sequential. Synthesized into the parent POC conclusions file as an appended `## Addendum NN` section (no standalone conclusions file).
 
 **Signal results** (`-results.md`, process: `signal-NN`) — AI-structured. Assessment artifact for external discoveries with no parent document. Uses `signal.results-template.md`. Determines whether the discovery warrants an addendum, a new POC/research plan, backlog, or discard. No conclusions file. Add entry to `plans/discovery-backlog.md`. Signal numbering is global per phase (not per parent).
 
@@ -494,7 +493,7 @@ Internal sessions (no client attendance) omit the transcript line. Sessions that
 
 **`**Alignment verified:**` field lifecycle:**
 Every conclusions file (POC, addendum, session, research) carries this field in its metadata block. It is empty when the file is created. Two events set it:
-1. `/activity-conclude [type]` sets it automatically at the end of Step 6 — because it performs alignment work inline (tracker, roadmap, backlink, wiki updates). Not set for the `session` type (no conclusions file yet).
+1. `/activity-conclude [type]` sets it automatically at the end of Step 5 — because it performs alignment work inline (tracker, roadmap, addendum append, wiki updates). Not set for the `session` type (no conclusions file yet). For addendum type: sets `**Addendum alignment verified:**` in the appended section, not the file-level `**Alignment verified:**` field.
 2. `/conclusions-review` sets it after running all 4 passes (patch list, stub fills, new coverage, forward signals) — even when issues are found, the date records "reviewed on this date."
 Rule 12 (`.claude/rules/behavioral.md`) checks this field before any downstream work begins. `/knowledge-audit` Dimension 11 flags any Complete conclusions file where the field is still empty. The `check-conclusions-alignment.sh` Stop hook also warns at session close.
 
@@ -521,7 +520,7 @@ Working files  → tmp/               (audits, trackers — lifecycle-limited)
 [1–3 lines: what happened and why]
 ```
 
-**Action types:** `create` | `update` | `restructure` | `archive` | `delete` | `ingest` | `move`
+**Action types:** `create` | `update` | `restructure` | `archive` | `delete` | `ingest` | `move` | `deprecate` | `migrate` | `reorder`
 
 > `move` — content relocated from one file to another via `/wiki-manage move`. Format: `move | source/file.md §N → destination/file.md §M | reason`
 
@@ -581,7 +580,13 @@ Every wiki file should pass: could someone use it in 6 months, without having be
 | POC conclusions written | ✅ maybe | ✅ if decisions | ❌ | ❌ | ✅ decisions | ❌ | ✅ | ❌ | ✅ |
 | Addendum plan started | ❌ | ❌ | ❌ | ❌ | ✅ new plan + backlog update | ✅ results stub | ❌ | ❌ | ✅ |
 | Addendum results complete | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ results | ❌ | ❌ | ✅ |
-| Addendum conclusions written | ✅ maybe | ✅ if decisions revised | ❌ | ❌ | ✅ decisions if revised | ❌ | ✅ + parent backlink | ❌ | ✅ |
+| Addendum conclusions written | ✅ maybe | ✅ if decisions revised | ❌ | ❌ | ✅ decisions if revised | ❌ | ✅ appended to parent §Addendum NN | ❌ | ✅ |
+| Activity updated | ❌ | ❌ | ❌ | ❌ | ✅ plan revised | ❌ | ❌ | ❌ | ✅ |
+| Activity deprecated | ❌ | ❌ | ❌ | ❌ | ✅ plan + roadmap status | ❌ | ❌ | ❌ | ✅ |
+| Activity migrated | ❌ | ❌ | ❌ | ❌ | ✅ source + target roadmaps | ❌ | ❌ | ❌ | ✅ |
+| Phase updated | ✅ maybe | ❌ | ❌ | ❌ | ✅ index or roadmap | ❌ | ❌ | ❌ | ✅ |
+| Phase deprecated | ✅ maybe | ❌ | ❌ | ❌ | ✅ archived | ❌ | ❌ | ❌ | ✅ |
+| Phase reordered | ✅ maybe | ❌ | ❌ | ❌ | ✅ all phase files renamed | ✅ renamed | ✅ renamed | ❌ | ✅ (new entry only — history unchanged) |
 | Signal assessed (external discovery, no parent) | ❌ | ❌ | ❌ | ❌ | ✅ backlog entry | ✅ signal results | ❌ | ❌ | ✅ |
 | Client relationship event or org change (new stakeholder, scope revision, decision-making shift) | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | Research or session produces synthesized user insights | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
@@ -631,7 +636,7 @@ Don't manually write conclusions. The skill enforces the structure, the evidence
 
 A **signal** has no parent document. Use `signal.results-template.md` → `findings/`. Signals route to `plans/discovery-backlog.md` and don't have their own conclusions. If a signal grows into a testable hypothesis, it becomes a POC or research plan.
 
-An **addendum** has a parent conclusions file. Use the addendum plan template → activate with `/activity-new addendum`. The addendum's conclusions file carries a backlink to the parent and a `§Downstream Impact` section.
+An **addendum** has a parent conclusions file. Use the addendum plan template → activate with `/activity-new addendum`. The addendum's conclusions are appended as a `## Addendum NN` section directly into the parent POC conclusions file (no standalone addendum conclusions file). H-numbers continue sequentially from the parent. See ADR-010 in `system-decisions.md`.
 
 ### When conclusions close a wiki decision
 

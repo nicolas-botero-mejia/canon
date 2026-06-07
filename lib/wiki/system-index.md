@@ -44,11 +44,31 @@ Every engagement activity follows a predictable file lifecycle. Use this table t
 | **session** | `session.plan` → `plans/` | `session.field-notes` → `findings/` (human) | `session.results` → `findings/` (AI) | `session.conclusions` → `conclusions/` | `/activity-conclude session` |
 | **poc** | `poc.plan` → `plans/` | `poc.notes` → `findings/` | `poc.results` → `findings/` | `poc.conclusions` → `conclusions/` | `/activity-conclude poc` |
 | **research** | `research.plan` → `plans/` | `research.notes` → `findings/` | `research.results` → `findings/` | `research.conclusions` → `conclusions/` | `/activity-conclude research` |
-| **addendum** | `addendum.plan` → `plans/` | `addendum.notes` → `findings/` | `addendum.results` → `findings/` | `addendum.conclusions` → `conclusions/` | `/activity-conclude addendum` |
+| **addendum** | `addendum.plan` → `plans/` | `addendum.notes` → `findings/` | `addendum.results` → `findings/` | appended as `## Addendum NN` to parent POC conclusions file | `/activity-conclude addendum` |
 | **signal** | — | — | `signal.results` → `findings/` | — | (no conclude; routes to next activity) |
 | **handoff** | — | — | `handoff.results` → `findings/` | — | (no conclude; contextual bridge) |
 
+*Addendum conclusions are not standalone files — they are appended sections inside the parent POC conclusions file. See ADR-010 in `system-decisions.md`.*
+
+For update / deprecate / migrate operations on activities, see Phase and Activity Operations below.
+
 Full template details → [`template-index.md`](../templates/template-index.md)
+
+---
+
+## Phase and Activity Operations
+
+Beyond create and conclude, the framework provides governed operations for changing in-flight phases and activities.
+
+| Operation | Phase skill | Activity skill | Scope |
+|-----------|------------|----------------|-------|
+| **Update** | `/phase-update` | `/activity-update` | Planned or In Progress only |
+| **Deprecate** | `/phase-deprecate` | `/activity-deprecate` | Planned or In Progress only (not concluded) |
+| **Migrate** | — | `/activity-migrate` | Planned activities only (no results content) |
+| **Reorder** | `/phase-reorder` | — | Swaps two phase numbers (neither concluded) |
+| **Conclude** | `/phase-conclude` | `/activity-conclude [type]` | All concluded states |
+
+All operations are fail-safe gated. See `system-operations.md` for patterns.
 
 ---
 

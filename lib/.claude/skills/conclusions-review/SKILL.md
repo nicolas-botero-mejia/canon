@@ -122,13 +122,18 @@ Output: structured recommendation per signal (type, description, recommended act
 If the section is absent → write "Pass 4 — No Addendum Candidates section found. If this POC has PARTIAL verdicts or deferred hypotheses, consider adding this section to the conclusions file."
 
 **Step 10 — Set Alignment Verified field**
-After all passes complete (regardless of whether issues were found), write the current date to the `**Alignment verified:**` field in the target conclusions file:
+After all passes complete (regardless of whether issues were found):
 
+**For full conclusions files (poc, research, session):** Write the current date to the `**Alignment verified:**` field in the target conclusions file:
 ```
 **Alignment verified:** YYYY-MM-DD
 ```
 
-This is the only file write this skill performs. It marks the file as reviewed so Rule 12 does not re-trigger. If the review found HIGH issues, the date is still set — it means "reviewed on this date, issues exist and are tracked in the patch list above," not "all clear."
+**For addendum targets (`--addendum NN` flag or when target is identified as an addendum section):** Set `**Addendum alignment verified:** YYYY-MM-DD` in the `## Addendum NN` section of the parent file, NOT the file-level `**Alignment verified:**` field. The file-level date is only updated when the user explicitly requests a full top-to-bottom review of the parent file. When the target is an addendum, also cross-check the appended section against the parent's decisions and H-numbers (auto-applied).
+
+Example addendum invocation: `conclusions-review phase-01-poc-01-conclusions.md --addendum 02`
+
+This is the only file write this skill performs. It marks the file or section as reviewed so Rule 12 does not re-trigger. If the review found HIGH issues, the date is still set — it means "reviewed on this date, issues exist and are tracked in the patch list above," not "all clear."
 
 ## Output
 - Pass 1: Patch list (corrections to existing content)

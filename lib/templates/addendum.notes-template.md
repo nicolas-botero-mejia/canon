@@ -43,4 +43,4 @@ Preliminary mapping — verify in results:
 
 ---
 
-*Tier: tmp scratch → **this file (findings/addendum-NN-[topic]-notes.md)** → findings/addendum-NN-[topic]-results.md → conclusions/addendum-NN-[topic]-conclusions.md*
+*Tier: tmp scratch → **this file (findings/addendum-NN-[topic]-notes.md)** → findings/addendum-NN-[topic]-results.md → `## Addendum NN` section appended to parent POC conclusions file*
