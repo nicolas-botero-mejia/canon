@@ -44,7 +44,7 @@ How we work and how we maintain this knowledge system.
 - **Wiki subdirectories:** standards/ (industry) | project/ (client decisions) | client/ (org knowledge) | user/ (user research) | meta/ (methodology)
 - **Update triggers:** Confirmed facts → CLAUDE.md; research → wiki; session outcomes → findings; synthesized activity conclusions → conclusions/; client-facing artifacts → deliverables/
 - **6-month test:** Could someone use this file in 6 months, without being in the project, to answer a real question?
-- **Active skills:** `/phase-new` + `/phase-conclude` (phase layer) | `/activity-new [type]` + `/activity-conclude [type]` (activity layer) | `/wiki-manage`, `/knowledge-audit`, `/conclusions-review` (system)
+- **Active skills:** Phase: `/phase-new`, `/phase-update`, `/phase-deprecate`, `/phase-reorder`, `/phase-conclude` | Activity: `/activity-new [type]`, `/activity-update`, `/activity-deprecate`, `/activity-migrate`, `/activity-conclude [type]` | System: `/wiki-manage`, `/knowledge-audit`, `/conclusions-review`, `/signal`
 
 **Questions it answers:**
 - What belongs in CLAUDE.md vs. wiki vs. plans vs. findings vs. output?
@@ -76,7 +76,7 @@ How we work and how we maintain this knowledge system.
 - PostToolUse hook covers wiki/ and plans/ (stale-ref block) AND findings/ and conclusions/ (CONTENT_INDEX advisory warning)
 - Stop hook chain: `node_modules/@nicolas-botero-mejia/canon/lib/scripts/check-index.sh` → `check-links.sh` → `check-stale-refs.sh` → `check-conclusions-alignment.sh`
 - `watch-project.sh` requires `fswatch` (`brew install fswatch`); `check-links.sh` requires python3 (pre-installed macOS)
-- `/knowledge-audit` runs 14 dimensions; Librarian runs 8 consistency dimensions
+- `/knowledge-audit` runs 15 dimensions; Librarian runs 8 consistency dimensions
 - **§7 Verification:** two levels required for governance changes — content check (text correct) + functional test (behavior correct). See Rule 15.
 
 **Questions it answers:**
