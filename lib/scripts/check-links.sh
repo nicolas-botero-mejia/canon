@@ -2,7 +2,7 @@
 # Checks that all relative markdown links in project files resolve to existing files.
 # Exits 2 (blocks Claude session close) if broken links are found.
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+PROJECT_ROOT="$(pwd)"
 DIRS=("wiki" "findings" "plans" "CONTENT_INDEX.md" ".claude")
 
 # Dependency check — python3 required for link extraction

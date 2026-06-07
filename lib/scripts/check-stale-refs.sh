@@ -17,7 +17,7 @@
 #
 # Maintain PATTERN when new tools/approaches are retired.
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+PROJECT_ROOT="$(pwd)"
 
 # --- Deprecated patterns (extend when tools/approaches are retired) ---
 # Pipe-separated regex of retired tool/approach names that must not appear in live

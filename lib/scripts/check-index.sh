@@ -2,9 +2,9 @@
 # Checks that every .md file in monitored project dirs is listed in CONTENT_INDEX.md.
 # Exits 2 (blocks Claude session close) if any files are missing.
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+PROJECT_ROOT="$(pwd)"
 INDEX="$PROJECT_ROOT/CONTENT_INDEX.md"
-DIRS=("wiki" "findings" "plans" "output")
+DIRS=("wiki" "findings" "plans" "conclusions")
 MISSING=()
 
 if [[ ! -f "$INDEX" ]]; then

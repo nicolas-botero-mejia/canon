@@ -17,15 +17,23 @@ case "$EVENT" in
     bash "${META}/post-write-check.sh"
     ;;
   Stop)
-    # Redirect stdout → stderr so pass/warn messages reach the terminal but are NOT
-    # fed back to the model as a new prompt (Claude Code feeds Stop hook stdout to the
-    # model, which would re-trigger the hook on every response — infinite loop).
-    # Failures use exit 2, which Claude Code surfaces regardless of this redirect.
-    { bash "${META}/check-index.sh" \
-    && bash "${META}/check-links.sh" \
-    && bash "${META}/check-stale-refs.sh" \
-    && bash "${META}/check-conclusions-alignment.sh" \
-    && bash "${META}/check-contracts.sh"; } >&2
+    # Capture all output (stdout + stderr). Only emit on failure.
+    # Claude Code feeds Stop hook stdout back to the model as a new prompt — any output
+    # on a clean pass triggers another turn → re-fires Stop → infinite loop.
+    # On failure (exit 2): emit captured output so Claude sees what to fix.
+    # On clean pass: total silence — session closes without prompting the model.
+    STOP_OUT=$(
+      bash "${META}/check-index.sh" \
+      && bash "${META}/check-links.sh" \
+      && bash "${META}/check-stale-refs.sh" \
+      && bash "${META}/check-conclusions-alignment.sh" \
+      && bash "${META}/check-contracts.sh" 2>&1
+    )
+    STOP_EXIT=$?
+    if [[ $STOP_EXIT -ne 0 ]]; then
+      echo "$STOP_OUT"
+      exit $STOP_EXIT
+    fi
     ;;
   *)
     echo "hook.sh: unknown event '${EVENT}'" >&2
