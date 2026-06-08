@@ -22,20 +22,23 @@ agree on the format. Where they diverge, per-tool format adapters handle the dif
 
 | Standard | What it is | Confirmed support |
 |---|---|---|
-| `AGENTS.md` | Convergent base-context file | Claude Code (as `CLAUDE.md`), Cursor, Copilot (reads nearest), Codex Cloud, Gemini CLI |
-| `SKILL.md` | Portable skill definition — slash-command invocable | Claude Code ✅, Cursor v2.4+ (Jan 2026) ✅. Others: **unconfirmed** — each has a "skills" concept but format portability not verified from docs |
+| `AGENTS.md` | Convergent base-context file | Claude Code (as `CLAUDE.md`), Cursor, Copilot (reads nearest `AGENTS.md`), Codex Cloud |
+| `SKILL.md` | Portable skill definition — YAML frontmatter + Markdown body | Claude Code ✅, Cursor v2.4+ (Jan 2026) ✅, **Copilot cloud agent ✅** (reads `.claude/skills/` natively). Codex: unconfirmed. |
 | `MCP` | Model Context Protocol | Claude Code ✅ native, Cursor ✅, Copilot ✅ native (2025), Codex ✅ |
 
-> **SKILL.md portability caveat (survey 2026-06-08):** The previous assumption that SKILL.md
-> is universally portable across Copilot/Windsurf/Codex was **not confirmed** from official
-> documentation. Copilot has its own "agent skills" system (folders of instructions + scripts
-> + resources); Codex has skills; neither explicitly documents SKILL.md compatibility. The
-> `write-once, place-many` model applies definitively for Claude Code + Cursor today.
-> Re-verify when adding other tools.
+**SKILL.md confirmed for Copilot cloud agent (2026-06-08 survey):** Copilot's official docs
+confirm `SKILL.md` as the required filename, same YAML frontmatter + Markdown body format.
+Discovery paths include `.github/skills/`, `.claude/skills/`, and `.agents/skills/` — meaning
+the framework's existing `.claude/skills/` directory is **already consumed by Copilot cloud
+agent natively, with no vendoring step needed.**
 
-**Write-once, place-many (confirmed for Claude Code + Cursor):** canonical artifacts are
-authored once and placed into each enabled tool's directory by `canon sync`. Format adapters
-handle per-tool structural differences (e.g. `.mdc` frontmatter for Cursor rules).
+**Invocation difference:** Claude Code invokes skills via `/skill-name` slash commands;
+Copilot auto-applies skills based on task context and the skill's `description` field.
+This is a behavioral difference, not a format difference — the same SKILL.md files work in both.
+
+**Write-once, place-many (confirmed for Claude Code, Cursor, Copilot cloud agent):** canonical
+artifacts are authored once and placed/discovered by each tool. Format adapters handle per-tool
+structural differences (e.g. `.mdc` frontmatter for Cursor rules).
 
 ---
 
@@ -46,7 +49,7 @@ Each cell: `✅ supported` / `⚠️ partial/unconfirmed` / `❌ not supported` 
 | Feature | Claude Code | Cursor | GitHub Copilot | Windsurf | Codex Cloud |
 |---|---|---|---|---|---|
 | **Base context file** | `CLAUDE.md` (native) | `AGENTS.md` or `.cursorrules` | `AGENTS.md` (nearest) + `.github/copilot-instructions.md` | ⚠️ status unclear — docs now redirect to Devin Desktop | `AGENTS.md` ✅ |
-| **Skills** | ✅ `.claude/skills/` SKILL.md | ✅ `.cursor/skills/` SKILL.md — v2.4, Jan 2026 | ⚠️ own format — "agent skills" (folders + instructions/scripts/resources); SKILL.md portability unconfirmed | ⚠️ unknown — product rebranded | ⚠️ skills confirmed; format unconfirmed |
+| **Skills** | ✅ `.claude/skills/[name]/SKILL.md` — slash-command invoked | ✅ `.cursor/skills/[name]/SKILL.md` — v2.4, Jan 2026; slash-command invoked | ✅ `.github/skills/`, `.claude/skills/`, `.agents/skills/` — same SKILL.md format; **auto-applied** by context (not slash command) | ⚠️ unknown — product rebranded | ⚠️ confirmed concept; format/path unconfirmed |
 | **Rules / behavioral** | ✅ `.claude/rules/*.md` (always-apply) | ✅ `.cursor/rules/*.mdc` (`alwaysApply: true`) | ✅ `.github/copilot-instructions.md` (repo-wide); `.github/instructions/*.instructions.md` (path-scoped) | ⚠️ unknown | ⚠️ via `AGENTS.md` embed |
 | **Subagents** | ✅ `.claude/agents/` | ✅ `.cursor/agents/` — v0.45+ | ✅ Custom agents (Oct 28, 2025) — via `.github/` config | ⚠️ unknown | ⚠️ partial |
 | **Lifecycle hooks** | ✅ `settings.json` — SessionStart, PreToolUse (blocking), PostToolUse, Stop (advisory) | ✅ `hooks.json` — PostToolUse, AfterAgent (v0.47+) | ✅ `.github/hooks/NAME.json` — sessionStart, preToolUse (**fail-closed**), postToolUse, sessionEnd, userPromptSubmitted, errorOccurred, agentStop. CLI + cloud agent. | ⚠️ unknown | ✅ hooks confirmed |
@@ -66,7 +69,7 @@ Each cell: `✅ supported` / `⚠️ partial/unconfirmed` / `❌ not supported` 
 | Copilot | Lifecycle hooks | ❌ not supported | ✅ 6 events, preToolUse fail-closed |
 | Copilot | MCP | ⚠️ preview | ✅ native (2025) |
 | Copilot | Subagents | ⚠️ Extensions only | ✅ Custom agents (Oct 2025) |
-| Copilot | Skills | ✅ `.github/skills/` SKILL.md | ⚠️ own format, SKILL.md portability unconfirmed |
+| Copilot | Skills | ⚠️ own format assumed | ✅ SKILL.md confirmed; reads `.claude/skills/` natively — no vendoring needed |
 | Codex | Hooks | ❌ | ✅ confirmed |
 | Codex | MCP | ❌ | ✅ confirmed |
 | Windsurf | All features | partially filled | ⚠️ unknown — product rebranded, docs moved |
@@ -247,10 +250,29 @@ Copilot CLI and Copilot cloud agent both support hooks. Configuration: `.github/
 ```
 
 ### Agent skills
-Copilot has an "agent skills" system — folders containing instructions, scripts, and resources
-that the agent loads when relevant. **File format: Copilot's own proprietary folder structure.**
-SKILL.md portability (same format as Claude Code + Cursor) has not been confirmed from official
-documentation. Do not assume SKILL.md places correctly into Copilot without verification.
+
+**Confirmed: same SKILL.md format as Claude Code and Cursor.** From official docs:
+"Skill files must be named `SKILL.md`." YAML frontmatter + Markdown body.
+
+Required frontmatter fields:
+- `name` — unique identifier, lowercase with hyphens
+- `description` — what the skill does and when to use it (used for auto-discovery)
+
+Optional: `license`, `allowed-tools` (pre-approves tools like `shell`/`bash`).
+
+Discovery paths (Copilot checks all of these):
+- `.github/skills/[skill-name]/SKILL.md` — Copilot primary
+- `.claude/skills/[skill-name]/SKILL.md` — also discovered natively
+- `.agents/skills/[skill-name]/SKILL.md` — also discovered natively
+- `~/.copilot/skills/` and `~/.agents/skills/` — user-level
+
+**Key implication:** the framework's `.claude/skills/` directory is **already consumed by
+Copilot cloud agent without any vendoring**. `canon sync` does not need to place skills
+into a separate Copilot directory — they are discovered directly.
+
+**Invocation model difference:** Copilot auto-applies skills based on task context and the
+skill's `description` field. Claude Code requires explicit `/skill-name` invocation. Same
+SKILL.md file, different trigger mechanism.
 
 ### Custom agents
 Configurable specialized agents announced Oct 28, 2025. Define via `.github/` config with

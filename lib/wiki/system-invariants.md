@@ -154,7 +154,7 @@ which asserts agreement across locations automatically.
 | **Must agree** | `bin/commands/init.mjs` (writes CLAUDE.md); `manifest.json` wiring section; `system-tool-integration.md §base file`; `docs/architecture.md §4` |
 | **Dup kind** | intentional — per-tool filename differences handled by format adapters |
 | **Guard** | `invariants.test.mjs` R-010; init output check |
-| **Note** | SKILL.md portability across non-Claude/non-Cursor tools is **unconfirmed** as of 2026-06-08 survey. Claude Code + Cursor confirmed. Others have skills systems with potentially different formats. See `system-tool-integration.md §SKILL.md portability caveat`. |
+| **Note** | SKILL.md portability confirmed for Claude Code, Cursor v2.4+, and Copilot cloud agent. Copilot also reads `.claude/skills/` natively — no extra vendoring step needed for it. Codex: format unconfirmed. See `system-tool-integration.md §Standards Alignment Model`. |
 
 ---
 
