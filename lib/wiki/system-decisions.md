@@ -1,11 +1,41 @@
 # System Decisions
 
-**Last updated:** 2026-06-06
+**Last updated:** 2026-06-08
 
 Architectural and methodology decisions for the Canon framework.
 Newest first. One entry per decision.
 
 > For design questions — check here before opening an issue or redesigning something. These decisions have already been through the tradeoff analysis.
+
+---
+
+## ADR-012 — No frontmatter on `wiki/client/` and `wiki/user/` files
+
+**Date:** 2026-06-08
+**Status:** Accepted
+
+**Context:** The framework exposes `wiki/client/` and `wiki/user/` files as full-content MCP resources. The MCP read-only layer (ADR-011 region) surfaces these files to the model as-is, without filtering or field extraction.
+
+**Decision:** Files in `wiki/client/` and `wiki/user/` do not carry YAML frontmatter.
+
+**Rationale:** Frontmatter is added to files where cross-file metadata queries need it — filtering by status, type, or date across many files. `wiki/client/` and `wiki/user/` are read as whole documents by the MCP layer; adding frontmatter would add noise without enabling any query that isn't already served by reading the file. Adding frontmatter for consistency would silently break the intended read model (full content, no header parsing). Rejected alternative: uniform frontmatter across all wiki files — consistent in appearance but adds no value for these two layers and couples them to a query model they don't use.
+
+**Consequences:** Any wiki file placed in `wiki/client/` or `wiki/user/` must not include YAML frontmatter. If frontmatter-based queries are needed for these layers in the future, a separate design review is required before adding it.
+
+---
+
+## ADR-011 — Test runner: `node:test` over jest/vitest
+
+**Date:** 2026-06-08
+**Status:** Accepted
+
+**Context:** The framework needed a test runner for its unit and integration test suite. Standard choices: jest, vitest, or the native `node:test` module (Node.js 18+).
+
+**Decision:** `node:test` (Node.js built-in). No test runner dependency added to `package.json`.
+
+**Rationale:** The framework is a zero-runtime-dependency package — adding jest or vitest would introduce a dev-dependency with its own transitive tree, configuration surface, and upgrade burden. `node:test` is native ESM, ships with Node.js 18+ (the project's minimum), and covers all needed assertions via `node:assert/strict`. The test suite is structural validation (file existence, keyword presence, script behavior) — not a complex test harness that needs jest's ecosystem (snapshots, mocking, parallel runners). Rejected: jest — large dependency, CommonJS-first by default; vitest — lighter but still a dependency with its own config layer.
+
+**Consequences:** Tests run via `node --test test/unit/*.test.mjs`. No `jest.config.*` or `vitest.config.*` file. Contributors unfamiliar with `node:test` can reference the Node.js docs directly — no framework-specific test runner to learn.
 
 ---
 
