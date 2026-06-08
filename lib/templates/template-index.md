@@ -1,6 +1,6 @@
 # Template Map
 
-**Last updated:** 2026-06-02
+**Last updated:** 2026-06-06
 **Purpose:** Maps every template to its destination folder, file suffix, and when to use it.
 
 > **Rule:** Every file type must have a template before more files of that type are created.
@@ -19,7 +19,9 @@
 | `addendum.notes-template.md` | `findings/` | `phase-NN-[parent-id]-addendum-NN-[slug]-notes.md` | During addendum execution — live observations on external source, preliminary parent-mapping; pre-synthesis tier |
 | `addendum.plan-template.md` | `plans/` | `phase-NN-[parent-identifier]-addendum-NN-[slug]-plan.md` | When an external discovery extends any closed parent document (POC, research, or session) — defines new hypotheses, test approach. `[parent-identifier]` = parent's own ID segment (e.g. `poc-02`, `research-mcp-landscape`, `session-04`). Includes §Pre-session Prerequisites with escalation protocol and §Downstream Dependencies — required at plan creation. |
 | `addendum.results-template.md` | `findings/` | `phase-NN-[parent-identifier]-addendum-NN-[slug]-results.md` | During/after addendum execution — raw observations for new hypotheses only |
-| `addendum.conclusions-template.md` | `conclusions/` | `phase-NN-[parent-identifier]-addendum-NN-[slug]-conclusions.md` | After addendum results — new hypothesis verdicts, decisions revised (if any), parent backlink. Includes `**Alignment verified:**` field (set by `/conclusions-review`) and §Downstream Impact — required at conclusions synthesis. |
+| `addendum.conclusions-section-template.md` | `conclusions/phase-NN-poc-NN-[parent-name]-conclusions.md §Addendum NN` | `## Addendum NN — [slug]` | After addendum results — structure is appended to the parent POC conclusions file (not a standalone file). New hypothesis verdicts, decisions revised (if any). Includes `**Addendum alignment verified:**` field (set by `/conclusions-review --addendum NN`). |
+| `poc-roadmap-template.md` | `plans/` | `phase-NN-poc-roadmap.md` | Created with phase scaffold; tracks all POC and addendum status within a phase. Status values: 🔜 Planned, ⏳ In Progress, ✅ Complete, Deprecated, Migrated → Phase NN, ~~In Progress~~ Deprecated. |
+| `discovery-backlog-template.md` | `plans/` | `discovery-backlog.md` | One per project; tracks signals and addendum triggers awaiting action. Status values: Plan created, In Progress, Complete, Deprecated — [reason] — YYYY-MM-DD. |
 | `signal.results-template.md` | `findings/` | `phase-NN-signal-NN-[slug]-results.md` | When an external discovery has no parent document — assessment artifact, routes to action or backlog |
 | `research.plan-template.md` | `plans/` | `phase-NN-research-[topic]-plan.md` | Before starting a research effort — what question, why, what sources |
 | `research.notes-template.md` | `findings/` | `phase-NN-research-[topic]-notes.md` | During research execution — source log, live observations, emerging patterns; pre-synthesis tier |
@@ -52,7 +54,7 @@ Each file carries an `**Author:**` metadata field:
 |---------|-----------|-----------|-------------|-----------------|-------|
 | `poc` | ✅ Required | ✅ Required | ✅ Required | ✅ Required | Full lifecycle, heavy structure |
 | `research` | ✅ Required | ✅ Required | ✅ Required | ⚠️ Only if closes a decision | Lighter plan than POC |
-| `addendum` | ✅ Required | ✅ Required | ✅ Required | ✅ Required | Extends any closed parent doc. New hypotheses only. |
+| `addendum` | ✅ Required | ✅ Required | ✅ Required | ✅ Required (appended to parent POC conclusions file as `## Addendum NN`) | Extends any closed parent doc. New hypotheses only. No standalone conclusions file. |
 | `session` | ✅ Required (`session.plan-template.md`) | field-notes (human) | ✅ results (AI, from transcript) | ✅ Required | Two findings types per session |
 | `signal` | ❌ | ❌ | ✅ Required | ❌ | Assessment artifact only. Routes to addendum / POC / backlog. |
 | `handoff` | ❌ | ❌ | ✅ in findings/ | ❌ | Transitional doc between phases/POCs |

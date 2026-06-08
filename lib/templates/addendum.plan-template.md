@@ -26,7 +26,7 @@ If the discovery has no parent document, use signal.results-template.md instead.
 
 > Parent conclusions → [link]
 > Results (fill during/after execution) → `findings/phase-NN-[parent-identifier]-addendum-NN-[slug]-results.md`
-> Addendum conclusions → `conclusions/phase-NN-[parent-identifier]-addendum-NN-[slug]-conclusions.md`
+> Addendum conclusions → appended as `## Addendum NN` in the parent POC conclusions file by `/activity-conclude addendum`
 > Addendum numbering is per-parent and sequential. If parent has no prior addendums, this is 01.
 > All file paths in this plan are relative to **Project root**. If executing from a different working directory, resolve against the absolute path above.
 > **Skill origin:** All `/skill-name` references in this plan (e.g. `/activity-conclude poc`, `/wiki-manage`) are **project-local skills** in `[project-root]/.claude/skills/`. Do not add a namespace prefix. See Rule 14 in `.claude/rules/behavioral.md`.
@@ -148,12 +148,10 @@ If executing from a different working directory, prefix each path with that abso
 
 > **Path anchor:** All files in this step live under `[Project root]`. Resolve against the absolute path in the plan header if running from outside that directory.
 
-**Addendum conclusions file:** `[Project root]/conclusions/phase-NN-[parent-identifier]-addendum-NN-[slug]-conclusions.md`
-
 For each hypothesis (H8–HN): status, finding, decision impact, wiki update needed.
 
 **After conclusions are written:**
-- Update parent conclusions `## Addendums` section with backlink to this addendum → `[Project root]/conclusions/phase-NN-[parent-identifier]-conclusions.md`
+- Append `## Addendum NN` section to the parent POC conclusions file → `[Project root]/conclusions/phase-NN-[parent-identifier]-conclusions.md` (done by `/activity-conclude addendum`)
 - Close or revise affected decisions → `[Project root]/plans/phase-NN-index.md §Decisions Tracker`
 - Update any wiki files where the parent decision changed → `[Project root]/wiki/project/[file].md`
 - Update discovery backlog → `[Project root]/plans/discovery-backlog.md`
@@ -165,8 +163,8 @@ For each hypothesis (H8–HN): status, finding, decision impact, wiki update nee
 | # | Criterion | Notes |
 |---|-----------|-------|
 | 1 | [Specific measurable outcome per hypothesis] | |
-| 2 | Addendum conclusions complete with all new hypotheses resolved | `conclusions/...` |
-| 3 | Parent conclusions updated with `## Addendums` backlink | `conclusions/phase-NN-[parent-identifier]-conclusions.md` |
+| 2 | Addendum conclusions complete with all new hypotheses resolved | Appended as `## Addendum NN` in parent file |
+| 3 | Parent POC conclusions file has the appended `## Addendum NN` section | `conclusions/phase-NN-[parent-identifier]-conclusions.md` |
 | 4 | Affected decisions revised in tracker | `plans/phase-NN-index.md §Decisions Tracker` |
 
 ---
@@ -189,7 +187,6 @@ If no downstream items are identified, write "None identified." — do not leave
 ## Expected Outputs
 
 - `findings/phase-NN-[parent-identifier]-addendum-NN-[slug]-results.md` — execution log
-- `conclusions/phase-NN-[parent-identifier]-addendum-NN-[slug]-conclusions.md` — verdicts + revised decisions
-- Updated parent conclusions `## Addendums` section (backlink added)
+- `## Addendum NN` section appended to parent POC conclusions file — verdicts + revised decisions
 - Wiki file updates for any decisions that change
 - `plans/discovery-backlog.md` entry updated to "Complete"

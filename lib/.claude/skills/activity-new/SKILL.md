@@ -64,7 +64,7 @@ Pre-populate with:
 
 **Step 5 — Writer creates stub files**
 - `poc`: results stub (`poc.results-template.md`) + conclusions stub (`poc.conclusions-template.md`, Status: In Progress)
-- `addendum`: results stub (`addendum.results-template.md`) + conclusions stub (`addendum.conclusions-template.md`, Status: In Progress, H-numbers continuing from parent)
+- `addendum`: results stub (`addendum.results-template.md`) only — no conclusions stub. Conclusions are appended to the parent POC conclusions file by `/activity-conclude addendum`.
 - `research`: results stub only (`research.results-template.md`) — no conclusions stub (conclusions are optional for research, created only when a decision closes)
 - `session`: field-notes stub only (`session.field-notes-template.md`, Author: Human) — no results stub, no conclusions stub
 
@@ -74,7 +74,7 @@ Pre-populate with:
 
 - Add all created files to `CONTENT_INDEX.md`
 - `poc`: update `plans/phase-NN-poc-roadmap.md` status (→ In Progress or 🔜 Next)
-- `addendum`: update `plans/phase-NN-poc-roadmap.md` — add addendum row; update `plans/discovery-backlog.md` entry (→ In Progress)
+- `addendum`: update `plans/phase-NN-poc-roadmap.md` — add addendum row; update `plans/discovery-backlog.md` entry (→ In Progress). Note: the conclusions registration happens at conclude time when the parent file is updated — no conclusions stub is registered here.
 - Append to `log.md`
 
 ---
@@ -83,7 +83,7 @@ Pre-populate with:
 | Type | Files created |
 |------|--------------|
 | `poc` | Plan + results stub + conclusions stub (3 files) |
-| `addendum` | Plan + results stub + conclusions stub (3 files) |
+| `addendum` | Plan + results stub (2 files — no standalone conclusions stub) |
 | `research` | Plan + results stub (2 files) |
 | `session` | Plan + field-notes stub (2 files) |
 

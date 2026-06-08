@@ -68,7 +68,7 @@ Skills invoked in plans and templates come from three distinct sources. **Never 
 
 | Source | Location | Invocation form | Examples |
 |--------|----------|-----------------|---------|
-| **Project-local** | `[project-root]/.claude/skills/` | `/skill-name` (no prefix) | `/activity-conclude poc`, `/activity-conclude session`, `/wiki-manage`, `/activity-new poc`, `/activity-new session`, `/activity-new addendum`, `/conclusions-review`, `/knowledge-audit` |
+| **Project-local** | `[project-root]/.claude/skills/` | `/skill-name` (no prefix) | `/activity-conclude poc`, `/activity-conclude session`, `/wiki-manage`, `/activity-new poc`, `/activity-new session`, `/activity-new addendum`, `/conclusions-review`, `/knowledge-audit`, `/activity-update`, `/activity-deprecate`, `/activity-migrate`, `/phase-update`, `/phase-deprecate`, `/phase-reorder` |
 | **User-level** | `~/.claude/skills/` | `/skill-name` (no prefix) | `/figma-analyze-component-set`, `/figma-audit-accessibility` |
 | **Plugin/registered** | Registered provider | `namespace:skill-name` | `anthropic-skills:consolidate-memory`, `figma:figma-use` |
 
@@ -93,3 +93,15 @@ Content checks alone are not sufficient for governance system changes. "The skil
 - For a new agent behavior: ask the agent to perform the new behavior and verify it does so correctly without prompting
 
 Do not close a session that adds or modifies governance mechanisms without running both levels. See `system-architecture.md (framework wiki, in node_modules) §7`.
+
+### 16. Concluded activities are immutable
+Once an activity has a conclusions file with `alignment_verified` set (or a parent POC conclusions file with a dated `**Addendum alignment verified:**` in the appended section, for addendum type), it cannot be updated or deprecated. Use `/activity-new addendum` to extend. Use `/wiki-manage update` to correct wiki entries it informed.
+
+### 17. Migration scope
+Migration is only for Planned activities (plan file exists, no results content). In Progress = conclude or deprecate first. Completed = create an addendum in the target phase. These constraints are fixed; revisit requires a separate design review.
+
+### 18. Phase deprecation requires explicit activity fate assignment
+Before any phase-deprecation files are archived, every in-progress activity must have an explicit fate (deprecate or migrate to named target phase). No bulk "deprecate all" without individual acknowledgment.
+
+### 19. Phase reorder preserves log history
+`log.md` is append-only. Phase reorder adds a new entry recording the swap; it does not update historical log entries that reference the old phase numbers. Historical entries remain accurate to when they were written.

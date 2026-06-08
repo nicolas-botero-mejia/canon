@@ -52,6 +52,31 @@ echo "[2b] Verify init created all expected directories"
   && pass "/signal skill vendored to .claude/skills/signal/SKILL.md" \
   || fail "/signal skill not found at .claude/skills/signal/SKILL.md"
 
+# Verify new lifecycle skills are vendored
+[ -f "${WORK_DIR}/.claude/skills/activity-deprecate/SKILL.md" ] \
+  && pass "/activity-deprecate skill vendored" \
+  || fail "/activity-deprecate skill not found at .claude/skills/activity-deprecate/SKILL.md"
+
+[ -f "${WORK_DIR}/.claude/skills/activity-update/SKILL.md" ] \
+  && pass "/activity-update skill vendored" \
+  || fail "/activity-update skill not found at .claude/skills/activity-update/SKILL.md"
+
+[ -f "${WORK_DIR}/.claude/skills/activity-migrate/SKILL.md" ] \
+  && pass "/activity-migrate skill vendored" \
+  || fail "/activity-migrate skill not found at .claude/skills/activity-migrate/SKILL.md"
+
+[ -f "${WORK_DIR}/.claude/skills/phase-deprecate/SKILL.md" ] \
+  && pass "/phase-deprecate skill vendored" \
+  || fail "/phase-deprecate skill not found at .claude/skills/phase-deprecate/SKILL.md"
+
+[ -f "${WORK_DIR}/.claude/skills/phase-reorder/SKILL.md" ] \
+  && pass "/phase-reorder skill vendored" \
+  || fail "/phase-reorder skill not found at .claude/skills/phase-reorder/SKILL.md"
+
+[ -f "${WORK_DIR}/.claude/skills/phase-update/SKILL.md" ] \
+  && pass "/phase-update skill vendored" \
+  || fail "/phase-update skill not found at .claude/skills/phase-update/SKILL.md"
+
 # Verify templates are accessible in node_modules
 [ -f "${WORK_DIR}/node_modules/@nicolas-botero-mejia/canon/lib/templates/session.plan-template.md" ] \
   && pass "session.plan-template.md accessible in node_modules" \

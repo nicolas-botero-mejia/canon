@@ -37,7 +37,8 @@ Always note which layer context came from when briefing the Writer or PM.
 Process types: `poc-NN`, `[parent-identifier]-addendum-NN`, `signal-NN`, `research`, `session-NN`, `handoff`
 File types: `plan`, `results`, `field-notes`, `conclusions`, `handoff`
 
-Addendum naming: `phase-NN-[parent-identifier]-addendum-NN-[slug]-[plan|results|conclusions].md`
+Addendum naming: `phase-NN-[parent-identifier]-addendum-NN-[slug]-[plan|results].md`
+  Addendum conclusions are appended as `## Addendum NN` sections to the parent POC conclusions file — no standalone addendum conclusions file is created.
   where [parent-identifier] = the parent's own ID segment: `poc-02`, `research-mcp-landscape`, `session-04`, etc.
 Signal naming: `phase-NN-signal-NN-[slug]-results.md` (results only — no plan, no conclusions)
 
@@ -76,7 +77,7 @@ log.md         → append-only ledger of all structural changes
 4. **Missing coverage** — confirmed fact from plans/phase-NN-index.md not reflected in wiki/project/
 5. **Structural inconsistency** — heading hierarchy, metadata format, link style differs from the majority
 6. **Meta-doc drift** — system-architecture.md or system-operations.md predate the last structural entry in log.md
-7. **Parent-backlink integrity** — for every addendum conclusions file in `conclusions/`, its parent conclusions file must have an `## Addendums` section with a link back to it. If the parent is missing the section or the specific link: flag as drift.
+7. **Addendum-section integrity** — for every addendum marked Complete on the POC roadmap, the parent POC conclusions file must contain a corresponding `## Addendum NN` section. If the section is missing: flag as drift. Standalone `addendum-NN-conclusions.md` files in `conclusions/` are the old model and should not exist — flag any found.
 8. **Content-type boundary drift** — applies to all four active wiki layers. Scope: `wiki/project/`, `wiki/standards/`, `wiki/client/`, `wiki/user/`.
 
    **`wiki/project/` violations:**

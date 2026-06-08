@@ -128,7 +128,10 @@ discovery_type: external | internal
 **`conclusions/*.conclusions.md`**:
 ```yaml
 ---
-type: poc-conclusions | research-conclusions | session-conclusions | addendum-conclusions
+type: poc-conclusions | research-conclusions | session-conclusions
+Note: addendum conclusions are not standalone files — they are sections appended to the parent
+POC conclusions file. The append-section structure is defined in addendum.conclusions-section-template.md
+(renamed from addendum.conclusions-template.md). See ADR-010 in system-decisions.md.
 phase: "NN"
 topic: "[slug]"
 status: in-progress | complete

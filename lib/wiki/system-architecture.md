@@ -30,6 +30,17 @@ Phase lifecycle
 
 **Activity** = a bounded unit of work inside a phase. Four types: `session`, `poc`, `research`, `addendum`. All share the same lifecycle — `new → in progress → concluded` — managed by two unified skills. The `session` type of `/activity-conclude` is a checkpoint (results stub + decisions update; no conclusions file written).
 
+**Full operations per level:**
+
+| Operation | Phase skill | Activity skill | Constraint |
+|-----------|------------|----------------|------------|
+| Create | `/phase-new` | `/activity-new [type]` | — |
+| Update | `/phase-update` | `/activity-update` | Not concluded |
+| Deprecate | `/phase-deprecate` | `/activity-deprecate` | Not concluded; no closed decisions |
+| Migrate | — | `/activity-migrate` | Planned activities only |
+| Reorder | `/phase-reorder` | — | Neither phase concluded or archived |
+| Conclude | `/phase-conclude` | `/activity-conclude [type]` | — |
+
 ---
 
 ### §1.2 — Session Lifecycle
@@ -46,7 +57,7 @@ Phase lifecycle
 ║  Hook [auto]: date/time                                              ║
 ║  Hook [auto]: scripts/session-start-report.sh                   ║
 ║    → file counts, pending external updates, CLAUDE.md age warning    ║
-║  Rules [always-on]: behavioral.md (15 rules) loaded via CLAUDE.md    ║
+║  Rules [always-on]: behavioral.md (19 rules) loaded via CLAUDE.md    ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
@@ -96,7 +107,7 @@ Phase lifecycle
 ╔══════════════════════════════════════════════════════════════════════╗
 ║  PERIODIC (manually triggered, not session-bound)                    ║
 ║  Skill [manual]: /knowledge-audit                                     ║
-║    → 14-dimension consistency check across all files                 ║
+║    → 15-dimension consistency check across all files                 ║
 ║  Phase operations (when phase ends / new phase begins):              ║
 ║    /phase-conclude → /phase-new                                       ║
 ╚══════════════════════════════════════════════════════════════════════╝
@@ -106,8 +117,8 @@ Agent + skill layer (`.claude/`):
 - `agents/librarian.md` — knowledge steward: 8-dimension consistency audit, context surfacing, tmp/ lifecycle
 - `agents/writer.md` — document producer: template-driven, prior-context-loaded
 - `agents/pm.md` — engagement state: decisions tracker, phase gates
-- `skills/[name]/SKILL.md` — **Phase:** `/phase-new`, `/phase-conclude` | **Activity:** `/activity-new`, `/activity-conclude` | **System:** `/wiki-manage`, `/knowledge-audit`, `/conclusions-review`
-- `rules/behavioral.md` — 15 behavioral rules (auto-loaded each session)
+- `skills/[name]/SKILL.md` — **Phase:** `/phase-new`, `/phase-update`, `/phase-deprecate`, `/phase-reorder`, `/phase-conclude` | **Activity:** `/activity-new`, `/activity-update`, `/activity-deprecate`, `/activity-migrate`, `/activity-conclude` | **System:** `/wiki-manage`, `/knowledge-audit`, `/conclusions-review`, `/signal`
+- `rules/behavioral.md` — 19 behavioral rules (auto-loaded each session)
 
 **Meta-doc currency:** `system-architecture.md` and `system-operations.md` must be updated whenever a structural change is made (CLAUDE.md Rule 10). The Librarian agent flags this inline during structural work. Design decisions → `system-decisions.md`.
 
@@ -240,7 +251,7 @@ Validates structural contracts on four file types — required for MCP query rel
 **What it validates:**
 - `CONTENT_INDEX.md` entries: all four parts present (`###`, `**What it is:**`, `**Key facts:**`, `**Questions it answers:**`)
 - `plans/phase-NN-index.md §Decisions Tracker`: all four columns present (`ID`, `Description`, `Status`, `Closed`)
-- `plans/phase-NN-poc-roadmap.md`: status emoji values are from the allowed set (🔜 ⏳ 🔄 ✅ ⏭️)
+- `plans/phase-NN-poc-roadmap.md`: status values are from the allowed set — core emojis (🔜 ⏳ 🔄 ✅ ⏭️) plus terminal text statuses (`Deprecated`, `~~In Progress~~ Deprecated`, `Migrated → Phase NN`)
 - `findings/*.md`: `**Author:**` and `**Date:**` present in first 10 lines
 - `conclusions/*.md`: `**Author:**`, `**Date:**`/`**Synthesis date:**`, and `**Alignment verified:**` present in first 10 lines
 
@@ -258,6 +269,14 @@ Archives all `plans/phase-<N>-*.md` files, scaffolds the next phase index from t
 
 **Dependencies:** `sed`, `find`, `mv`, `mkdir` — standard POSIX.
 **Usage:** `bash scripts/phase-transition.sh 01 02` or `bash scripts/phase-transition.sh 01 02 --dry-run`
+
+### `scripts/phase-reorder.sh`
+Swaps the numbers of two active phases using a three-step atomic rename (A→TMP, B→A, TMP→B) to avoid collisions. Updates internal file references, `CONTENT_INDEX.md` section headers, `CLAUDE.md` phase references, and appends a `reorder` log entry. Supports `--dry-run` flag. Blocks if either phase has a summary file or archive directory. Called by `/phase-reorder` Step 2 after human approves the dry-run rename plan.
+
+**Dependencies:** `sed`, `find`, `mv`, `grep` — standard POSIX.
+**Modes:** `--dry-run` (print rename plan, no changes) or execute.
+**Usage:** `bash scripts/phase-reorder.sh 02 04` or `bash scripts/phase-reorder.sh 02 04 --dry-run`
+**Scope:** `plans/`, `findings/`, `conclusions/` only — `plans/_archive/` is read-only.
 
 ---
 
@@ -290,7 +309,7 @@ Named `[process-type].[file-type]-template.md`. Full map → `templates/template
 | `poc.conclusions-template.md` | POC synthesized output | `conclusions/` |
 | `addendum.plan-template.md` | Addendum plan (extends a closed POC) | `plans/` |
 | `addendum.results-template.md` | Addendum execution log (new hypotheses only) | `findings/` |
-| `addendum.conclusions-template.md` | Addendum verdicts + revised decisions | `conclusions/` |
+| `addendum.conclusions-section-template.md` | Addendum verdicts + revised decisions (appended section) | parent POC `conclusions/` file `§Addendum NN` |
 | `signal.results-template.md` | Signal assessment (no parent doc — routes to action) | `findings/` |
 | `research.plan-template.md` | Research plan | `plans/` |
 | `research.results-template.md` | Research findings | `findings/` |
@@ -301,7 +320,7 @@ Named `[process-type].[file-type]-template.md`. Full map → `templates/template
 | `handoff.results-template.md` | Transitional context-transfer between phases/POCs | `findings/` |
 | `tmp.working-file-template.md` | Transient working files | `tmp/` |
 
-> **Template updates 2026-06-01:** `addendum.plan-template.md` now includes `§Pre-session Prerequisites` (with escalation protocol) and `§Downstream Dependencies` (declares which future POCs/sessions depend on this addendum's outcome). `addendum.conclusions-template.md` now includes `**Alignment verified:**` metadata field (set by `/conclusions-review`) and `§Downstream Impact` (records verdict impact on each downstream item). `poc.plan-template.md` now includes the escalation protocol in its Prerequisites section. `poc.conclusions-template.md` and `session.conclusions-template.md` now include `**Alignment verified:**` field.
+> **Template updates 2026-06-01:** `addendum.plan-template.md` now includes `§Pre-session Prerequisites` (with escalation protocol) and `§Downstream Dependencies` (declares which future POCs/sessions depend on this addendum's outcome). `poc.plan-template.md` now includes the escalation protocol in its Prerequisites section. `poc.conclusions-template.md` and `session.conclusions-template.md` now include `**Alignment verified:**` field. **2026-06-06:** `addendum.conclusions-template.md` renamed to `addendum.conclusions-section-template.md` — addendum conclusions are now appended as `## Addendum NN` sections into the parent POC conclusions file (ADR-010).
 
 ---
 
@@ -390,7 +409,7 @@ Structural guarantees for template-generated files. Required for MCP query relia
 ### `plans/phase-NN-poc-roadmap.md`
 
 - **Required columns:** `POC` | `Status` | `Prerequisite` | `Description`
-- **Status values:** `🔜 Next` | `⏳ Planned` | `🔄 In Progress` | `✅ Complete` | `⏭️ Deferred`
+- **Status values:** `🔜 Planned` | `⏳ In Progress` | `✅ Complete` | `Deprecated` | `~~In Progress~~ Deprecated` | `Migrated → Phase NN`
 - **Contract:** consistent emoji status values across all roadmap files
 
 ### `CONTENT_INDEX.md` entries

@@ -9,6 +9,21 @@ Newest first. One entry per decision.
 
 ---
 
+## ADR-010 — Addendum conclusions appended to parent POC file
+
+**Date:** 2026-06-06
+**Status:** Accepted
+
+**Context:** Addendum conclusions were written as standalone files (`addendum-NN-conclusions.md`). This created a fragmented hypothesis chain — the parent POC had H1–H7, addendum 1 had H8–H10 in a separate file, addendum 2 had H11–H13 in another. No single file showed the full arc of a POC investigation.
+
+**Decision:** Addendum conclusions are appended as `## Addendum NN` sections directly into the parent POC conclusions file. No standalone addendum-conclusions files are created. H-numbers are sequential across parent and all addendums.
+
+**Rationale:** A single conclusions file is the source of truth for an investigation. The sequential H-number chain is readable and verifiable in one place. Section-level `**Addendum alignment verified:**` dates handle the alignment tracking concern without requiring file proliferation.
+
+**Consequences:** `activity-new addendum` no longer creates a conclusions stub. `activity-conclude addendum` appends to the parent file. `knowledge-audit` Dimension 10 checks sections, not files. Old standalone addendum-conclusions files (if any exist in consumer projects) are not auto-migrated — manual append to the parent conclusions file is needed. (Note: `/activity-migrate` is for moving planned activities between phases; it cannot restructure conclusions file content.)
+
+---
+
 ## ADR-009 — `**Last updated:**` verbose changelogs removed from wiki headers
 
 **Date:** 2026-06-06

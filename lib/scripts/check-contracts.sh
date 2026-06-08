@@ -69,11 +69,11 @@ ROADMAP_FAIL=0
 for f in "${CONSUMER_ROOT}/plans/phase-"*"-poc-roadmap.md"; do
   [ -f "$f" ] || continue
   ROADMAP_COUNT=$((ROADMAP_COUNT + 1))
-  # Allowed status emojis
-  ALLOWED="🔜\|⏳\|🔄\|✅\|⏭️"
-  # Extract status column values and check for unknown emojis
-  # Find lines that look like table rows with emoji status (contains |)
-  BAD=$(grep "^|" "$f" | grep -v "^| POC\|^|---" | awk -F'|' '{print $3}' | grep -v "^[[:space:]]*$" | grep -v "Status" | grep -v "🔜\|⏳\|🔄\|✅\|⏭️\|^[[:space:]]*$" || true)
+  # Allowed status values: core emojis + terminal text statuses
+  # Core: 🔜 Planned | ⏳ In Progress | 🔄 | ✅ Complete | ⏭️
+  # Terminal: Deprecated | ~~In Progress~~ Deprecated | Migrated → Phase NN
+  BAD=$(grep "^|" "$f" | grep -v "^| POC\|^| Addendum\|^|---\|^| #" | awk -F'|' '{print $3}' | grep -v "^[[:space:]]*$" | grep -v "Status" | \
+    grep -v "🔜\|⏳\|🔄\|✅\|⏭️\|^[[:space:]]*$\|Deprecated\|Migrated\|~~In Progress~~" || true)
   if [ -n "$BAD" ]; then
     fail "$(basename "$f"): unknown status values found: $BAD"
     ROADMAP_FAIL=$((ROADMAP_FAIL + 1))
@@ -82,7 +82,7 @@ done
 if [ "$ROADMAP_COUNT" -eq 0 ]; then
   pass "poc roadmap: no roadmap files found (ok for new projects)"
 elif [ "$ROADMAP_FAIL" -eq 0 ]; then
-  pass "poc roadmap: ${ROADMAP_COUNT} file(s) — all use allowed status emojis"
+  pass "poc roadmap: ${ROADMAP_COUNT} file(s) — all use allowed status values"
 fi
 
 # ── findings/*.md: Author and Date in header ─────────────────────────────────

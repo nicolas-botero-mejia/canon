@@ -52,7 +52,7 @@ Updating means two things — both required:
 The Librarian flags this inline when structural work is done. The `/knowledge-audit` skill detects drift after the fact.
 
 ### 11. External Discovery Routing
-When an external source (article, video, tool release, community post) extends an existing closed POC or research finding → it is an **addendum**. Create a plan using `addendum.plan-template.md`. Numbered per parent and sequential (addendum-01, -02, …). When there is no clear parent document → it is a **signal**. Create a results file using `signal.results-template.md`. Both route to `findings/` for results and `output/` for conclusions (addendum only). Add an entry to `plans/discovery-backlog.md`. Validate with human before any wiki updates.
+When an external source (article, video, tool release, community post) extends an existing closed POC or research finding → it is an **addendum**. Create a plan using `addendum.plan-template.md`. Numbered per parent and sequential (addendum-01, -02, …). When there is no clear parent document → it is a **signal**. Create a results file using `signal.results-template.md`. Both route to `findings/` for results and `conclusions/` for conclusions (addendum only, appended to parent POC conclusions file). Add an entry to `plans/discovery-backlog.md`. Validate with human before any wiki updates.
 
 ### 12. Conclusions Alignment Check
 Before creating any downstream plan (addendum, POC, or session) that depends on prior concluded work, check whether those conclusions carry an `**Alignment verified:**` date. If the field is absent or empty → run `/conclusions-review` on that file first (it will set the field after producing a patch list). If the field is set → proceed without re-running.
@@ -66,7 +66,7 @@ Skills invoked in plans and templates come from three distinct sources. **Never 
 
 | Source | Location | Invocation form | Examples |
 |--------|----------|-----------------|---------|
-| **Project-local** | `[project-root]/.claude/skills/` | `/skill-name` (no prefix) | `/activity-conclude poc`, `/activity-conclude session`, `/wiki-manage`, `/activity-new poc`, `/activity-new session`, `/activity-new addendum`, `/conclusions-review`, `/knowledge-audit` |
+| **Project-local** | `[project-root]/.claude/skills/` | `/skill-name` (no prefix) | `/activity-conclude poc`, `/activity-conclude session`, `/wiki-manage`, `/activity-new poc`, `/activity-new session`, `/activity-new addendum`, `/conclusions-review`, `/knowledge-audit`, `/activity-update`, `/activity-deprecate`, `/activity-migrate`, `/phase-update`, `/phase-deprecate`, `/phase-reorder` |
 | **User-level** | `~/.claude/skills/` | `/skill-name` (no prefix) | `/figma-analyze-component-set`, `/figma-audit-accessibility` |
 | **Plugin/registered** | Registered provider | `namespace:skill-name` | `anthropic-skills:consolidate-memory`, `figma:figma-use` |
 
@@ -91,3 +91,15 @@ Content checks alone are not sufficient for governance system changes. "The skil
 - For a new agent behavior: ask the agent to perform the new behavior and verify it does so correctly without prompting
 
 Do not close a session that adds or modifies governance mechanisms without running both levels. See `wiki/meta/system-architecture.md §7`.
+
+### 16. Concluded activities are immutable
+Once an activity has a conclusions file with `alignment_verified` set (or a parent POC conclusions file with a dated `**Addendum alignment verified:**` in the appended section, for addendum type), it cannot be updated or deprecated. Use `/activity-new addendum` to extend. Use `/wiki-manage update` to correct wiki entries it informed.
+
+### 17. Migration scope
+Migration is only for Planned activities (plan file exists, no results content). In Progress = conclude or deprecate first. Completed = create an addendum in the target phase. These constraints are fixed; revisit requires a separate design review.
+
+### 18. Phase deprecation requires explicit activity fate assignment
+Before any phase-deprecation files are archived, every in-progress activity must have an explicit fate (deprecate or migrate to named target phase). No bulk "deprecate all" without individual acknowledgment.
+
+### 19. Phase reorder preserves log history
+`log.md` is append-only. Phase reorder adds a new entry recording the swap; it does not update historical log entries that reference the old phase numbers. Historical entries remain accurate to when they were written.

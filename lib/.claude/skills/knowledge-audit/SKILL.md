@@ -52,18 +52,21 @@ Reads each file in `tmp/`. For each: reads its `**Closes when:**` condition and 
 **Dimension 9 — Template coverage**
 Reads `templates/template-index.md (framework templates, in node_modules)`. For each file type that exists in the project, confirms a template entry exists. Flags any file types without templates.
 
-**Dimension 10 — Parent-backlink integrity**
-For every addendum conclusions file in `conclusions/` (filename contains `addendum-NN`):
-- Finds the parent conclusions file (e.g., `conclusions/phase-NN-poc-NN-[parent]-conclusions.md`)
-- Confirms the parent has an `## Addendums` section with a link to this addendum
-- If the section is missing or the link is absent → flags: *"Parent-backlink missing: [parent file] has no link to [addendum file]"*
+**Dimension 10 — Addendum-section integrity**
+For every parent POC conclusions file in `conclusions/` that has a corresponding addendum row on the POC roadmap:
+- For each addendum that shows ✅ Complete on the roadmap: confirm the parent POC conclusions file contains a corresponding `## Addendum NN` section
+- If a Complete addendum has no appended section in the parent → flags: *"Addendum [N] is Complete on roadmap but parent [file] has no `## Addendum NN` section."*
+- Note: standalone addendum conclusions files (old model) should not exist; if any are found in `conclusions/` matching the old naming pattern, flag as: *"Unexpected standalone addendum conclusions file: [file] — should be appended to parent as `## Addendum NN` section."*
 
 **Dimension 11 — Alignment verification coverage**
 For every Complete conclusions file in `conclusions/` (`**Status:** Complete`):
 - Reads the `**Alignment verified:**` field
 - If the field is absent or empty → flags: *"Alignment unverified: [file] — run `/conclusions-review` or confirm inline alignment and set the field manually."*
 - If the field is present with a date → passes
-This dimension ensures conclusions files don't accumulate without being cross-checked against the system state. A full set of empty fields after several POCs is a signal that system drift has gone undetected.
+
+Also scan every `## Addendum NN` section within parent POC conclusions files for a missing or empty `**Addendum alignment verified:**` date. Flag: *"Alignment unverified: [file] §Addendum NN — run `/conclusions-review` or set `**Addendum alignment verified:**` manually."*
+
+This dimension ensures conclusions (including addendum sections) don't accumulate without being cross-checked against the system state.
 
 **Dimension 12 — Partial-update scan**
 For each wiki/project/ or wiki/standards/ file whose `**Last updated:**` date falls within the current audit window (since the previous audit date, or since the start of the current phase if no prior audit exists):
