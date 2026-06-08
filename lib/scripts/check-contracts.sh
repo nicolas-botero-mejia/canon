@@ -26,10 +26,10 @@ if [ -f "${CONSUMER_ROOT}/CONTENT_INDEX.md" ]; then
 
   # Check that required parts exist in file (at least one entry must have all parts)
   if grep -q "^### " "${CONSUMER_ROOT}/CONTENT_INDEX.md"; then
-    ENTRY_COUNT=$(grep -c "^### " "${CONSUMER_ROOT}/CONTENT_INDEX.md" || echo 0)
-    WIT_COUNT=$(grep -c "^\*\*What it is:\*\*" "${CONSUMER_ROOT}/CONTENT_INDEX.md" || echo 0)
-    KF_COUNT=$(grep -c "^\*\*Key facts:\*\*" "${CONSUMER_ROOT}/CONTENT_INDEX.md" || echo 0)
-    QA_COUNT=$(grep -c "^\*\*Questions it answers:\*\*" "${CONSUMER_ROOT}/CONTENT_INDEX.md" || echo 0)
+    ENTRY_COUNT=$(grep -c "^### " "${CONSUMER_ROOT}/CONTENT_INDEX.md" || true)
+    WIT_COUNT=$(grep -c "^\*\*What it is:\*\*" "${CONSUMER_ROOT}/CONTENT_INDEX.md" || true)
+    KF_COUNT=$(grep -c "^\*\*Key facts:\*\*" "${CONSUMER_ROOT}/CONTENT_INDEX.md" || true)
+    QA_COUNT=$(grep -c "^\*\*Questions it answers:\*\*" "${CONSUMER_ROOT}/CONTENT_INDEX.md" || true)
 
     if [ "$WIT_COUNT" -lt "$ENTRY_COUNT" ] || [ "$KF_COUNT" -lt "$ENTRY_COUNT" ] || [ "$QA_COUNT" -lt "$ENTRY_COUNT" ]; then
       fail "CONTENT_INDEX.md: ${ENTRY_COUNT} entries found but some are missing required parts (What it is: ${WIT_COUNT}, Key facts: ${KF_COUNT}, Questions it answers: ${QA_COUNT})"
@@ -93,8 +93,8 @@ for f in "${CONSUMER_ROOT}/findings/"*.md; do
   FINDINGS_COUNT=$((FINDINGS_COUNT + 1))
   # Check first 10 lines for **Author:** and **Date:**
   HEADER="$(head -10 "$f")"
-  HAS_AUTHOR=$(echo "$HEADER" | grep -c "^\*\*Author:\*\*" || echo 0)
-  HAS_DATE=$(echo "$HEADER" | grep -c "^\*\*Date:\*\*\|^\*\*Synthesis date:\*\*" || echo 0)
+  HAS_AUTHOR=$(echo "$HEADER" | grep -c "^\*\*Author:\*\*" || true)
+  HAS_DATE=$(echo "$HEADER" | grep -c "^\*\*Date:\*\*\|^\*\*Synthesis date:\*\*" || true)
   if [ "$HAS_AUTHOR" -eq 0 ] || [ "$HAS_DATE" -eq 0 ]; then
     fail "$(basename "$f"): findings header missing required fields (Author: ${HAS_AUTHOR}, Date: ${HAS_DATE})"
     FINDINGS_FAIL=$((FINDINGS_FAIL + 1))
@@ -113,9 +113,9 @@ for f in "${CONSUMER_ROOT}/conclusions/"*.md; do
   [ -f "$f" ] || continue
   CONCLUSIONS_COUNT=$((CONCLUSIONS_COUNT + 1))
   HEADER="$(head -10 "$f")"
-  HAS_AUTHOR=$(echo "$HEADER" | grep -c "^\*\*Author:\*\*" || echo 0)
-  HAS_DATE=$(echo "$HEADER" | grep -c "^\*\*Date:\*\*\|^\*\*Synthesis date:\*\*" || echo 0)
-  HAS_ALIGN=$(grep -c "^\*\*Alignment verified:\*\*" "$f" || echo 0)
+  HAS_AUTHOR=$(echo "$HEADER" | grep -c "^\*\*Author:\*\*" || true)
+  HAS_DATE=$(echo "$HEADER" | grep -c "^\*\*Date:\*\*\|^\*\*Synthesis date:\*\*" || true)
+  HAS_ALIGN=$(grep -c "^\*\*Alignment verified:\*\*" "$f" || true)
   if [ "$HAS_AUTHOR" -eq 0 ] || [ "$HAS_DATE" -eq 0 ] || [ "$HAS_ALIGN" -eq 0 ]; then
     fail "$(basename "$f"): conclusions header missing fields (Author: ${HAS_AUTHOR}, Date: ${HAS_DATE}, Alignment verified: ${HAS_ALIGN})"
     CONCLUSIONS_FAIL=$((CONCLUSIONS_FAIL + 1))

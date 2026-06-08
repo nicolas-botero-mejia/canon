@@ -8,8 +8,8 @@
 # Rationale: some conclusions predate Rule 12 and would false-positive on a hard block.
 # The warning is designed to be impossible to miss at session close.
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-OUTPUT_DIR="$PROJECT_ROOT/output"
+PROJECT_ROOT="$(pwd)"
+OUTPUT_DIR="$PROJECT_ROOT/conclusions"
 
 UNVERIFIED=()
 
