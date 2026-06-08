@@ -2,7 +2,7 @@
 
 <!--
 TEMPLATE — copy this file, rename it, fill in the brackets.
-Naming convention: plans/phase-NN-poc-NN-[short-name]-session.md
+Naming convention: plans/phase-NN-poc-NN-[short-name]-plan.md
 Status values: Draft | Planned | In Progress | Complete
 -->
 

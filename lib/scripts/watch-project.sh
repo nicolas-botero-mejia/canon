@@ -12,7 +12,7 @@
 #
 # Requires: fswatch (brew install fswatch)
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+PROJECT_ROOT="$(pwd)"
 SENTINEL="$PROJECT_ROOT/.claude/pending-updates.log"
 
 if ! command -v fswatch &>/dev/null; then

@@ -11,7 +11,7 @@ date: "YYYY-MM-DD"
 
 <!--
 TEMPLATE — copy this file, rename it, fill in the brackets.
-Naming convention: findings/phase-NN-[topic]-research.md
+Naming convention: findings/phase-NN-research-[topic]-results.md
 Use this template for research briefs that are NOT POC session notes.
 For POC session notes, use: lib/templates/poc.results-template.md (in canon package)
 -->

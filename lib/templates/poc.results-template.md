@@ -11,7 +11,7 @@ date: "YYYY-MM-DD"
 
 <!--
 TEMPLATE — copy this file, rename it, fill in the brackets.
-Naming convention: findings/phase-NN-poc-NN-[short-name]-notes.md
+Naming convention: findings/phase-NN-poc-NN-[short-name]-results.md
 This file is filled DURING the POC session. It is raw observations, not conclusions.
 Conclusions go in conclusions/phase-NN-poc-NN-[name]-conclusions.md (see that template).
 -->

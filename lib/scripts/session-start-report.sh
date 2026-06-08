@@ -2,7 +2,7 @@
 # Runs at session start. Reports project state as hookSpecificOutput.
 # Informational only — never exits 2.
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+PROJECT_ROOT="$(pwd)"
 INDEX="$PROJECT_ROOT/CONTENT_INDEX.md"
 SENTINEL="$PROJECT_ROOT/.claude/pending-updates.log"
 CLAUDE_MD="$PROJECT_ROOT/CLAUDE.md"

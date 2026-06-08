@@ -227,12 +227,98 @@ test('R-011: system-tool-integration.md Stop row says advisory only (not blockin
 // ─── SKILL.md standard compliance ────────────────────────────────────────────
 // Verify all framework SKILL.md files pass the open standard spec (agentskills.io)
 
-import { readdirSync, statSync } from 'node:fs'
+import { readdirSync, statSync, lstatSync } from 'node:fs'
 
 const SKILLS_DIR = join(PKG, 'lib', '.claude', 'skills')
 const skillDirs = readdirSync(SKILLS_DIR).filter(d =>
   statSync(join(SKILLS_DIR, d)).isDirectory()
 )
+
+// ─── R-009: Template naming comments match template-index ────────────────────
+// template-index is canonical. Template comment lines must agree.
+// Violations found: poc.plan says -session.md; poc.results says -notes.md;
+// research.results has reversed pattern [topic]-research instead of research-[topic]-results
+
+test('R-009: poc.plan-template naming comment says -plan.md (not -session.md)', () => {
+  const t = read('lib/templates/poc.plan-template.md')
+  assert.ok(
+    !t.includes('-session.md'),
+    'poc.plan-template.md naming comment says "-session.md" — template-index says "-plan.md"'
+  )
+  assert.ok(
+    t.includes('-plan.md'),
+    'poc.plan-template.md naming comment must contain "-plan.md" to match template-index'
+  )
+})
+
+test('R-009: poc.results-template naming comment says -results.md (not -notes.md)', () => {
+  const t = read('lib/templates/poc.results-template.md')
+  assert.ok(
+    !t.includes('-notes.md'),
+    'poc.results-template.md naming comment says "-notes.md" — template-index says "-results.md"'
+  )
+  assert.ok(
+    t.includes('-results.md'),
+    'poc.results-template.md naming comment must contain "-results.md" to match template-index'
+  )
+})
+
+test('R-009: research.results-template naming comment matches template-index (research-[topic]-results.md)', () => {
+  const t = read('lib/templates/research.results-template.md')
+  assert.ok(
+    !t.includes('[topic]-research'),
+    'research.results-template.md naming comment uses reversed "[topic]-research" pattern — template-index says "research-[topic]-results.md"'
+  )
+  assert.ok(
+    t.includes('research-') && t.includes('-results.md'),
+    'research.results-template.md naming comment must match template-index pattern: phase-NN-research-[topic]-results.md'
+  )
+})
+
+// ─── ADR-014: examples/consumer matches canon init output ────────────────────
+// examples/consumer must be a generated reference matching `canon init` defaults.
+// After 2E changes init writes AGENTS.md and .agents/skills/ — consumer must have both.
+
+test('ADR-014: examples/consumer has AGENTS.md', () => {
+  assert.ok(
+    existsSync(join(PKG, 'examples/consumer/AGENTS.md')),
+    'examples/consumer/AGENTS.md missing — canon init now writes it (writeAgentsMd); examples/consumer must match init output (ADR-014)'
+  )
+})
+
+test('ADR-014: examples/consumer has .agents/skills symlink', () => {
+  const p = join(PKG, 'examples/consumer/.agents/skills')
+  // Use lstatSync (not existsSync) — existsSync follows the symlink and returns false
+  // if the target dir doesn't exist; lstatSync checks the symlink entry itself.
+  let stat
+  try { stat = lstatSync(p) } catch { stat = null }
+  assert.ok(stat !== null, 'examples/consumer/.agents/skills missing — canon init now writes this symlink; examples/consumer must match init output (ADR-014)')
+  assert.ok(stat.isSymbolicLink(), 'examples/consumer/.agents/skills must be a symlink, not a plain directory')
+})
+
+// ─── PROJECT_ROOT runtime fix ─────────────────────────────────────────────────
+// session-start-report.sh and watch-project.sh use dirname "$0" which resolves
+// to the package root inside node_modules, not the consumer project root.
+// Fix: use $(pwd) — hooks always run from the consumer project root as cwd.
+
+test('PROJECT_ROOT: session-start-report.sh does not use dirname "$0" pattern', () => {
+  const s = read('lib/scripts/session-start-report.sh')
+  assert.ok(
+    !s.includes('"$(dirname "$0"'),
+    'session-start-report.sh uses dirname "$0" which resolves to the package root (node_modules), not the consumer root. Use $(pwd) instead.'
+  )
+})
+
+test('PROJECT_ROOT: watch-project.sh does not use dirname "$0" pattern', () => {
+  const s = read('lib/scripts/watch-project.sh')
+  assert.ok(
+    !s.includes('"$(dirname "$0"'),
+    'watch-project.sh uses dirname "$0" which resolves to the package root (node_modules), not the consumer root. Use $(pwd) instead.'
+  )
+})
+
+// ─── SKILL.md standard compliance ────────────────────────────────────────────
+// Verify all framework SKILL.md files pass the open standard spec (agentskills.io)
 
 for (const skillName of skillDirs) {
   const skillPath = join(SKILLS_DIR, skillName, 'SKILL.md')
