@@ -154,7 +154,7 @@ which asserts agreement across locations automatically.
 | **Must agree** | `bin/commands/init.mjs` (writes CLAUDE.md); `manifest.json` wiring section; `system-tool-integration.md §base file`; `docs/architecture.md §4` |
 | **Dup kind** | intentional — per-tool filename differences handled by format adapters |
 | **Guard** | `invariants.test.mjs` R-010; init output check |
-| **Note** | SKILL.md portability confirmed for Claude Code, Cursor v2.4+, and Copilot cloud agent. Copilot also reads `.claude/skills/` natively — no extra vendoring step needed for it. Codex: format unconfirmed. See `system-tool-integration.md §Standards Alignment Model`. |
+| **Note** | SKILL.md is the **Anthropic-originated open standard** (agentskills.io), confirmed for Claude Code, Cursor v2.4+, Copilot (CLI+cloud+VS Code), Codex, Gemini CLI, and 30+ other tools. `.claude/skills/` is read natively by Claude Code, Cursor (compat), and Copilot — no vendoring needed for these. `.agents/skills/` is the cross-tool convergent path (Codex, Gemini CLI primary). See `system-tool-integration.md §Standards Alignment Model`. |
 
 ---
 
