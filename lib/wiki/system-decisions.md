@@ -7,6 +7,49 @@ Newest first. One entry per decision.
 
 > For design questions — check here before opening an issue or redesigning something. These decisions have already been through the tradeoff analysis.
 
+## ADR-015 — Cursor hook architecture: vendored dispatcher scripts
+
+**Date:** 2026-06-08
+**Status:** Accepted
+
+**Context:** Three competing models existed in the codebase for how Cursor executes framework hooks: (1) vendored hook scripts in `.cursor/hooks/` called directly by `hooks.json`; (2) a single dispatcher script (like `bin/hook.sh` for Claude Code) that routes events; (3) lightweight wrapper scripts in `examples/consumer/` that delegate to node_modules. No single model was declared canonical, creating ambiguity about what to maintain.
+
+**Decision:** Vendored hook scripts in `.cursor/hooks/` — identical model to Claude Code's `.claude/` directory pattern. `canon sync` vendors them from `lib/.cursor/hooks/`. The `hooks.json` wiring references these vendored scripts directly.
+
+**Rationale:** Cursor does not support a package-scope dispatcher the way Claude Code does (where `bin/hook.sh` can be referenced from node_modules). Cursor hook scripts must be present in the consumer project root. The vendored model is already established by ADR-001 (thin-vendor over symlinks) — applying it to Cursor hooks is the natural extension. A dispatcher adds indirection with no benefit since Cursor's event model (PostToolUse, AfterAgent) maps directly to individual scripts.
+
+**Consequences:** Cursor hook scripts live in `.cursor/hooks/` (vendored from `lib/.cursor/hooks/`). `canon sync` keeps them up to date. `hooks.json` wiring is written by `canon init`. No separate dispatcher file for Cursor. Examples/consumer/ should not contain standalone hook wrapper scripts.
+
+---
+
+## ADR-014 — `examples/consumer/` purpose: generated reference, not hand-maintained docs
+
+**Date:** 2026-06-08
+**Status:** Accepted
+
+**Context:** Two conflicting descriptions existed: `docs/architecture.md` described `examples/consumer/` as "documentation" showing the consumer project shape; the root `CLAUDE.md` described it as "what `canon init` produces." These are materially different: "documentation" implies it can be curated; "what init produces" implies it must be mechanically faithful to init output.
+
+**Decision:** `examples/consumer/` is a **generated reference** — it must exactly match what `canon init` produces for a default configuration (Claude Code + Cursor + MCP enabled). It is not hand-maintained documentation.
+
+**Rationale:** If `examples/consumer/` is documentation, it will drift from `init.mjs` output (and has already drifted). If it is the generated reference, it is verifiable by the test suite (run `canon init` into a temp dir, diff against `examples/consumer/`). The verifiable model eliminates an entire class of drift. New contributors using `examples/consumer/` as a reference must see what they will actually get.
+
+**Consequences:** `examples/consumer/` is regenerated whenever `canon init` output changes — not hand-edited. The integration test suite must include an `init`-diff check against `examples/consumer/`. Curated additions (explanatory comments, extra files) are not permitted — they create drift. Design documentation lives in `docs/architecture.md`.
+
+---
+
+## ADR-013 — Stop hook: advisory only; exit 2 does not block session close
+
+**Date:** 2026-06-08
+**Status:** Accepted
+
+**Context:** Claude Code's Stop event fires when a session ends. Documentation in `system-tool-integration.md` (the original version) stated "Yes — exit 2 blocks close" for the Stop event. The framework's check scripts (run in the Stop hook chain) used exit 2 to signal errors. A prior session deliberately changed the Stop hook chain to be advisory — using informational JSON output instead of exit 2 — to eliminate an infinite-close loop. But the documentation was not updated, and two files still implied Stop was blocking.
+
+**Decision:** The Stop event is **advisory only**. Exit code from Stop hook scripts is ignored by Claude Code. Scripts in the Stop hook chain must not rely on exit 2 to prevent session close — it will not work.
+
+**Rationale:** The advisory decision was made deliberately to eliminate the close-loop problem: a blocking Stop hook that errored would prevent the session from ever closing, requiring a force-quit. The correct pattern is: Stop hooks emit informational output (JSON advisory or plain stdout) that the model reads before the session terminates. The model can then decide to address issues in the same session or defer to the next. This is both safer and more aligned with Claude Code's actual behavior for the Stop event.
+
+**Consequences:** All Stop hook scripts must treat errors as advisories — emit informational output, exit 0. The `system-tool-integration.md` lifecycle table for Claude Code is updated (Stop row: "No — advisory only"). `check-contracts.sh` and other Stop-chain scripts must not use exit 2 expecting to block. `system-invariants.md R-011` tracks agreement across all locations.
+
 ---
 
 ## ADR-012 — No frontmatter on `wiki/client/` and `wiki/user/` files
