@@ -469,7 +469,10 @@ Recommended CI trigger: push to `wiki/` or `plans/`. The `check-conclusions-alig
 
 **Test suite structure:**
 ```
-npm test              → test/unit/**/*.test.mjs  (node --test, 37 assertions)
+npm test              → test/unit/**/*.test.mjs  (node --test)
+                        ├─ invariants.test.mjs  — agreement across hand-listed locations (registry rows)
+                        └─ scanners.test.mjs    — whole-repo forbidden-value scan + self-enumerating
+                                                  skill/template coverage (completeness by construction)
 npm run test:integration → test/integration/update-safety.sh
 npm run test:hooks    → test/hooks/run.sh (hook routing + script existence)
 npm run test:all      → all three in sequence

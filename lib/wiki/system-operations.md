@@ -602,6 +602,14 @@ Every wiki file should pass: could someone use it in 6 months, without having be
 
 > **⚠️ Structural changes that modify a skill, agent, or hook:** functional test also required (Rule 15) — confirm actual behavior, not just that the text is correct. See `system-verification.md (framework wiki, in node_modules) §2` for what counts as a functional test.
 
+> **What you do NOT need to add to the test suite:** a new skill or a new template is covered
+> *automatically* by the self-enumerating scanners in `test/unit/scanners.test.mjs` (skill `name`
+> must match its directory; every template must be registered in `template-index.md`). You only add
+> a test when you introduce a genuinely new *kind* of cross-cutting fact (a new folder name, status
+> vocabulary, filename convention, or field) — then add a registry row in
+> `system-invariants.md (framework wiki, in node_modules)` and, if it has a dead/old value, a
+> forbidden-value entry in the scanner. See `system-invariants.md §"Whole-repo scanners"`.
+
 ---
 
 ## 15. The Framework in Practice — Activity-by-Activity Patterns

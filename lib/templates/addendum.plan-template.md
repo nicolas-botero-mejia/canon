@@ -29,7 +29,7 @@ If the discovery has no parent document, use signal.results-template.md instead.
 > Addendum conclusions → appended as `## Addendum NN` in the parent POC conclusions file by `/activity-conclude addendum`
 > Addendum numbering is per-parent and sequential. If parent has no prior addendums, this is 01.
 > All file paths in this plan are relative to **Project root**. If executing from a different working directory, resolve against the absolute path above.
-> **Skill origin:** All `/skill-name` references in this plan (e.g. `/activity-conclude poc`, `/wiki-manage`) are **project-local skills** in `[project-root]/.claude/skills/`. Do not add a namespace prefix. See Rule 14 in `.claude/rules/behavioral.md`.
+> **Skill origin:** All `/skill-name` references in this plan (e.g. `/activity-conclude addendum`, `/wiki-manage`) are **project-local skills** in `[project-root]/.claude/skills/`. Do not add a namespace prefix. See Rule 14 in `.claude/rules/behavioral.md`.
 
 ---
 

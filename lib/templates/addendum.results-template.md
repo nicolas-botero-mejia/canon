@@ -110,7 +110,7 @@ Do not edit after conclusions are written — it is the permanent record of what
 
 <!-- Repeat the Step block for each step. -->
 <!-- External Validation (Step N-1) gets a manual block below. -->
-<!-- Addendum Conclusions (Step N) is handled by /activity-conclude poc — see the placeholder block after External Validation. -->
+<!-- Addendum Conclusions (Step N) is handled by /activity-conclude addendum — see the placeholder block after External Validation. -->
 
 ---
 

@@ -4,7 +4,7 @@
 # Reuses lib/scripts/session-start-report.sh for the project state logic.
 # Informational only — never exits non-zero.
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+PROJECT_ROOT="$(pwd)"
 
 date_str=$(date "+%A, %B %d, %Y %H:%M %Z")
 

@@ -9,7 +9,7 @@
 # Cursor tool_input field is "path" (not "file_path" as in Claude Code).
 # Both are tried for forward compatibility.
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+PROJECT_ROOT="$(pwd)"
 CHECK_SCRIPT="$PROJECT_ROOT/node_modules/@nicolas-botero-mejia/canon/lib/scripts/check-stale-refs.sh"
 
 INPUT=$(cat 2>/dev/null)

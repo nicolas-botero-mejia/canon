@@ -184,6 +184,46 @@ which asserts agreement across locations automatically.
 
 ---
 
+### R-013 — Phase synthesis filename
+
+| | |
+|---|---|
+| **Canonical value** | `phase-NN-summary.md` (phase-level synthesis file; `phase-{{PHASE_NUMBER}}-summary.md` in templates) |
+| **Canonical home** | `lib/.claude/skills/phase-conclude/SKILL.md` |
+| **Must agree** | `phase-deprecate`, `phase-update`, `phase-reorder`, `activity-deprecate` SKILL.md files; `lib/scripts/phase-reorder.sh`; `lib/wiki/system-operations.md`; `lib/.claude/agents/pm.md`; `lib/templates/phase-index-template.md` |
+| **Dup kind** | accidental — all derive from the phase-conclude synthesis step |
+| **Guard** | `invariants.test.mjs` R-013; `scanners.test.mjs` forbidden-scan (dead names `synthesis-conclusions`, `phase-NN-conclusions.md`) |
+| **Known drift** | None — fixed 2026-06-08 |
+
+---
+
+## Whole-repo scanners (completeness layer)
+
+The registry above lists *known* concepts and their locations — but a registry can only
+catch drift in locations someone remembered to list. `test/unit/scanners.test.mjs` adds the
+complementary guarantee by scanning **every** source file, so coverage is complete by
+construction rather than by memory.
+
+- **Forbidden-value scan** (denylist): dead values (`synthesis-conclusions`, `phase-NN-conclusions.md`,
+  `wiki/meta/`, the `dirname "$0")/../..` root pattern, `blocks on exit 2`) asserted to appear
+  nowhere except an explicit allowlist — the registry row or ADR that legitimately *defines* them
+  as forbidden. A new file reintroducing a dead value fails immediately; there is no location list
+  to maintain.
+- **Self-enumerating coverage**: globs `lib/.claude/skills/*/` and `lib/templates/*-template.md`
+  and asserts each member satisfies its rule (skill `name` matches its directory; every template is
+  registered in `template-index.md`). **Adding skill #15 or a new template is covered automatically**
+  — there is nothing to add to the test.
+
+This is the structural answer to two recurring questions: *"where does changing X land?"* (the
+forbidden-value scan visits all files) and *"did I remember to test the new thing?"* (the
+self-enumerating tests read the filesystem, so new instances are guarded by construction). Only a
+genuinely new *shape* of fact needs a new scanner entry. The scanner layer caught three drifts the
+location-listed registry missed (orphaned-hook root pattern ×2, addendum conclude-command ×2,
+unregistered `phase-index-template.md`) — the evidence that completeness must come from scanning,
+not enumeration.
+
+---
+
 ## Declared intentional mirrors
 
 These pairs intentionally duplicate content across tools. Agreement is required; byte-equality is not.
