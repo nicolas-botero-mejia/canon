@@ -8,7 +8,7 @@ compatibility: Claude Code
 Conclude the current phase: audit open decisions, run a knowledge audit, write the phase summary, and execute the phase transition.
 
 ## When to use
-After Session 8 (scope confirmation) — the final client session of Phase 1. All client decisions should be closed or explicitly deferred before running this.
+After the final session of the current phase. All client decisions should be closed or explicitly deferred before running this.
 
 ## Arguments
 - Current phase number (required): e.g., `01`
@@ -30,7 +30,7 @@ Before the knowledge audit: scan all Complete conclusions files in `conclusions/
 - This is a pre-wrap gate: unverified conclusions carry forward unknown drift into the next phase. Human decides whether to verify now or explicitly accept the risk and proceed.
 
 **Step 2 — /knowledge-audit (inline)**
-Runs the full 11-dimension audit (including alignment verification coverage — Dimension 11). Output goes to `tmp/phase-NN-knowledge-audit-pre-wrap-YYYY-MM-DD.md`.
+Runs the full 15-dimension audit (including alignment verification coverage). Output goes to `tmp/phase-NN-knowledge-audit-pre-wrap-YYYY-MM-DD.md`.
 Flags anything blocking the transition (especially meta-doc drift, contradictions, or empty alignment fields).
 **Pause here if critical issues found.** Human decides whether to fix before transition or defer.
 

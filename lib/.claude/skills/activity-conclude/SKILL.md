@@ -134,7 +134,9 @@ This is advisory, not blocking. Human decides.
 - Update `CONTENT_INDEX.md` — conclusions file entry (update status from In Progress → Complete)
 - Update `plans/phase-NN-poc-roadmap.md` (poc and addendum: → ✅ Complete)
 - Update `plans/discovery-backlog.md` entry status (addendum: → Complete)
-- **Set `**Alignment verified:** YYYY-MM-DD`** on the conclusions file (poc/addendum/research types only — NOT session, since no conclusions file is written yet)
+- **Set alignment fields** on the conclusions file (poc/addendum/research types only — NOT session):
+  - Body: `**Alignment verified:** YYYY-MM-DD`
+  - YAML frontmatter: `alignment_verified: "YYYY-MM-DD"` (MCP reads the YAML field; body-only leaves MCP reporting the file as unverified)
 - Append to `log.md`
 
 ---

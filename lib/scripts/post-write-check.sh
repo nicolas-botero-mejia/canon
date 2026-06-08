@@ -23,12 +23,14 @@ if [[ -z "$INPUT" ]]; then
     exit 0
 fi
 
-# Extract file_path via stdin pipe to python3 (avoids arg-length limits on large writes)
+# Extract file path via stdin pipe to python3 (avoids arg-length limits on large writes).
+# Handles both Claude Code (tool_input.file_path) and Cursor (tool_input.path).
 FILE_PATH=$(echo "$INPUT" | python3 -c "
 import json, sys
 try:
     data = json.load(sys.stdin)
-    print(data.get('tool_input', {}).get('file_path', ''))
+    ti = data.get('tool_input', {})
+    print(ti.get('file_path', '') or ti.get('path', ''))
 except Exception:
     print('')
 " 2>/dev/null)

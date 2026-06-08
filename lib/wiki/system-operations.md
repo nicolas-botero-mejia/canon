@@ -368,7 +368,7 @@ When transcript available:
 Within 24h:      conclusions/phase-NN-session-NN-[topic]-conclusions.md
 
 After final session of phase:
-                 conclusions/phase-NN-conclusions.md  (full phase synthesis)
+                 conclusions/phase-NN-summary.md  (full phase synthesis)
 ```
 
 **Note:** Sessions produce TWO findings files — field-notes (human, during session) and results (AI, from transcript). They are different documents with different authorship and different roles in synthesis.

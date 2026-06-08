@@ -317,6 +317,152 @@ test('PROJECT_ROOT: watch-project.sh does not use dirname "$0" pattern', () => {
   )
 })
 
+// ─── Cursor PostToolUse path field ───────────────────────────────────────────
+// Cursor sends tool_input.path (not .file_path). The unified post-write-check.sh
+// must handle both fields or Cursor users get no stale-ref feedback on writes.
+
+test('Cursor PostToolUse: post-write-check.sh reads both path and file_path fields', () => {
+  const s = read('lib/scripts/post-write-check.sh')
+  assert.ok(
+    s.includes("'path'") || s.includes('"path"'),
+    'lib/scripts/post-write-check.sh must handle Cursor\'s "path" field (tool_input.path), not only "file_path"'
+  )
+})
+
+// ─── Phase synthesis filename (R-013) ────────────────────────────────────────
+// Canonical: conclusions/phase-NN-summary.md — used by phase-conclude, phase-deprecate,
+// phase-update, activity-deprecate, phase-reorder skills + phase-reorder.sh (6 sources).
+// Drift: system-operations.md says phase-NN-conclusions.md; phase-index-template.md
+// says phase-NN-synthesis-conclusions.md; pm.md says phase-NN-conclusions.md.
+
+test('R-013: system-operations.md uses phase-NN-summary.md for phase synthesis file', () => {
+  const s = read('lib/wiki/system-operations.md')
+  assert.ok(
+    !s.includes('phase-NN-conclusions.md'),
+    'system-operations.md says "phase-NN-conclusions.md" for phase synthesis — canonical is "phase-NN-summary.md" (used by phase-conclude and 5 other skills)'
+  )
+})
+
+test('R-013: phase-index-template.md uses phase-NN-summary.md not synthesis-conclusions', () => {
+  const s = read('lib/templates/phase-index-template.md')
+  assert.ok(
+    !s.includes('synthesis-conclusions'),
+    'phase-index-template.md says "synthesis-conclusions.md" — canonical is phase-NN-summary.md'
+  )
+  assert.ok(
+    s.includes('summary.md'),
+    'phase-index-template.md checklist must reference the canonical phase-NN-summary.md filename'
+  )
+})
+
+test('R-013: pm.md uses phase-NN-summary.md not phase-NN-conclusions.md', () => {
+  const s = read('lib/.claude/agents/pm.md')
+  assert.ok(
+    !s.includes('phase-NN-conclusions.md'),
+    'pm.md says "phase-NN-conclusions.md" for phase synthesis — canonical is "phase-NN-summary.md"'
+  )
+})
+
+// ─── R-004: Alignment dual-field ─────────────────────────────────────────────
+// Templates have both **Alignment verified:** (body) and alignment_verified (YAML).
+// Skills must instruct setting BOTH or MCP reports all concluded activities as unverified.
+
+test('R-004: activity-conclude/SKILL.md instructs setting YAML alignment_verified field', () => {
+  const s = read('lib/.claude/skills/activity-conclude/SKILL.md')
+  assert.ok(
+    s.includes('alignment_verified:'),
+    'activity-conclude/SKILL.md must instruct setting YAML alignment_verified: "YYYY-MM-DD" in frontmatter (MCP reads YAML; body-only sets leave MCP reporting unverified)'
+  )
+})
+
+test('R-004: conclusions-review/SKILL.md instructs setting YAML alignment_verified field', () => {
+  const s = read('lib/.claude/skills/conclusions-review/SKILL.md')
+  assert.ok(
+    s.includes('alignment_verified:'),
+    'conclusions-review/SKILL.md must instruct setting YAML alignment_verified: "YYYY-MM-DD" in frontmatter (MCP reads YAML; body-only leaves MCP reporting unverified)'
+  )
+})
+
+// ─── Skill residue ────────────────────────────────────────────────────────────
+
+test('phase-conclude/SKILL.md: no hardcoded "Session 8" reference', () => {
+  const s = read('lib/.claude/skills/phase-conclude/SKILL.md')
+  assert.ok(
+    !s.includes('Session 8'),
+    'phase-conclude/SKILL.md contains hardcoded "Session 8" — project-specific residue, not a generic skill instruction'
+  )
+})
+
+test('phase-conclude/SKILL.md: says 15-dimension audit not 11', () => {
+  const s = read('lib/.claude/skills/phase-conclude/SKILL.md')
+  assert.ok(
+    !s.includes('11-dimension'),
+    'phase-conclude/SKILL.md says "11-dimension audit" — knowledge-audit has 15 dimensions (R-005 canonical)'
+  )
+})
+
+test('activity-new/SKILL.md: alignment check uses /conclusions-review, not /activity-conclude poc', () => {
+  const s = read('lib/.claude/skills/activity-new/SKILL.md')
+  // Alignment check context: loading prior CONCLUDED conclusions files.
+  // Concluded = immutable (Rule 16). /activity-conclude poc re-concludes — wrong.
+  // /conclusions-review is the correct fix for a missing alignment date.
+  const idx = s.indexOf('Alignment verified:')
+  if (idx !== -1) {
+    const block = s.slice(Math.max(0, idx - 100), idx + 400)
+    assert.ok(
+      !block.includes('/activity-conclude poc'),
+      'activity-new/SKILL.md alignment check suggests /activity-conclude poc — concluded files are immutable (Rule 16); use /conclusions-review'
+    )
+  }
+})
+
+test('behavioral.md Rule 14: lists /signal, /phase-new, /phase-conclude', () => {
+  const s = read('lib/.claude/rules/behavioral.md')
+  const rule14 = s.slice(s.indexOf('### 14.'))
+  assert.ok(rule14.includes('/signal'), 'behavioral.md Rule 14 missing /signal')
+  assert.ok(rule14.includes('/phase-new'), 'behavioral.md Rule 14 missing /phase-new')
+  assert.ok(rule14.includes('/phase-conclude'), 'behavioral.md Rule 14 missing /phase-conclude')
+})
+
+test('behavioral.mdc Rule 14: lists /signal, /phase-new, /phase-conclude (mirror)', () => {
+  const s = read('lib/.cursor/rules/behavioral.mdc')
+  const rule14 = s.slice(s.indexOf('### 14.'))
+  assert.ok(rule14.includes('/signal'), 'behavioral.mdc Rule 14 missing /signal (must mirror behavioral.md)')
+  assert.ok(rule14.includes('/phase-new'), 'behavioral.mdc Rule 14 missing /phase-new (must mirror behavioral.md)')
+  assert.ok(rule14.includes('/phase-conclude'), 'behavioral.mdc Rule 14 missing /phase-conclude (must mirror behavioral.md)')
+})
+
+test('ADR-014: examples/consumer/.cursor/hooks.json uses dispatcher not wrapper scripts', () => {
+  const h = JSON.parse(read('examples/consumer/.cursor/hooks.json'))
+  const cmds = [
+    h.hooks?.sessionStart?.[0]?.command ?? '',
+    h.hooks?.postToolUse?.[0]?.command ?? '',
+    h.hooks?.stop?.[0]?.command ?? '',
+  ]
+  for (const cmd of cmds) {
+    assert.ok(
+      !cmd.includes('.cursor/hooks/'),
+      `examples/consumer/.cursor/hooks.json command "${cmd}" points at vendored wrapper — must use dispatcher (bin/hook.sh)`
+    )
+  }
+})
+
+test('lib/.cursor/hooks/stop-check.sh: no dirname "$0" pattern (PROJECT_ROOT bug)', () => {
+  const s = read('lib/.cursor/hooks/stop-check.sh')
+  assert.ok(
+    !s.includes('"$(dirname "$0"'),
+    'lib/.cursor/hooks/stop-check.sh uses dirname "$0" — resolves to package root in node_modules; use $(pwd)'
+  )
+})
+
+test('system-architecture.md: Stop hooks not described as "blocks on exit 2" (ADR-013)', () => {
+  const s = read('lib/wiki/system-architecture.md')
+  assert.ok(
+    !s.includes('[auto, blocks on exit 2]'),
+    'system-architecture.md lifecycle diagram says Stop hooks "blocks on exit 2" — ADR-013: Stop is advisory only, always exits 0'
+  )
+})
+
 // ─── SKILL.md standard compliance ────────────────────────────────────────────
 // Verify all framework SKILL.md files pass the open standard spec (agentskills.io)
 

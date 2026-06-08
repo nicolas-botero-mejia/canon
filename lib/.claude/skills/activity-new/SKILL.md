@@ -44,7 +44,7 @@ Activities are bounded units of work inside a phase. Four types share the same l
 - `poc`: check for prior research on this topic (advisory if missing — suggest `/activity-new research` first if hypothesis space is unclear)
 - `addendum`: parent conclusions already loaded in Step 1. Check for prior research on the addendum topic — it may resolve hypotheses before execution.
 - `research`: search `CONTENT_INDEX.md` for existing research on the same or closely related topic. If found, surface it: *"Prior research found on [topic]. Does new research still add value, or can we build on what exists?"*
-- `session`: load prior conclusions relevant to this session's topic. For each conclusions file depended on: check `**Alignment verified:**` field (Rule 12). If absent: surface it — *"[file] has not been alignment-verified. Run `/activity-conclude poc` or `/conclusions-review [file]` before creating this plan, or confirm inline."* Do not block — surface and let human decide.
+- `session`: load prior conclusions relevant to this session's topic. For each conclusions file depended on: check `**Alignment verified:**` field (Rule 12). If absent: surface it — *"[file] has not been alignment-verified. Run `/conclusions-review [file]` before creating this plan, or confirm inline."* Do not block — surface and let human decide.
 
 **Step 3 — Load prior context brief**
 For all types: load relevant conclusions, deferred observations, wiki sections in priority order (conclusions > results > field-notes). Return structured brief:

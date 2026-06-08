@@ -3,18 +3,18 @@
   "hooks": {
     "sessionStart": [
       {
-        "command": ".cursor/hooks/session-start.sh"
+        "command": "bash node_modules/@nicolas-botero-mejia/canon/bin/hook.sh SessionStart"
       }
     ],
     "postToolUse": [
       {
-        "command": ".cursor/hooks/post-write-check.sh",
+        "command": "bash node_modules/@nicolas-botero-mejia/canon/bin/hook.sh PostToolUse",
         "matcher": "Write|StrReplace"
       }
     ],
     "stop": [
       {
-        "command": ".cursor/hooks/stop-check.sh"
+        "command": "bash node_modules/@nicolas-botero-mejia/canon/bin/hook.sh Stop"
       }
     ]
   }

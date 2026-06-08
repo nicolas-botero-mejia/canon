@@ -8,3 +8,6 @@ node_modules/
 
 # runtime artifact
 .claude/pending-updates.log
+
+# Canon
+Thumbs.db

@@ -377,9 +377,7 @@ During `canon init`, answer **y** to "Enable MCP knowledge server?" This writes:
 }
 ```
 
-> **Known bug (Phase 2D):** `canon sync` currently overwrites `.claude/settings.json` before
-> reading back `mcpServers` — MCP configuration is wiped on sync. See `sync.mjs:23`. Do not
-> run `canon sync` until fixed if MCP is configured.
+> **Fixed (2026-06-08):** MCP wipe on sync resolved — `sync.mjs` now reads existing `mcpServers` before overwriting `settings.json` and re-applies the block after. Regression test in `sync.test.mjs`.
 
 ### Resources
 
@@ -414,14 +412,14 @@ Key fields read by MCP tools — full schema in `system-template-standards.md §
 
 ---
 
-## Tools Registry (declarative model — Phase 2E)
+## Tools Registry (declarative model — shipped 2026-06-08)
 
-The CLI will iterate this structure after the Phase 2E refactor. Each entry declares everything
-needed to vendor artifacts and write wiring for that tool. Replaces the ~7 hardcoded
-`claude`/`cursor` spots in `init.mjs`, `sync-ops.mjs`, and `manifest.json`.
+The CLI iterates this structure — `init.mjs` and `sync.mjs` loop over registry entries for
+prompting and wiring. Replaces the ~7 hardcoded `claude`/`cursor` spots.
+Canonical source: `bin/lib/tools-registry.mjs`. Adding a new tool = one registry entry.
 
 ```js
-// bin/lib/tools-registry.mjs (planned — Phase 2E)
+// bin/lib/tools-registry.mjs (shipped)
 export const TOOLS = [
   {
     id: 'claude',
@@ -475,19 +473,16 @@ export const TOOLS = [
 
 ---
 
-## Adding a new tool integration (current procedure — pre Phase 2E)
+## Adding a new tool integration
 
-1. Add a new section to this file with: lifecycle events, config format, hook output format,
+1. Add one entry to `bin/lib/tools-registry.mjs` with: `id`, `label`, `promptText`,
+   `defaultEnabled`, `isInstalled()`, `writeWiring()`. Add `writeXxxHooks()` to `sync-ops.mjs`
+   if the tool needs a custom config format.
+2. Add a new section to this file with: lifecycle events, config format, hook output format,
    skill discovery paths, known limitations
-2. Add the tool to the capability matrix above with version/date per feature
-3. Verify SKILL.md discovery: does the tool read `.claude/skills/` natively? If not, does it
-   read `.agents/skills/`? Plan vendoring or symlinking accordingly
-4. Update `**Last updated:**` at top to today's date
-5. Update `bin/commands/init.mjs` to prompt for the new layer and write config
-6. Update `bin/lib/sync-ops.mjs` to vendor any files the tool doesn't auto-discover
-7. Add tool's config file(s) to `manifest.json` wiring
-8. Run `npm test` — invariants test will catch registry/docs agreement failures
-
-Post Phase 2E: add one entry to `bin/lib/tools-registry.mjs` and run `canon init` in a test
-consumer to verify dirs, config file, base-context file, and hook wiring are all correct.
-`system-architecture.md` and `system-operations.md` do not need updating for new tool wiring.
+3. Add the tool to the capability matrix above with version/date per feature
+4. Verify SKILL.md discovery: does the tool read `.claude/skills/` natively? If not, confirm
+   `.agents/skills/` symlink covers it (already written by `canon init`)
+5. Update `**Last updated:**` at top to today's date
+6. Run `canon init --yes` in a temp dir and confirm dirs, config file, and hook wiring are correct
+7. Run `npm test` — invariants test catches registry/docs agreement failures

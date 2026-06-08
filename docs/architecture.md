@@ -93,7 +93,7 @@ Why npm over the alternatives, given the "update the core later" requirement:
 | `npx @nicolas-botero-mejia/canon init` | Interactive. Iterates `bin/lib/tools-registry.mjs` to ask which AI-tool layers to enable (currently: Claude Code, Cursor). Scaffolds user content dirs; writes per-tool wiring (`CLAUDE.md` + `settings.json`, `hooks.json`); writes cross-tool paths unconditionally (`AGENTS.md` with base content, `.agents/skills/ → .claude/skills/` symlink); records `.framework-version`. Adding a new AI tool = one entry in `tools-registry.mjs`, no code changes elsewhere. |
 | `npx @nicolas-botero-mejia/canon sync` | Re-applies the wiring from the currently-installed package version. Writes only the wiring bucket; never the user bucket. Run after `npm update`. |
 | `npx @nicolas-botero-mejia/canon doctor` | Validates integrity: package installed, `@import` line present, discovered dirs present and pointing at the right version, hook dispatcher resolves, `.framework-version` matches `node_modules`. This is the user's "guarantee the link is always there." |
-| `npx @nicolas-botero-mejia/canon migrate` *(later)* | Imports existing project content (e.g. the CRC Phase-1 corpus) into a fresh consumer project. |
+| `npx @nicolas-botero-mejia/canon migrate` | *(Not yet implemented — removed per ADR-005. Corpus import is handled manually.)* |
 
 ---
 

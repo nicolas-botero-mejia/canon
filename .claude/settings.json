@@ -1,0 +1,44 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "date_str=$(date \"+%A, %B %d, %Y %H:%M %Z\") && echo \"{\\\"hookSpecificOutput\\\": {\\\"hookEventName\\\": \\\"SessionStart\\\", \\\"additionalContext\\\": \\\"Current date and time: $date_str\\\"}}\"",
+            "statusMessage": "Loading session date..."
+          },
+          {
+            "type": "command",
+            "command": "bash node_modules/@nicolas-botero-mejia/canon/bin/hook.sh SessionStart",
+            "statusMessage": "Loading project state..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash node_modules/@nicolas-botero-mejia/canon/bin/hook.sh PostToolUse",
+            "timeout": 30,
+            "statusMessage": "Checking for stale references..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash node_modules/@nicolas-botero-mejia/canon/bin/hook.sh Stop",
+            "statusMessage": "Verifying knowledge base consistency..."
+          }
+        ]
+      }
+    ]
+  }
+}

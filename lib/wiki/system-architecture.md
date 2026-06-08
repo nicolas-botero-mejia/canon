@@ -93,12 +93,12 @@ Phase lifecycle
                               ▼
 ╔══════════════════════════════════════════════════════════════════════╗
 ║  SESSION STOP                                                         ║
-║  Hook [auto, blocks on exit 2]: scripts/check-index.sh          ║
+║  Hook [auto, advisory — never blocks]: scripts/check-index.sh   ║
 ║    → missing files + ⚠ mtime drift (stale entries)                   ║
-║  Hook [auto, blocks on exit 2]: scripts/check-links.sh          ║
-║  Hook [auto, blocks on exit 2]: scripts/check-stale-refs.sh     ║
-║  Hook [auto, warns]: scripts/check-conclusions-alignment.sh     ║
-║  Hook [auto, warns]: scripts/check-contracts.sh                 ║
+║  Hook [auto, advisory — never blocks]: scripts/check-links.sh   ║
+║  Hook [auto, advisory — never blocks]: scripts/check-stale-refs.sh║
+║  Hook [auto, advisory — never blocks]: scripts/check-conclusions-alignment.sh║
+║  Hook [auto, advisory — never blocks]: scripts/check-contracts.sh║
 ║    → structural contract validation (frontmatter, tracker cols,       ║
 ║      roadmap emoji set, findings/conclusions required fields)         ║
 ╚══════════════════════════════════════════════════════════════════════╝

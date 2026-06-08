@@ -12,7 +12,7 @@
 # sees them and can address them before the user closes the session.
 # Exits 0 always (Cursor stop hooks do not support hard blocking via exit 2).
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+PROJECT_ROOT="$(pwd)"
 SCRIPTS="$PROJECT_ROOT/node_modules/@nicolas-botero-mejia/canon/lib/scripts"
 
 WARNINGS=""

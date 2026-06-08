@@ -31,7 +31,7 @@ A phase closes when its gate is satisfied. Typical gate criteria (confirm the sp
 - All session notes and conclusions exist for completed sessions
 - All POC/research conclusions exist
 - All tracked decisions closed or explicitly deferred with rationale
-- The phase synthesis (`conclusions/phase-NN-conclusions.md`) is written
+- The phase synthesis (`conclusions/phase-NN-summary.md`) is written
 - All check scripts pass
 
 ### POC / Research Roadmap

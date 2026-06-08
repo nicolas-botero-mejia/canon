@@ -129,10 +129,9 @@ If the section is absent → write "Pass 4 — No Addendum Candidates section fo
 **Step 10 — Set Alignment Verified field**
 After all passes complete (regardless of whether issues were found):
 
-**For full conclusions files (poc, research, session):** Write the current date to the `**Alignment verified:**` field in the target conclusions file:
-```
-**Alignment verified:** YYYY-MM-DD
-```
+**For full conclusions files (poc, research, session):** Write the current date to both alignment fields:
+- Body: `**Alignment verified:** YYYY-MM-DD`
+- YAML frontmatter: `alignment_verified: "YYYY-MM-DD"` (MCP reads the YAML field; body-only leaves MCP reporting the file as unverified)
 
 **For addendum targets (`--addendum NN` flag or when target is identified as an addendum section):** Set `**Addendum alignment verified:** YYYY-MM-DD` in the `## Addendum NN` section of the parent file, NOT the file-level `**Alignment verified:**` field. The file-level date is only updated when the user explicitly requests a full top-to-bottom review of the parent file. When the target is an addendum, also cross-check the appended section against the parent's decisions and H-numbers (auto-applied).
 
