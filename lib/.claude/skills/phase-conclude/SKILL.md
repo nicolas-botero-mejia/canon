@@ -1,3 +1,8 @@
+---
+name: phase-conclude
+description: Conclude the current phase: audit open decisions, run a knowledge audit, write the phase summary, and execute the phase transition.
+compatibility: Claude Code
+---
 # /phase-conclude
 
 Conclude the current phase: audit open decisions, run a knowledge audit, write the phase summary, and execute the phase transition.

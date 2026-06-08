@@ -1,3 +1,8 @@
+---
+name: wiki-manage
+description: Manage the lifecycle of wiki files: add, update, or deprecate content. All operations are propose-then-approve — nothing executes without human sign-off.
+compatibility: Claude Code
+---
 # /wiki-manage
 
 Manage the lifecycle of wiki files: add new content, update existing content, or deprecate stale content. All operations are propose-then-approve — nothing executes without human sign-off.

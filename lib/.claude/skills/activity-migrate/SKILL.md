@@ -1,3 +1,8 @@
+---
+name: activity-migrate
+description: Move a Planned activity from one phase to another: port the plan file, update roadmaps and CONTENT_INDEX in both phases, and log the move.
+compatibility: Claude Code
+---
 # /activity-migrate
 
 Move a Planned activity from one phase to another: port the plan file, update roadmaps and CONTENT_INDEX in both phases, and log the move.

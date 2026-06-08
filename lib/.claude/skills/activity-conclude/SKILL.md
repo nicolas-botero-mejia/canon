@@ -1,3 +1,8 @@
+---
+name: activity-conclude
+description: Conclude a completed activity: synthesize results into conclusions, close decisions, update the tracker, register everything.
+compatibility: Claude Code
+---
 # /activity-conclude
 
 Conclude a completed activity: synthesize results into conclusions, close decisions, update the tracker, register everything.

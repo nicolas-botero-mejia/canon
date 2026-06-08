@@ -1,3 +1,8 @@
+---
+name: phase-deprecate
+description: Deprecate an active phase that will not be concluded: resolve open decisions, handle in-progress activities, archive plans, and log the decision.
+compatibility: Claude Code
+---
 # /phase-deprecate
 
 Deprecate an active phase that will not be concluded: resolve open decisions, handle in-progress activities, archive plans, and log the decision.

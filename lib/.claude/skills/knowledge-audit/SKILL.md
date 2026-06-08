@@ -1,3 +1,8 @@
+---
+name: knowledge-audit
+description: Run a full consistency and currency check on the knowledge base. Produces an actionable issues report in tmp/ — no auto-execution.
+compatibility: Claude Code
+---
 # /knowledge-audit
 
 Run a full consistency and currency check on the knowledge base. Produces an actionable issues report in tmp/ — no auto-execution.

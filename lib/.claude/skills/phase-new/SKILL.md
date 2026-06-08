@@ -1,3 +1,8 @@
+---
+name: phase-new
+description: Scaffold a new engagement phase — create the phase index, update CLAUDE.md and CONTENT_INDEX.md, and verify the transition is complete.
+compatibility: Claude Code
+---
 # /phase-new
 
 Scaffold a new engagement phase — create the phase index, update CLAUDE.md and CONTENT_INDEX.md, and verify the transition is complete.

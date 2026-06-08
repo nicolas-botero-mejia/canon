@@ -1,3 +1,8 @@
+---
+name: activity-update
+description: Surgically revise an in-progress activity plan: update scope, hypotheses, or plan structure. Does not change status or produce conclusions.
+compatibility: Claude Code
+---
 # /activity-update
 
 Surgically revise an in-progress activity's plan: update scope, hypotheses, or plan structure. Does not change status or produce conclusions.

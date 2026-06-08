@@ -18,7 +18,7 @@ count_md() {
 wiki_count=$(count_md "wiki")
 findings_count=$(count_md "findings")
 plans_count=$(count_md "plans")
-output_count=$(count_md "output")
+output_count=$(count_md "conclusions")
 
 # --- Pending external updates ---
 pending_lines=""

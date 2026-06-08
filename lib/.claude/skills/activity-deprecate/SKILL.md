@@ -1,3 +1,8 @@
+---
+name: activity-deprecate
+description: Mark an activity as abandoned without conclusions: update plan frontmatter, clear roadmap and backlog entries, and log the decision.
+compatibility: Claude Code
+---
 # /activity-deprecate
 
 Mark an activity as abandoned without conclusions: update plan frontmatter, clear roadmap and backlog entries, and log the decision.

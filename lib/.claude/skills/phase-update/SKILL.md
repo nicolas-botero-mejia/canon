@@ -1,3 +1,8 @@
+---
+name: phase-update
+description: Make a surgical update to an active phase index or roadmap: add/close decisions, update session map, modify roadmap, or revise scope statement.
+compatibility: Claude Code
+---
 # /phase-update
 
 Make a surgical update to an active phase's index or roadmap: add/close decisions in the tracker, update the session map, modify the roadmap, or revise the phase scope statement.

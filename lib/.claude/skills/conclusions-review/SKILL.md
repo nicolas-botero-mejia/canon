@@ -1,3 +1,8 @@
+---
+name: conclusions-review
+description: Analytically review concluded documents to verify system alignment, surface dependency chains, identify stale files, and produce a prioritized patch list.
+compatibility: Claude Code
+---
 # /conclusions-review
 
 Analytically review one or more concluded documents to verify system alignment, surface dependency chains, identify stale files, and produce a prioritized patch list.

@@ -1,3 +1,8 @@
+---
+name: phase-reorder
+description: Swap the numbers of two active phases: rename all associated files, update internal references, and log the swap.
+compatibility: Claude Code
+---
 # /phase-reorder
 
 Swap the numbers of two active phases: rename all associated files, update internal references, and log the swap. Uses a three-step atomic rename to avoid collisions.

@@ -33,7 +33,7 @@ fswatch -r \
   "$PROJECT_ROOT/wiki" \
   "$PROJECT_ROOT/findings" \
   "$PROJECT_ROOT/plans" \
-  "$PROJECT_ROOT/output" \
+  "$PROJECT_ROOT/conclusions" \
   "$PROJECT_ROOT/raw" \
 | while IFS= read -r changed_file; do
     timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)

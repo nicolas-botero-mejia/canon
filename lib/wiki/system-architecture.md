@@ -408,9 +408,9 @@ Structural guarantees for template-generated files. Required for MCP query relia
 
 ### `plans/phase-NN-poc-roadmap.md`
 
-- **Required columns:** `POC` | `Status` | `Prerequisite` | `Description`
+- **Required columns:** `POC #` | `Name` | `Status` | `Prerequisite` | `Sessions` | `Decisions it closes`
 - **Status values:** `🔜 Planned` | `⏳ In Progress` | `✅ Complete` | `Deprecated` | `~~In Progress~~ Deprecated` | `Migrated → Phase NN`
-- **Contract:** consistent emoji status values across all roadmap files
+- **Contract:** consistent emoji status values across all roadmap files; 6 columns in every data row
 
 ### `CONTENT_INDEX.md` entries
 

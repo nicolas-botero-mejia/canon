@@ -1,3 +1,8 @@
+---
+name: activity-new
+description: Create all planning artifacts for a new activity inside the current phase.
+compatibility: Claude Code
+---
 # /activity-new
 
 Create all planning artifacts for a new activity inside the current phase.

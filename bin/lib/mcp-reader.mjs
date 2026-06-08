@@ -77,7 +77,8 @@ export function readDecisionsTracker(phaseIndexPath) {
 }
 
 // Parse POC roadmap table rows from a phase roadmap file.
-// Returns [{poc, status, prerequisite, description}]
+// Template has 6 columns: POC # | Name | Status | Prerequisite | Sessions | Decisions it closes
+// Returns [{poc, name, status, prerequisite, sessions, decisions}]
 export function readPocRoadmap(roadmapPath) {
   if (!existsSync(roadmapPath)) return []
   const content = readFileSync(roadmapPath, 'utf8')
@@ -95,9 +96,11 @@ export function readPocRoadmap(roadmapPath) {
     if (cols.length >= 4) {
       rows.push({
         poc: cols[0],
-        status: cols[1],
-        prerequisite: cols[2],
-        description: cols[3],
+        name: cols[1] ?? '',
+        status: cols[2] ?? '',
+        prerequisite: cols[3] ?? '',
+        sessions: cols[4] ?? '',
+        decisions: cols[5] ?? '',
       })
     }
   }

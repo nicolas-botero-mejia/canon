@@ -1,3 +1,8 @@
+---
+name: signal
+description: Capture a discovery in 2 minutes without interrupting current work. Works whether or not an activity is open.
+compatibility: Claude Code
+---
 # /signal
 
 Capture a discovery in 2 minutes without interrupting current work. Works whether or not an activity is open.
