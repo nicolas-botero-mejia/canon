@@ -17,41 +17,59 @@ R-012 wiki path drift, R-011 Stop hook behavior).
 
 ## Standards Alignment Model (June 2026)
 
-The framework uses **open standards** as the canonical shape for its artifacts so that they
-work across tools without per-tool content generation:
+The framework uses **open standards** as the canonical shape for its artifacts where tools
+agree on the format. Where they diverge, per-tool format adapters handle the difference.
 
-| Standard | What it is | Supported by |
+| Standard | What it is | Confirmed support |
 |---|---|---|
-| `AGENTS.md` | Convergent base-context file (Linux Foundation / Agentic AI Foundation, 60k+ repos) | Claude Code, Cursor, Copilot, Windsurf, Codex CLI, Gemini CLI, Zed |
-| `SKILL.md` | Portable skill definition — slash-command invocable | Claude Code, Cursor (v2.4+), Copilot (2026), Windsurf Cascade, Codex CLI |
-| `MCP` | Model Context Protocol — structured resource + tool exposure | Claude Code (native), Cursor (via MCP setting), Copilot (MCP preview), Windsurf |
+| `AGENTS.md` | Convergent base-context file | Claude Code (as `CLAUDE.md`), Cursor, Copilot (reads nearest), Codex Cloud, Gemini CLI |
+| `SKILL.md` | Portable skill definition — slash-command invocable | Claude Code ✅, Cursor v2.4+ (Jan 2026) ✅. Others: **unconfirmed** — each has a "skills" concept but format portability not verified from docs |
+| `MCP` | Model Context Protocol | Claude Code ✅ native, Cursor ✅, Copilot ✅ native (2025), Codex ✅ |
 
-**Write-once, place-many:** canonical artifacts (skills, agents, rules, base context) are
-authored once in open-standard shapes and **placed** into each enabled tool's directory by
-`canon sync`. No content generation — only format adapters for the small per-tool structural
-differences (e.g. `.mdc` frontmatter for Cursor rules).
+> **SKILL.md portability caveat (survey 2026-06-08):** The previous assumption that SKILL.md
+> is universally portable across Copilot/Windsurf/Codex was **not confirmed** from official
+> documentation. Copilot has its own "agent skills" system (folders of instructions + scripts
+> + resources); Codex has skills; neither explicitly documents SKILL.md compatibility. The
+> `write-once, place-many` model applies definitively for Claude Code + Cursor today.
+> Re-verify when adding other tools.
 
-**Adding a tool:** one entry in the tools registry below → `init.mjs`/`sync-ops.mjs`/
-`manifest.json` pick it up. No hardcoded tool names; no architecture change.
+**Write-once, place-many (confirmed for Claude Code + Cursor):** canonical artifacts are
+authored once and placed into each enabled tool's directory by `canon sync`. Format adapters
+handle per-tool structural differences (e.g. `.mdc` frontmatter for Cursor rules).
 
 ---
 
 ## Tool Capability Matrix
 
-Each cell: `✅ supported` / `⚠️ partial` / `❌ not supported` — with version/date when introduced.
+Each cell: `✅ supported` / `⚠️ partial/unconfirmed` / `❌ not supported` — with version/date.
 
-| Feature | Claude Code | Cursor | GitHub Copilot | Windsurf | Codex CLI |
+| Feature | Claude Code | Cursor | GitHub Copilot | Windsurf | Codex Cloud |
 |---|---|---|---|---|---|
-| **Base context file** | `CLAUDE.md` (native, always loaded) | `AGENTS.md` or `.cursorrules` | `AGENTS.md` (2026) / `.github/copilot-instructions.md` | `AGENTS.md` (2025) | `AGENTS.md` (2026) |
-| **Skills (`SKILL.md`)** | ✅ `.claude/skills/` | ✅ `.cursor/skills/` — v2.4, Jan 2026 | ✅ `.github/skills/` — 2026 | ✅ `.windsurf/skills/` — Cascade, 2026 | ✅ `.codex/skills/` — 2026 |
-| **Rules / behavioral** | ✅ `.claude/rules/` (always-apply `.md`) | ✅ `.cursor/rules/` (`.mdc`, `alwaysApply: true`) | ✅ `.github/instructions/` — 2026 | ✅ `.windsurf/rules/` — 2026 | ⚠️ via `AGENTS.md` embed |
-| **Subagents** | ✅ `.claude/agents/` | ✅ `.cursor/agents/` — v0.45+ | ⚠️ Copilot Extensions (separate) | ⚠️ limited | ⚠️ limited |
-| **Lifecycle hooks** | ✅ `settings.json` — SessionStart, PreToolUse, PostToolUse, Stop | ✅ `hooks.json` — AfterAgent, PostToolUse (v0.47+, 2026) | ❌ not supported | ❌ not supported | ❌ not supported |
-| **MCP resources** | ✅ native, `mcpServers` in `settings.json` | ✅ via MCP setting | ⚠️ MCP preview (2026) | ✅ native MCP | ❌ |
+| **Base context file** | `CLAUDE.md` (native) | `AGENTS.md` or `.cursorrules` | `AGENTS.md` (nearest) + `.github/copilot-instructions.md` | ⚠️ status unclear — docs now redirect to Devin Desktop | `AGENTS.md` ✅ |
+| **Skills** | ✅ `.claude/skills/` SKILL.md | ✅ `.cursor/skills/` SKILL.md — v2.4, Jan 2026 | ⚠️ own format — "agent skills" (folders + instructions/scripts/resources); SKILL.md portability unconfirmed | ⚠️ unknown — product rebranded | ⚠️ skills confirmed; format unconfirmed |
+| **Rules / behavioral** | ✅ `.claude/rules/*.md` (always-apply) | ✅ `.cursor/rules/*.mdc` (`alwaysApply: true`) | ✅ `.github/copilot-instructions.md` (repo-wide); `.github/instructions/*.instructions.md` (path-scoped) | ⚠️ unknown | ⚠️ via `AGENTS.md` embed |
+| **Subagents** | ✅ `.claude/agents/` | ✅ `.cursor/agents/` — v0.45+ | ✅ Custom agents (Oct 28, 2025) — via `.github/` config | ⚠️ unknown | ⚠️ partial |
+| **Lifecycle hooks** | ✅ `settings.json` — SessionStart, PreToolUse (blocking), PostToolUse, Stop (advisory) | ✅ `hooks.json` — PostToolUse, AfterAgent (v0.47+) | ✅ `.github/hooks/NAME.json` — sessionStart, preToolUse (**fail-closed**), postToolUse, sessionEnd, userPromptSubmitted, errorOccurred, agentStop. CLI + cloud agent. | ⚠️ unknown | ✅ hooks confirmed |
+| **MCP resources** | ✅ native — `mcpServers` in `settings.json` | ✅ via MCP setting | ✅ native — repo-level JSON config; both CLI + cloud agent (2025) | ⚠️ unknown | ✅ confirmed |
 
-> **Survey date:** 2026-06-08. Feature support verified via official documentation and release
-> notes. Cells marked with a version/date reflect when that feature was introduced — earlier
-> versions of the tool may not support it.
+> **Survey date:** 2026-06-08. Sources: official GitHub Copilot docs (hooks reference, cloud
+> agent docs, MCP config docs), Cursor release notes, Claude Code docs.
+> **Windsurf:** docs.windsurf.com now permanently redirects to docs.devin.ai (Devin Desktop) —
+> Windsurf appears to have been rebranded/acquired by Cognition. All Windsurf cells are marked
+> unknown until docs are verified at the new location.
+> **Codex Cloud** replaces "Codex CLI" — OpenAI now ships Codex as a cloud agent, not a CLI tool.
+
+### Key corrections vs. previous versions of this matrix
+
+| Tool | Feature | Was | Is |
+|---|---|---|---|
+| Copilot | Lifecycle hooks | ❌ not supported | ✅ 6 events, preToolUse fail-closed |
+| Copilot | MCP | ⚠️ preview | ✅ native (2025) |
+| Copilot | Subagents | ⚠️ Extensions only | ✅ Custom agents (Oct 2025) |
+| Copilot | Skills | ✅ `.github/skills/` SKILL.md | ⚠️ own format, SKILL.md portability unconfirmed |
+| Codex | Hooks | ❌ | ✅ confirmed |
+| Codex | MCP | ❌ | ✅ confirmed |
+| Windsurf | All features | partially filled | ⚠️ unknown — product rebranded, docs moved |
 
 ---
 
@@ -189,54 +207,115 @@ standard). Available since Cursor v2.4, January 2026.
 ## GitHub Copilot
 
 ### Base context
-`AGENTS.md` (preferred, 2026) or `.github/copilot-instructions.md`. The framework targets
-`AGENTS.md` as the canonical base file — no Copilot-specific base file needed.
-
-### Skills / instructions
-`.github/skills/[name]/SKILL.md` — same format as Claude Code and Cursor. Available 2026.
-`.github/instructions/` — behavioral rules (`.md` format, `applyTo` field for scoping).
+Copilot reads base context from multiple files (nearest takes precedence):
+- `AGENTS.md` — reads nearest file in the directory tree
+- `.github/copilot-instructions.md` — repo-wide instructions
+- `.github/instructions/*.instructions.md` — path-scoped instructions (frontmatter `applyTo` glob)
+- `CLAUDE.md` or `GEMINI.md` at repo root (also recognized)
 
 ### Lifecycle hooks
-Not supported. Copilot does not expose pre/post tool use hooks.
+
+Copilot CLI and Copilot cloud agent both support hooks. Configuration: `.github/hooks/NAME.json`
+(repo-level, must be on default branch for cloud agent).
+
+| Event | When it fires | Blocking? |
+|-------|--------------|-----------|
+| `sessionStart` | Session opens | No |
+| `userPromptSubmitted` | User submits a prompt | No |
+| `preToolUse` | Before tool execution | **Yes — fail-closed** (crash or timeout denies execution) |
+| `postToolUse` | After tool execution | No |
+| `errorOccurred` | Error during execution | No |
+| `sessionEnd` / `agentStop` | Session ends | No |
+
+**Hook types:** command (bash/powershell), HTTP (POST to URL), prompt (CLI-only, auto-submits text).
+**Hook output:** must be valid JSON on a single line. Input JSON contains `timestamp`, `cwd`, `toolName`, `toolArgs`.
+
+```json
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "bash .github/hooks/pre-tool-check.sh",
+        "powershell": ".github/hooks/pre-tool-check.ps1",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}
+```
+
+### Agent skills
+Copilot has an "agent skills" system — folders containing instructions, scripts, and resources
+that the agent loads when relevant. **File format: Copilot's own proprietary folder structure.**
+SKILL.md portability (same format as Claude Code + Cursor) has not been confirmed from official
+documentation. Do not assume SKILL.md places correctly into Copilot without verification.
+
+### Custom agents
+Configurable specialized agents announced Oct 28, 2025. Define via `.github/` config with
+custom prompts, tool selections, and MCP server connections. Works across github.com, Copilot
+CLI, and VS Code.
+
+### MCP
+Native support — configured at repo level via JSON. Both Copilot CLI and cloud agent.
+`mcpServers` object; supports `local`, `stdio`, `http`, `sse` types. Available since 2025.
 
 ### Known limitations
-- No hook support — governance enforcement via rules only (no session-close checks).
-- Subagents via Copilot Extensions are a separate model (separate API, not SKILL.md based).
+- `preToolUse` fail-closed behavior differs from Claude Code (where exit 2 blocks but a crash
+  does not necessarily). Timeouts also deny execution in Copilot.
+- Hook scripts run in the Copilot cloud agent's ephemeral Linux sandbox — files written by
+  hooks are discarded when the job ends.
+- SKILL.md portability for Copilot's agent skills system is unconfirmed — verify before
+  assuming the framework's skills vendor correctly into Copilot directories.
 
 ---
 
 ## Windsurf
 
-### Base context
-`AGENTS.md` (native, 2025). Also reads `.windsurfrules` for legacy compatibility.
+> **⚠️ Status as of 2026-06-08:** Windsurf's documentation domain (`docs.windsurf.com`)
+> now permanently redirects to `docs.devin.ai` (Devin Desktop by Cognition). Windsurf appears
+> to have been acquired/rebranded. All capability claims below are from pre-acquisition
+> documentation and should be re-verified before relying on them.
 
-### Skills / rules
-`.windsurf/skills/[name]/SKILL.md` — Cascade model, 2026.
-`.windsurf/rules/` — behavioral rules in `.md` format.
+### Base context (pre-acquisition, unverified)
+`AGENTS.md` (native). Also reportedly read `.windsurfrules` for legacy compatibility.
 
-### Lifecycle hooks
-Not supported.
+### Skills / rules / hooks (pre-acquisition, unverified)
+Prior documentation referenced `.windsurf/rules/` for behavioral rules and a Cascade-model
+skills system. Hook support was not documented. MCP was reportedly supported.
 
-### Known limitations
-- No hook support — governance enforcement via rules only.
-- Cascade architecture means agent interactions differ from Claude Code's explicit tool calls.
+### Action required
+Before adding Windsurf to the tools registry, re-survey the current product at `docs.devin.ai`
+to confirm what is now supported under the Devin Desktop / Windsurf branding.
 
 ---
 
-## Codex CLI
+## Codex Cloud
+
+> **Note:** OpenAI now ships Codex as **Codex Cloud** (cloud agent), not a standalone CLI tool.
+> The following is based on available documentation as of 2026-06-08; some details
+> (exact file paths for skills, hook format) remain to be verified.
 
 ### Base context
-`AGENTS.md` (native, 2026). Reads from project root.
-
-### Skills
-`.codex/skills/[name]/SKILL.md` — available 2026.
+`AGENTS.md` — confirmed supported.
 
 ### Lifecycle hooks
-Not supported. Codex CLI operates as a one-shot agent; no persistent session lifecycle.
+Confirmed supported. Exact hook event names, config file location, and blocking behavior
+require verification from full Codex docs.
+
+### Skills
+Confirmed as a concept. File format and directory structure require verification —
+do not assume SKILL.md portability without confirming from Codex documentation.
+
+### MCP
+Confirmed supported for tool integration and connectors.
 
 ### Known limitations
-- No hook support.
-- Skills invocation model may differ from interactive tools — verify slash-command syntax.
+- Codex operates as a background/cloud agent — session lifecycle model may differ from
+  interactive tools.
+- Skills format, hook config path, and exact event names are not yet fully documented
+  in publicly available sources. Mark all Codex cells as provisional until verified.
 
 ---
 

@@ -149,11 +149,12 @@ which asserts agreement across locations automatically.
 
 | | |
 |---|---|
-| **Canonical value** | Canonical base = `lib/CLAUDE.base.md`; consumer entry point = `CLAUDE.md` (thin wrapper with `@import lib/CLAUDE.base.md`); per-tool base files (future: `AGENTS.md` for non-Claude tools) derive from the same canonical source |
+| **Canonical value** | Canonical base = `lib/CLAUDE.base.md`; consumer entry point = `CLAUDE.md` (thin wrapper with `@import lib/CLAUDE.base.md`); future: `AGENTS.md` is the convergent standard read by Cursor/Copilot/Codex — plan to make it the canonical base, with `CLAUDE.md` as a thin wrapper |
 | **Canonical home** | `lib/CLAUDE.base.md` |
 | **Must agree** | `bin/commands/init.mjs` (writes CLAUDE.md); `manifest.json` wiring section; `system-tool-integration.md §base file`; `docs/architecture.md §4` |
-| **Dup kind** | intentional — per-tool format differences are format adapters, not separate content |
+| **Dup kind** | intentional — per-tool filename differences handled by format adapters |
 | **Guard** | `invariants.test.mjs` R-010; init output check |
+| **Note** | SKILL.md portability across non-Claude/non-Cursor tools is **unconfirmed** as of 2026-06-08 survey. Claude Code + Cursor confirmed. Others have skills systems with potentially different formats. See `system-tool-integration.md §SKILL.md portability caveat`. |
 
 ---
 
