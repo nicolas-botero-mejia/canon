@@ -21,7 +21,7 @@ A user's working repo contains **only their content plus thin references.** All 
 | **Package repo** (this one) | What we author and publish to npm | `bin/` (CLI), framework payload, `package.json`, `docs/` |
 | **Consumer project** | What `init` produces for a user | user content dirs + thin wiring + `node_modules/` |
 
-> **`examples/consumer/`** in this repo is folder documentation — it shows framework users what each directory is for (via README stubs and CONTENT_INDEX). It is not a test fixture for what `init` produces structurally. Structural correctness of `init` is validated by running `init` directly or via integration tests, not by keeping this directory in sync.
+> **`examples/consumer/`** in this repo is a **generated reference** — it must exactly match what `canon init` produces for a default configuration (Claude Code layer + MCP enabled). It is not hand-maintained documentation. Verifiable by running `canon init` into a temp dir and diffing the output (ADR-014).
 
 > The current clean-slate folder is shaped like a *consumer's* framework-owned files. To become the package, the payload must be re-homed (see §10). The clean slate is the reference for *what gets shipped*, not the package itself.
 
@@ -45,11 +45,13 @@ The whole design problem reduces to: **keep the wiring bucket as small and as pu
 
 | File / dir | Where the real content lives | Wiring in the repo | Owner | What `update` + `sync` does |
 |------------|------------------------------|--------------------|-------|------------------------------|
+| `AGENTS.md` | framework base in `node_modules`; copy written at init | content from `lib/CLAUDE.base.md` written once by `canon init` | **User** | nothing — written once, never re-written by sync |
 | `CLAUDE.md` | user's facts in the repo; framework base in `node_modules` | one `@import node_modules/@nicolas-botero-mejia/canon/CLAUDE.base.md` line | **User** | nothing — the imported file changes, the user's file doesn't |
 | `CONTENT_INDEX.md` | indexes user dirs only | n/a — framework wiki isn't in monitored dirs | **User** | nothing |
 | `.claude/settings.json` | hook logic in `node_modules` | hooks call `bin/hook.sh <event>` dispatcher | Wiring | optional re-sync if the dispatcher contract changes |
-| `.claude/skills`, `.claude/agents`, `.claude/rules` | the package | **symlink → node_modules** *or* **thin-vendor** (see §5) | Framework (discovered) | overwrite — safe, no user content |
-| `.cursor/rules`, `.cursor/hooks` | the package | same as above | Framework (discovered) | overwrite — safe |
+| `.claude/skills`, `.claude/agents`, `.claude/rules` | the package | **thin-vendor** (see §5); `.claude/skills/` is the cross-tool path (read natively by Claude Code, Cursor v2.4+, and all Copilot hosts — no extra vendoring needed for these tools) | Framework (discovered) | overwrite — safe, no user content |
+| `.agents/skills` | symlink → `.claude/skills/` | written by `canon init`; makes `.agents/skills/` available as the convergent path for Codex and Gemini CLI | Framework (wiring) | no-op if symlink exists |
+| `.cursor/rules`, `.cursor/hooks` | the package | thin-vendor | Framework (discovered) | overwrite — safe |
 | `lib/scripts/` | `node_modules` | referenced by the hook dispatcher | Framework | not present in repo |
 | `lib/wiki/., .lib/templates/, templates | `node_modules` | referenced by skills + index links | Framework | not present in repo |
 | `plans/ findings/ conclusions/ raw/ wiki/project/ wiki/standards/ tmp/` | the repo | n/a | **User** | **never touched** |
@@ -88,7 +90,7 @@ Why npm over the alternatives, given the "update the core later" requirement:
 
 | Command | Does |
 |---------|------|
-| `npx @nicolas-botero-mejia/canon init` | Interactive. Asks which AI-tool layers to enable (Claude / Cursor / Copilot / Windsurf / Codex). Scaffolds the user content dirs, writes the wiring (`CLAUDE.md` skeleton + `@import`, `settings.json` delegating to the dispatcher, discovered dirs), and records `.framework-version`. |
+| `npx @nicolas-botero-mejia/canon init` | Interactive. Iterates `bin/lib/tools-registry.mjs` to ask which AI-tool layers to enable (currently: Claude Code, Cursor). Scaffolds user content dirs; writes per-tool wiring (`CLAUDE.md` + `settings.json`, `hooks.json`); writes cross-tool paths unconditionally (`AGENTS.md` with base content, `.agents/skills/ → .claude/skills/` symlink); records `.framework-version`. Adding a new AI tool = one entry in `tools-registry.mjs`, no code changes elsewhere. |
 | `npx @nicolas-botero-mejia/canon sync` | Re-applies the wiring from the currently-installed package version. Writes only the wiring bucket; never the user bucket. Run after `npm update`. |
 | `npx @nicolas-botero-mejia/canon doctor` | Validates integrity: package installed, `@import` line present, discovered dirs present and pointing at the right version, hook dispatcher resolves, `.framework-version` matches `node_modules`. This is the user's "guarantee the link is always there." |
 | `npx @nicolas-botero-mejia/canon migrate` *(later)* | Imports existing project content (e.g. the CRC Phase-1 corpus) into a fresh consumer project. |
@@ -125,3 +127,26 @@ This is the headline promise; every design choice above exists to make it true b
 5. `migrate` for the existing corpus.
 
 **Naming:** package scope/name still open (`praxis` / `chronicle` / `crónica` / …).
+
+---
+
+## 11. Multi-tool capability model (June 2026 survey)
+
+The framework targets cross-tool standards rather than per-tool projections. Canonical files use open standards read natively by the tools:
+
+| Standard | Canonical path | Natively read by |
+|----------|---------------|-----------------|
+| `AGENTS.md` (Linux Foundation) | consumer root `AGENTS.md` | Cursor, Copilot, Codex, Gemini CLI, Zed, 60k+ repos |
+| `SKILL.md` (agentskills.io, Anthropic-originated) | `.claude/skills/*/SKILL.md` | Claude Code, Cursor v2.4+, Copilot (CLI + cloud + VS Code), Codex, Gemini CLI, 30+ tools |
+| MCP | configured in `.claude/settings.json` | Claude Code (native), Copilot (native, 2025), Cursor |
+| `.agents/skills/` symlink | `.agents/skills/ → .claude/skills/` | Codex (primary discovery path), Gemini CLI |
+
+Per-tool hook formats differ — see `lib/wiki/system-tool-integration.md` for the full capability matrix and per-tool hook details.
+
+**Key tool notes (as of 2026-06-08 survey):**
+- **GitHub Copilot:** CLI and cloud agent share `.github/hooks/NAME.json` but differ — cloud agent: bash only, no `permissionRequest`, no `notification` event, ephemeral filesystem, firewall-restricted network. CLI: PowerShell supported, all events.
+- **Codex subagents:** use TOML format (`.codex/agents/*.toml`) — NOT portable from Claude Code's Markdown agent files. Hooks use `preToolUse`/`afterToolUse`/`afterAgent` events.
+- **Windsurf:** `docs.windsurf.com` permanently redirects to `docs.devin.ai` (product appears rebranded/acquired by Cognition). All capability cells unverified — excluded from tools registry until status is confirmed.
+- **Gemini CLI:** SKILL.md (`.gemini/skills/` or `.agents/skills/`), AGENTS.md, MCP confirmed.
+
+The tools registry (`bin/lib/tools-registry.mjs`) is the single place to add a new tool. It covers prompting, wiring, and installed-check logic. Cross-tool paths (AGENTS.md, `.agents/skills/`) are written unconditionally by `canon init`, not gated on any registry entry.

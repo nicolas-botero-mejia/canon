@@ -1,8 +1,9 @@
 import { createInterface } from 'readline'
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs'
 import { join } from 'path'
-import { vendorDirs, writeClaudeMd, writeClaudeSettings, writeCursorHooks, writeGitignore, writeMcpSettings } from '../lib/sync-ops.mjs'
+import { vendorDirs, writeAgentsMd, writeAgentsSymlink, writeGitignore, writeMcpSettings } from '../lib/sync-ops.mjs'
 import { PKG_NAME, packageRoot, readManifest } from '../lib/paths.mjs'
+import { TOOLS } from '../lib/tools-registry.mjs'
 
 const PACKAGE_ROOT = packageRoot()
 const USER_DIRS = [
@@ -25,14 +26,18 @@ export async function run(args) {
     process.exit(1)
   }
 
-  let layers = { claude: true, cursor: false, mcp: false }
+  // Default layers from registry + mcp (protocol layer, not a tool entry)
+  const layers = Object.fromEntries(TOOLS.map(t => [t.id, t.defaultEnabled]))
+  layers.mcp = false
 
   if (!yes) {
     const rl = createInterface({ input: process.stdin, output: process.stdout })
-    const claudeAns = await ask(rl, 'Enable Claude Code layer? [Y/n] ')
-    layers.claude = claudeAns.trim().toLowerCase() !== 'n'
-    const cursorAns = await ask(rl, 'Enable Cursor layer? [y/N] ')
-    layers.cursor = cursorAns.trim().toLowerCase() === 'y'
+    for (const tool of TOOLS) {
+      const ans = await ask(rl, tool.promptText)
+      layers[tool.id] = tool.defaultEnabled
+        ? ans.trim().toLowerCase() !== 'n'
+        : ans.trim().toLowerCase() === 'y'
+    }
     const mcpAns = await ask(rl, 'Enable MCP knowledge server? [y/N] ')
     layers.mcp = mcpAns.trim().toLowerCase() === 'y'
     rl.close()
@@ -55,18 +60,18 @@ export async function run(args) {
   // Vendor framework dirs and write wiring
   vendorDirs(manifest, PACKAGE_ROOT, consumerRoot, { force })
 
-  if (layers.claude) {
-    writeClaudeMd(consumerRoot, PKG_NAME)
-    writeClaudeSettings(consumerRoot, PKG_NAME)
-  }
-
-  if (layers.cursor) {
-    writeCursorHooks(consumerRoot, PKG_NAME)
+  // Per-tool wiring (registry-driven)
+  for (const tool of TOOLS) {
+    if (layers[tool.id]) tool.writeWiring(consumerRoot, PKG_NAME)
   }
 
   if (layers.mcp) {
     writeMcpSettings(consumerRoot, PKG_NAME)
   }
+
+  // Cross-tool standards paths — written unconditionally (not per-tool)
+  writeAgentsMd(consumerRoot, PKG_NAME, PACKAGE_ROOT)
+  writeAgentsSymlink(consumerRoot)
 
   // Scaffold log and CONTENT_INDEX if absent
   const logPath = join(consumerRoot, 'log.md')
@@ -78,8 +83,7 @@ export async function run(args) {
   writeFileSync(join(consumerRoot, '.framework-version'), version)
 
   const layerList = [
-    layers.claude && 'claude',
-    layers.cursor && 'cursor',
+    ...TOOLS.filter(t => layers[t.id]).map(t => t.id),
     layers.mcp && 'mcp',
   ].filter(Boolean).join(', ')
 

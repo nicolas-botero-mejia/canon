@@ -14,7 +14,9 @@
     ".cursor/hooks"
   ],
   "wiring": [
+    "AGENTS.md",
     "CLAUDE.md",
+    ".agents/skills",
     ".claude/settings.json",
     ".cursor/hooks.json",
     ".framework-version",

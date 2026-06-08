@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync, writeFileSync, appendFileSync, readFileSync, existsSync, readdirSync } from 'fs'
+import { cpSync, mkdirSync, symlinkSync, writeFileSync, appendFileSync, readFileSync, existsSync, readdirSync } from 'fs'
 import { join, dirname } from 'path'
 import { createHash } from 'crypto'
 
@@ -132,6 +132,44 @@ export function writeClaudeMd(consumerRoot, pkgName) {
 }
 
 /**
+ * Write AGENTS.md to the consumer root with the base framework content.
+ * AGENTS.md is the cross-tool canonical context file (Linux Foundation standard,
+ * read natively by Cursor, Copilot, Codex, Gemini CLI, and 60k+ repos).
+ * Unlike CLAUDE.md it cannot use @import — content is written directly from
+ * lib/CLAUDE.base.md so all tools get the same base context.
+ * Only writes if absent — never overwrites a user-authored version.
+ */
+export function writeAgentsMd(consumerRoot, pkgName, pkgRoot) {
+  const dest = join(consumerRoot, 'AGENTS.md')
+  if (existsSync(dest)) return
+  // Try package root directly (dev / tests), then fall back to consumer's node_modules
+  const candidates = [
+    pkgRoot && join(pkgRoot, 'lib', 'CLAUDE.base.md'),
+    join(consumerRoot, 'node_modules', pkgName, 'lib', 'CLAUDE.base.md'),
+  ].filter(Boolean)
+  for (const p of candidates) {
+    if (existsSync(p)) { writeFileSync(dest, readFileSync(p, 'utf8')); return }
+  }
+}
+
+/**
+ * Create the .agents/skills/ → .claude/skills/ symlink.
+ * .agents/skills/ is the convergent cross-tool standard path for Codex and
+ * Gemini CLI (and all agentskills.io tools that prefer it over .claude/skills/).
+ * .claude/skills/ remains the canonical source; this symlink requires no
+ * duplication — a single SKILL.md edit propagates to both paths.
+ * No-ops if the symlink already exists.
+ */
+export function writeAgentsSymlink(consumerRoot) {
+  const agentsDir = join(consumerRoot, '.agents')
+  const symlinkPath = join(agentsDir, 'skills')
+  if (existsSync(symlinkPath)) return
+  mkdirSync(agentsDir, { recursive: true })
+  // Relative target: from .agents/, go up one level then into .claude/skills/
+  symlinkSync(join('..', '.claude', 'skills'), symlinkPath)
+}
+
+/**
  * Create or append Canon entries to .gitignore.
  */
 export function writeGitignore(consumerRoot) {
@@ -149,6 +187,24 @@ export function writeGitignore(consumerRoot) {
       console.log(`  ✓  .gitignore — added ${missing.length} Canon entries`)
     }
   }
+}
+
+/**
+ * Write .codex/hooks.json delegating to the package dispatcher.
+ * Codex uses AfterAgent/AfterToolUse/PreToolUse events (bash only, no permissionRequest).
+ * Overwrites on sync — wiring, not user content.
+ */
+export function writeCodexHooks(consumerRoot, pkgName) {
+  const dir = join(consumerRoot, '.codex')
+  mkdirSync(dir, { recursive: true })
+  const dispatcher = `node_modules/${pkgName}/bin/hook.sh`
+  writeFileSync(join(dir, 'hooks.json'), JSON.stringify({
+    hooks: {
+      preToolUse: [{ command: `bash ${dispatcher} PreToolUse` }],
+      afterToolUse: [{ command: `bash ${dispatcher} PostToolUse`, timeout: 30 }],
+      afterAgent: [{ command: `bash ${dispatcher} Stop` }],
+    },
+  }, null, 2))
 }
 
 /**
