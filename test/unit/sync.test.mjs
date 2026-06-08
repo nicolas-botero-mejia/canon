@@ -193,3 +193,23 @@ test('warning format: includes path and count', () => {
   const result = runCmdSafe(dir, ['sync'])
   assert.ok(result.output.includes('user-modified file'), `expected "user-modified file" in: ${result.output}`)
 })
+
+// ─── MCP wipe regression (2D bug) ───────────────────────────────────────────
+// Before fix: writeClaudeSettings() overwrote settings.json first, then tried
+// to read back mcpServers — which had already been erased. On sync, MCP opt-in
+// was silently lost.
+test('sync: preserves mcpServers.canon across a sync (MCP wipe regression)', () => {
+  const dir = makeTmp()
+  initConsumer(dir)
+  // Simulate a user who has opted into MCP by writing the canon server entry
+  const settingsPath = join(dir, '.claude', 'settings.json')
+  const settings = JSON.parse(readFileSync(settingsPath, 'utf8'))
+  settings.mcpServers = { canon: { command: 'node', args: ['node_modules/@canon/framework/bin/mcp-server.mjs'] } }
+  writeFileSync(settingsPath, JSON.stringify(settings, null, 2))
+
+  // sync should NOT wipe the mcpServers block
+  runCmd(dir, ['sync'])
+
+  const after = JSON.parse(readFileSync(settingsPath, 'utf8'))
+  assert.ok(after.mcpServers?.canon, 'mcpServers.canon must survive a sync')
+})

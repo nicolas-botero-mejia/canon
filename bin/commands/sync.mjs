@@ -20,19 +20,24 @@ export async function run(args) {
 
   // Re-write wiring only if the layer files already exist (don't add layers not opted in)
   const hasClaudeSettings = existsSync(join(consumerRoot, '.claude', 'settings.json'))
+
+  // Read existing MCP opt-in state BEFORE writeClaudeSettings() overwrites the file.
+  let hadMcpCanon = false
+  if (hasClaudeSettings) {
+    try {
+      const prior = JSON.parse(readFileSync(join(consumerRoot, '.claude', 'settings.json'), 'utf8'))
+      hadMcpCanon = Boolean(prior.mcpServers?.canon)
+    } catch { /* ignore parse errors */ }
+  }
+
   if (hasClaudeSettings) writeClaudeSettings(consumerRoot, PKG_NAME)
 
   const hasCursorHooks = existsSync(join(consumerRoot, '.cursor', 'hooks.json'))
   if (hasCursorHooks) writeCursorHooks(consumerRoot, PKG_NAME)
 
-  // If MCP was previously opted in, keep the mcpServers block pointing to the correct path
-  if (hasClaudeSettings) {
-    try {
-      const settings = JSON.parse(readFileSync(join(consumerRoot, '.claude', 'settings.json'), 'utf8'))
-      if (settings.mcpServers?.canon) {
-        writeMcpSettings(consumerRoot, PKG_NAME)
-      }
-    } catch { /* ignore parse errors */ }
+  // If MCP was previously opted in, re-apply the mcpServers block after the settings rewrite.
+  if (hasClaudeSettings && hadMcpCanon) {
+    writeMcpSettings(consumerRoot, PKG_NAME)
   }
 
   writeFileSync(join(consumerRoot, '.framework-version'), version)

@@ -71,6 +71,12 @@ log.md         → append-only ledger of all structural changes
 
 ### Consistency Dimensions (8 total)
 
+> These 8 are the **core subset** checked by the Librarian on every `/knowledge-audit` pass.
+> The full `/knowledge-audit` skill defines 15 dimensions — a superset that also covers structural
+> completeness, metric derivation, session/decision cross-linking, and governance drift. If a
+> finding requires one of the 7 additional dimensions, defer to `/knowledge-audit` directly.
+> See `lib/wiki/system-invariants.md` R-005 for the canonical count declaration.
+
 1. **Contradictions** — two files state different things about the same fact or decision. Scope: all four active wiki layers (`wiki/project/`, `wiki/standards/`, `wiki/client/`, `wiki/user/`). Contradictions can occur across any combination — e.g., a stakeholder described differently in `wiki/client/` and `wiki/project/`, or a user persona that conflicts between `wiki/user/` and a research finding.
 2. **Stale content** — references a decision as open that has since closed, or version that has changed
 3. **Orphans** — file exists in CONTENT_INDEX.md but nothing links to it
