@@ -11,3 +11,29 @@ node_modules/
 
 # Canon
 Thumbs.db
+
+# Consumer-generated files (created by `canon init` if run from the package repo root)
+# These belong in consumer projects, not here.
+/.agents/
+/.canon-sync-manifest.json
+/.framework-version
+/AGENTS.md
+/CONTENT_INDEX.md
+/conclusions/
+/deliverables/
+/findings/
+/log.md
+/plans/
+/raw/
+/wiki/client/
+/wiki/project/
+/wiki/standards/
+/wiki/user/
+/scripts/project/
+# vendored consumer tool dirs (consumer has .claude/skills etc; package has lib/.claude/)
+/.claude/agents/
+/.claude/rules/
+/.claude/skills/
+/.claude/settings.json
+/.cursor/hooks/
+/.cursor/rules/
