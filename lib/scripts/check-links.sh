@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Checks that all relative markdown links in project files resolve to existing files.
-# Exits 2 (blocks Claude session close) if broken links are found.
+# Exits 2 if broken links are found. (Advisory from the Stop hook — see bin/hook.sh.)
 
 PROJECT_ROOT="$(pwd)"
 DIRS=("wiki" "findings" "plans" "CONTENT_INDEX.md" ".claude")

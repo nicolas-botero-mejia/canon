@@ -49,6 +49,50 @@ else
   pass "Stop → routed to check chain (check-index → check-links → check-stale-refs → check-conclusions-alignment → check-contracts → check-addendum-integrity)"
 fi
 
+# ── Stop banner emission ──────────────────────────────────────────────────────
+# Stage a minimal consumer with a deliberate check-index violation: a findings/
+# file with no CONTENT_INDEX.md. Run the Stop hook from that dir and verify the
+# advisory banner JSON is emitted correctly (the hand-rolled awk escaping is tested).
+STAGED=$(mktemp -d)
+mkdir -p "$STAGED/findings"
+printf "# Results\n\nTest results file.\n" > "$STAGED/findings/phase-01-poc-01-results.md"
+# No CONTENT_INDEX.md → check-index exits 2 → banner fires
+
+BANNER=$(cd "$STAGED" && bash "$HOOK" Stop 2>/dev/null)
+if [[ -z "$BANNER" ]]; then
+  fail "Stop → no banner output (expected JSON when check-index fails)"
+else
+  if echo "$BANNER" | grep -q '"suppressOutput": true' && echo "$BANNER" | grep -q '"systemMessage"'; then
+    pass "Stop → banner JSON emitted (suppressOutput=true, systemMessage present)"
+  else
+    fail "Stop → banner output missing expected fields: $BANNER"
+  fi
+  # Verify the JSON is syntactically parseable (tests the awk escaping)
+  if command -v python3 >/dev/null 2>&1; then
+    if echo "$BANNER" | python3 -c "import json,sys; json.load(sys.stdin)" 2>/dev/null; then
+      pass "Stop → banner JSON is syntactically valid (awk escaping correct)"
+    else
+      fail "Stop → banner JSON is malformed: $BANNER"
+    fi
+  else
+    pass "Stop → banner JSON parse skipped (python3 not available)"
+  fi
+fi
+rm -rf "$STAGED"
+
+# Advisory contract: the hook always exits 0, even with check failures
+STAGED2=$(mktemp -d)
+mkdir -p "$STAGED2/findings"
+printf "# Results\n\nTest.\n" > "$STAGED2/findings/phase-01-poc-01-results.md"
+(cd "$STAGED2" && bash "$HOOK" Stop >/dev/null 2>&1)
+BANNER_EXIT=$?
+rm -rf "$STAGED2"
+if [[ "$BANNER_EXIT" -eq 0 ]]; then
+  pass "Stop → exits 0 even when checks fail (advisory contract)"
+else
+  fail "Stop → unexpected non-zero exit ($BANNER_EXIT) — advisory contract violated"
+fi
+
 # ── UnknownEvent ─────────────────────────────────────────────────────────────
 if bash "$HOOK" UnknownEvent >/dev/null 2>&1; then
   fail "UnknownEvent → should have exited non-zero"

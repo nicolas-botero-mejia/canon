@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Checks that every .md file in monitored project dirs is listed in CONTENT_INDEX.md.
-# Exits 2 (blocks Claude session close) if any files are missing.
+# Exits 2 if any files are missing. (Advisory from the Stop hook — see bin/hook.sh.)
 
 PROJECT_ROOT="$(pwd)"
 INDEX="$PROJECT_ROOT/CONTENT_INDEX.md"
