@@ -29,3 +29,10 @@
 - Foo adopted; D-01 closed.
 **Questions it answers:**
 - What did we decide about Foo? → [conclusions](./conclusions/phase-01-poc-01-conclusions.md)
+
+### decisions.md
+**What it is:** Project decisions log.
+**Key facts:**
+- Phase 01 tooling choice recorded.
+**Questions it answers:**
+- What tooling was chosen? → [decisions](./wiki/project/decisions.md)

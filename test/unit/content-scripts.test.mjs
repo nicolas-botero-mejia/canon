@@ -188,3 +188,75 @@ test('bad/addendum-section-unverified → check-addendum-integrity WARNs but exi
   assert.equal(status, 0, out)
   assert.match(out, /Addendum alignment verified/)
 })
+
+// ─── check-stale-refs: PATTERN injection (CANON_STALE_PATTERN env var) ────────
+// The shipped PATTERN is a placeholder that matches nothing. Consumers populate it
+// when they retire tools. Tests inject a real pattern via env to exercise the
+// detection, exclusion, and code-block-skip logic without modifying the script.
+
+function runStaleRefs(fixtureRel, env = {}) {
+  const res = spawnSync('bash', [join(SCRIPTS, 'check-stale-refs.sh')], {
+    cwd: join(FIXTURES, fixtureRel),
+    encoding: 'utf8',
+    env: { ...process.env, ...env },
+  })
+  return { status: res.status, out: `${res.stdout || ''}${res.stderr || ''}` }
+}
+
+test('bad/stale-ref-in-wiki → check-stale-refs FAILs when CANON_STALE_PATTERN matches (exit 2)', () => {
+  const { status, out } = runStaleRefs('bad/stale-ref-in-wiki', { CANON_STALE_PATTERN: 'STALE_TOOL_V1' })
+  assert.equal(status, 2, out)
+  assert.match(out, /Stale references/)
+})
+
+test('bad/stale-ref-excluded → check-stale-refs PASSES when match is in exclusion context', () => {
+  const { status } = runStaleRefs('bad/stale-ref-excluded', { CANON_STALE_PATTERN: 'STALE_TOOL_V1' })
+  assert.equal(status, 0)
+})
+
+test('bad/stale-ref-code-block → check-stale-refs PASSES when match is inside a code block', () => {
+  const { status } = runStaleRefs('bad/stale-ref-code-block', { CANON_STALE_PATTERN: 'STALE_TOOL_V1' })
+  assert.equal(status, 0)
+})
+
+// ─── G8: PostToolUse behavioral tests ─────────────────────────────────────────
+// post-write-check.sh has two output paths:
+//   Advisory — findings/conclusions file not in CONTENT_INDEX → hookSpecificOutput ⚠
+//   Block     — wiki/plans file with stale ref → { "decision": "block" }
+// The clean path (wiki file, pattern matches nothing) must be silent.
+
+function runPostWrite(fixtureRel, filePath, env = {}) {
+  const payload = JSON.stringify({ tool_input: { file_path: filePath } })
+  const res = spawnSync('bash', [join(SCRIPTS, 'post-write-check.sh')], {
+    cwd: join(FIXTURES, fixtureRel),
+    input: payload,
+    encoding: 'utf8',
+    env: { ...process.env, ...env },
+  })
+  return { status: res.status, out: `${res.stdout || ''}${res.stderr || ''}` }
+}
+
+test('G8: post-write-check: wiki/ file with stale ref → block JSON emitted', { skip: needsPython }, () => {
+  const filePath = join(FIXTURES, 'bad/stale-ref-in-wiki', 'wiki/project/decisions.md')
+  const { status, out } = runPostWrite('bad/stale-ref-in-wiki', filePath, { CANON_STALE_PATTERN: 'STALE_TOOL_V1' })
+  assert.equal(status, 0, out)
+  const parsed = JSON.parse(out.trim())
+  assert.equal(parsed.decision, 'block')
+  assert.match(parsed.reason, /[Ss]tale reference/)
+})
+
+test('G8: post-write-check: findings/ file not in index → advisory JSON emitted', { skip: needsPython }, () => {
+  const fixtureDir = join(FIXTURES, 'bad/post-write-findings-unindexed')
+  const filePath = join(fixtureDir, 'findings/phase-01-poc-01-results.md')
+  const { status, out } = runPostWrite('bad/post-write-findings-unindexed', filePath)
+  assert.equal(status, 0, out)
+  const parsed = JSON.parse(out.trim())
+  assert.match(parsed.hookSpecificOutput.additionalContext, /not yet in CONTENT_INDEX/)
+})
+
+test('G8: post-write-check: wiki/ file with no pattern match → exits 0, no output', { skip: needsPython }, () => {
+  const filePath = join(FIXTURES, 'clean-populated', 'wiki/project/decisions.md')
+  const { status, out } = runPostWrite('clean-populated', filePath)
+  assert.equal(status, 0)
+  assert.equal(out.trim(), '', `unexpected output: ${out}`)
+})

@@ -24,7 +24,7 @@ PROJECT_ROOT="$(pwd)"
 # wiki/ or plans/ references. Add the exact string a stale reference would use, e.g.
 # 'old-cli-name|legacy_config|SomeLib v1'. The placeholder below matches nothing, so a
 # fresh project starts clean — replace it as tools are retired.
-PATTERN='__RETIRED_PATTERN_PLACEHOLDER__'
+PATTERN="${CANON_STALE_PATTERN:-__RETIRED_PATTERN_PLACEHOLDER__}"
 
 # --- Context words that mark an intentional reference ---
 # Covers: deprecation markers, comparison/replacement prose, URL lines
