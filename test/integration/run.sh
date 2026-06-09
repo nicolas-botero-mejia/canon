@@ -18,6 +18,7 @@ run_test() {
 }
 
 run_test "update-safety" "${DIR}/update-safety.sh"
+run_test "doctor-deep-cli" "${DIR}/doctor-deep-cli.sh"
 
 if [ "$FAILED" -gt 0 ]; then
   echo "=== $FAILED integration test(s) FAILED ==="
