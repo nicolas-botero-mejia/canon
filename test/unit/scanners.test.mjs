@@ -20,6 +20,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { join, relative, extname } from 'node:path'
+import { CONTENT_CHECKS } from '../../bin/commands/doctor.mjs'
 
 const PKG = new URL('../../', import.meta.url).pathname.replace(/\/$/, '')
 
@@ -203,3 +204,47 @@ for (const tpl of templateFiles) {
     )
   })
 }
+
+// ─── 5. Content-check roster completeness (G6) ────────────────────────────────
+// Every lib/scripts/check-*.sh must be wired into BOTH the doctor --deep roster
+// (CONTENT_CHECKS in doctor.mjs) AND the Stop-hook chain (bin/hook.sh). A check
+// shipped into neither would silently never run — the roster is hand-maintained in
+// two places, so this binds them. Add to ROSTER_EXEMPT only with an explicit reason.
+
+const ROSTER_EXEMPT = new Set([
+  // (empty) — every check-*.sh today is a doctor + Stop content check.
+])
+
+const CHECK_SCRIPTS = readdirSync(join(PKG, 'lib', 'scripts'))
+  .filter((f) => /^check-.*\.sh$/.test(f))
+  .map((f) => f.replace(/\.sh$/, ''))
+  .filter((s) => !ROSTER_EXEMPT.has(s))
+
+const rosterScripts = CONTENT_CHECKS.map((c) => c[0])
+
+// Parse the Stop chain from bin/hook.sh: `for chk in check-index ... check-contracts; do`
+const hookSrc = readFileSync(join(PKG, 'bin', 'hook.sh'), 'utf8')
+const hookChain = (hookSrc.match(/for chk in ([^;]+); do/)?.[1] ?? '').trim().split(/\s+/).filter(Boolean)
+
+test('roster: every lib/scripts/check-*.sh is in doctor.mjs CONTENT_CHECKS', () => {
+  for (const s of CHECK_SCRIPTS) {
+    assert.ok(rosterScripts.includes(s), `${s}.sh exists but is missing from doctor.mjs CONTENT_CHECKS — it would never run in \`canon doctor --deep\``)
+  }
+})
+
+test('roster: every lib/scripts/check-*.sh is in the bin/hook.sh Stop chain', () => {
+  for (const s of CHECK_SCRIPTS) {
+    assert.ok(hookChain.includes(s), `${s}.sh exists but is missing from bin/hook.sh's Stop chain — it would never run at session end`)
+  }
+})
+
+test('roster: doctor CONTENT_CHECKS and the hook.sh Stop chain are the same set', () => {
+  assert.deepEqual([...rosterScripts].sort(), [...hookChain].sort(),
+    'doctor.mjs CONTENT_CHECKS and bin/hook.sh Stop chain must run the same content checks')
+})
+
+test('roster: every CONTENT_CHECKS entry maps to a real lib/scripts/*.sh', () => {
+  for (const s of rosterScripts) {
+    assert.ok(existsSync(join(PKG, 'lib', 'scripts', `${s}.sh`)), `CONTENT_CHECKS lists "${s}" but lib/scripts/${s}.sh does not exist`)
+  }
+})
