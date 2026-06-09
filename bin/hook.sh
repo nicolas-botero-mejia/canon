@@ -26,15 +26,22 @@ case "$EVENT" in
     #   * Enforcement of NEW issues already happens inline at write time via PostToolUse.
     #     This is a human-facing reminder that ROUTES to the right remedy.
     # An exit-0 Stop hook cannot loop by construction; no stop_hook_active guard is needed.
+    # Three tiers (mirrors runContentChecks() in bin/commands/doctor.mjs):
+    #   FAIL — exit != 0                  → names (require attention)
+    #   WARN — exit 0 + stdout has ⚠     → warns (advisory, would be missed by exit-code-only)
+    #   PASS — exit 0, no ⚠ in stdout    → silent
     set +e
     names=""
+    warns=""
     failed=0
+    warned=0
     # Run every check independently (no && short-circuit) so the human sees ALL failing
     # dimensions at once. Keep the banner a concise SUMMARY — the full per-file detail
     # lives in `canon doctor --deep`, which this routes to.
     for chk in check-index check-links check-stale-refs check-conclusions-alignment check-contracts check-addendum-integrity; do
-      bash "${META}/${chk}.sh" >/dev/null 2>&1
-      if [[ $? -ne 0 ]]; then
+      OUT=$(bash "${META}/${chk}.sh" 2>&1)
+      STATUS=$?
+      if [[ $STATUS -ne 0 ]]; then
         failed=$(( failed + 1 ))
         case "$chk" in
           check-index)                 label="CONTENT_INDEX.md out of date (unregistered files)" ;;
@@ -46,13 +53,30 @@ case "$EVENT" in
           *)                           label="$chk" ;;
         esac
         names+="  • ${label}"$'\n'
+      elif echo "$OUT" | grep -q '⚠'; then
+        warned=$(( warned + 1 ))
+        case "$chk" in
+          check-index)                 wlabel="CONTENT_INDEX.md entries may be stale (files modified since last update)" ;;
+          check-conclusions-alignment) wlabel="Complete conclusions missing alignment verification date" ;;
+          check-addendum-integrity)    wlabel="addendum sections missing alignment verification date" ;;
+          *)                           wlabel="$chk (advisory)" ;;
+        esac
+        warns+="  • ${wlabel}"$'\n'
       fi
     done
     set -e
-    if [[ $failed -gt 0 ]]; then
-      msg="⚠ ${failed} knowledge-base issue(s) flagged at session end"$'\n'
+    if [[ $failed -gt 0 || $warned -gt 0 ]]; then
+      total=$(( failed + warned ))
+      msg="⚠ ${total} knowledge-base item(s) flagged at session end"$'\n'
       msg+="(advisory — the session still ends; a half-migrated repo shows inherited debt here):"$'\n\n'
-      msg+="${names}"$'\n'
+      if [[ $failed -gt 0 ]]; then
+        msg+="✗ Require attention (${failed}):"$'\n'
+        msg+="${names}"$'\n'
+      fi
+      if [[ $warned -gt 0 ]]; then
+        msg+="⚠ Advisory only (${warned}):"$'\n'
+        msg+="${warns}"$'\n'
+      fi
       msg+="See the full per-file report with fixes:"$'\n'
       msg+="  ->  canon doctor --deep    (full diagnostics)"$'\n'
       msg+="  ->  /knowledge-audit       (guided triage & proposed fixes)"$'\n'
