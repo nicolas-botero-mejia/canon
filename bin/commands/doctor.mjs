@@ -12,6 +12,7 @@ export const CONTENT_CHECKS = [
   ['check-stale-refs', 'no stale references'],
   ['check-conclusions-alignment', 'conclusions alignment-verified'],
   ['check-contracts', 'document format contracts'],
+  ['check-addendum-integrity', 'addendum model integrity'],
 ]
 
 // Run each content check and classify it into one of three tiers:

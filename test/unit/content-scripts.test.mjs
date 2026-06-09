@@ -36,7 +36,7 @@ function runScript(scriptName, fixtureRel) {
 
 // ─── Happy path: a compliant tree passes every script (no false positives) ────
 
-for (const s of ['check-index', 'check-stale-refs', 'check-conclusions-alignment', 'check-contracts']) {
+for (const s of ['check-index', 'check-stale-refs', 'check-conclusions-alignment', 'check-contracts', 'check-addendum-integrity']) {
   test(`clean-populated: ${s} passes (exit 0)`, () => {
     const { status, out } = runScript(s, 'clean-populated')
     assert.equal(status, 0, `${s} should pass on a compliant tree:\n${out}`)
@@ -169,4 +169,22 @@ test('bad/deliverables-unindexed → check-index PASSES despite an unregistered 
   const { status, out } = runScript('check-index', 'bad/deliverables-unindexed')
   assert.equal(status, 0, out)
   assert.doesNotMatch(out, /not listed/)
+})
+
+// ─── Addendum integrity (check-addendum-integrity) ─────────────────────────────
+// FAIL: a standalone *addendum*-conclusions.md file (retired model, ADR-010).
+// WARN: a "## Addendum NN" section missing its alignment date.
+// (clean-populated's conclusion carries a valid ## Addendum 01 section — covered by
+// the happy-path loop above.)
+
+test('bad/addendum-standalone-file → check-addendum-integrity FAILs (exit 1)', () => {
+  const { status, out } = runScript('check-addendum-integrity', 'bad/addendum-standalone-file')
+  assert.equal(status, 1, out)
+  assert.match(out, /Standalone addendum/)
+})
+
+test('bad/addendum-section-unverified → check-addendum-integrity WARNs but exits 0', () => {
+  const { status, out } = runScript('check-addendum-integrity', 'bad/addendum-section-unverified')
+  assert.equal(status, 0, out)
+  assert.match(out, /Addendum alignment verified/)
 })

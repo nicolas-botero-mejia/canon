@@ -46,7 +46,7 @@ fi
 if bash "$HOOK" Stop 2>&1 | grep -q "unknown event"; then
   fail "Stop → hit unknown-event branch (routing broken)"
 else
-  pass "Stop → routed to check chain (check-index → check-links → check-stale-refs → check-conclusions-alignment → check-contracts)"
+  pass "Stop → routed to check chain (check-index → check-links → check-stale-refs → check-conclusions-alignment → check-contracts → check-addendum-integrity)"
 fi
 
 # ── UnknownEvent ─────────────────────────────────────────────────────────────
@@ -72,7 +72,7 @@ fi
 # hook.sh uses set -euo pipefail, so a missing script causes a non-zero exit
 # We can test this indirectly by verifying the scripts exist
 MISSING=0
-for script in session-start-report.sh post-write-check.sh check-index.sh check-links.sh check-stale-refs.sh check-conclusions-alignment.sh check-contracts.sh; do
+for script in session-start-report.sh post-write-check.sh check-index.sh check-links.sh check-stale-refs.sh check-conclusions-alignment.sh check-contracts.sh check-addendum-integrity.sh; do
   if [ ! -f "${PKG_ROOT}/lib/scripts/${script}" ]; then
     fail "Missing script file: lib/scripts/${script}"
     MISSING=$((MISSING + 1))

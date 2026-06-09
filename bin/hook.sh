@@ -32,7 +32,7 @@ case "$EVENT" in
     # Run every check independently (no && short-circuit) so the human sees ALL failing
     # dimensions at once. Keep the banner a concise SUMMARY — the full per-file detail
     # lives in `canon doctor --deep`, which this routes to.
-    for chk in check-index check-links check-stale-refs check-conclusions-alignment check-contracts; do
+    for chk in check-index check-links check-stale-refs check-conclusions-alignment check-contracts check-addendum-integrity; do
       bash "${META}/${chk}.sh" >/dev/null 2>&1
       if [[ $? -ne 0 ]]; then
         failed=$(( failed + 1 ))
@@ -42,6 +42,7 @@ case "$EVENT" in
           check-stale-refs)            label="stale references to renamed/removed files" ;;
           check-conclusions-alignment) label="conclusions missing alignment verification" ;;
           check-contracts)             label="document format / contract violations" ;;
+          check-addendum-integrity)    label="addendum model violations (standalone files / unverified sections)" ;;
           *)                           label="$chk" ;;
         esac
         names+="  • ${label}"$'\n'

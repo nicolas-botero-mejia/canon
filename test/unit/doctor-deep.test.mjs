@@ -42,10 +42,10 @@ const byScript = (dir) => Object.fromEntries(runContentChecks(dir, PKG).map(r =>
 
 // ─── G6: the roster doctor runs is the canonical five, in order ────────────────
 
-test('CONTENT_CHECKS roster is the five content scripts in order', () => {
+test('CONTENT_CHECKS roster is the six content scripts in order', () => {
   assert.deepEqual(
     CONTENT_CHECKS.map(c => c[0]),
-    ['check-index', 'check-links', 'check-stale-refs', 'check-conclusions-alignment', 'check-contracts']
+    ['check-index', 'check-links', 'check-stale-refs', 'check-conclusions-alignment', 'check-contracts', 'check-addendum-integrity']
   )
 })
 
