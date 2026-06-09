@@ -10,8 +10,7 @@
     ".claude/agents",
     ".claude/skills",
     ".claude/rules",
-    ".cursor/rules",
-    ".cursor/hooks"
+    ".cursor/rules"
   ],
   "wiring": [
     "AGENTS.md",

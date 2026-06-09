@@ -64,6 +64,22 @@ const FILES = collectFiles()
 
 const FORBIDDEN = [
   {
+    id: 'phase-conclude SKILL.md: no hardcoded phase/POC numbers (must be generic)',
+    // Skills must work for any phase number, not just phase 01→02.
+    // Only checked in skill files — usage examples in scripts/docs are fine.
+    match: (line, rel) => {
+      if (!rel.startsWith('lib/.claude/skills/')) return false
+      return (
+        /phase-transition\.sh 0[0-9] 0[0-9]/.test(line) ||
+        /plans\/_archive\/phase-0[0-9]/.test(line) ||
+        /conclusions\/phase-0[0-9]-summary/.test(line) ||
+        /\(POC 0[0-9], 0[0-9]\)/.test(line) ||
+        /Phase [0-9]+ → Phase [0-9]+/.test(line)
+      )
+    },
+    allow: [],
+  },
+  {
     id: 'R-013 dead phase-synthesis name "synthesis-conclusions"',
     match: (line) => line.includes('synthesis-conclusions'),
     allow: ['lib/wiki/system-invariants.md'],
@@ -101,7 +117,7 @@ for (const rule of FORBIDDEN) {
     for (const { rel, text } of FILES) {
       if (rule.allow.includes(rel)) continue
       text.split('\n').forEach((line, i) => {
-        if (rule.match(line)) hits.push(`  ${rel}:${i + 1}: ${line.trim()}`)
+        if (rule.match(line, rel)) hits.push(`  ${rel}:${i + 1}: ${line.trim()}`)
       })
     }
     assert.equal(hits.length, 0, `Forbidden value still present:\n${hits.join('\n')}`)
@@ -129,6 +145,17 @@ const skillDirs = readdirSync(SKILLS_DIR, { withFileTypes: true })
   .filter((e) => e.isDirectory())
   .map((e) => e.name)
 
+// Skills that don't write files and therefore don't need CONTENT_INDEX registration steps.
+// A skill belongs here only if it produces NO new files (e.g. wiki-manage just proposes changes;
+// activity-update edits an existing file; phase-update edits an existing file).
+const CONTENT_INDEX_EXEMPT = new Set([
+  'activity-update',   // edits existing plan, no new file
+  'phase-update',      // edits existing phase index, no new file
+  'wiki-manage',       // proposes changes to existing wiki files; Librarian executes
+  'conclusions-review', // reads and annotates existing files, no new standalone file
+  'knowledge-audit',   // produces a tmp/ report — intentionally not indexed (transient)
+])
+
 for (const skill of skillDirs) {
   const skillPath = join(SKILLS_DIR, skill, 'SKILL.md')
 
@@ -147,6 +174,16 @@ for (const skill of skillDirs) {
       `${skill}/SKILL.md description too thin for auto-discovery (Copilot/Codex select by it): "${desc}"`
     )
   })
+
+  if (!CONTENT_INDEX_EXEMPT.has(skill)) {
+    test(`skill-coverage: ${skill}/SKILL.md instructs adding to CONTENT_INDEX`, () => {
+      const text = readFileSync(skillPath, 'utf8')
+      assert.ok(
+        text.includes('CONTENT_INDEX'),
+        `${skill}/SKILL.md creates files but never mentions CONTENT_INDEX — new files must be registered (Rule 6 + check-index.sh)`
+      )
+    })
+  }
 }
 
 // ─── 4. Self-enumerating template coverage ───────────────────────────────────

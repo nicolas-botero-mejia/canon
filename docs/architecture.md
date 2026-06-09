@@ -51,7 +51,8 @@ The whole design problem reduces to: **keep the wiring bucket as small and as pu
 | `.claude/settings.json` | hook logic in `node_modules` | hooks call `bin/hook.sh <event>` dispatcher | Wiring | optional re-sync if the dispatcher contract changes |
 | `.claude/skills`, `.claude/agents`, `.claude/rules` | the package | **thin-vendor** (see §5); `.claude/skills/` is the cross-tool path (read natively by Claude Code, Cursor v2.4+, and all Copilot hosts — no extra vendoring needed for these tools) | Framework (discovered) | overwrite — safe, no user content |
 | `.agents/skills` | symlink → `.claude/skills/` | written by `canon init`; makes `.agents/skills/` available as the convergent path for Codex and Gemini CLI | Framework (wiring) | no-op if symlink exists |
-| `.cursor/rules`, `.cursor/hooks` | the package | thin-vendor | Framework (discovered) | overwrite — safe |
+| `.cursor/rules` | the package | thin-vendor | Framework (discovered) | overwrite — safe |
+| `.cursor/hooks.json` | dispatcher path in package | written by `canon init`/`sync` (wiring, not vendored) | Framework (wiring) | rewritten on sync |
 | `lib/scripts/` | `node_modules` | referenced by the hook dispatcher | Framework | not present in repo |
 | `lib/wiki/., .lib/templates/, templates | `node_modules` | referenced by skills + index links | Framework | not present in repo |
 | `plans/ findings/ conclusions/ raw/ wiki/project/ wiki/standards/ tmp/` | the repo | n/a | **User** | **never touched** |

@@ -18,9 +18,9 @@ After the final session of the current phase. All client decisions should be clo
 
 **Step 1 — PM: decisions audit**
 Reads `plans/phase-NN-index.md §Decisions Tracker`. Reports:
-- All decisions still marked Open: *"[N] decisions remain Open. These must close or be explicitly deferred before Phase 2."*
+- All decisions still marked Open: *"[N] decisions remain Open. These must close or be explicitly deferred before the next phase."*
 - For each open decision: which session was supposed to close it? Is it phase-blocking?
-- Proposed deferral format: `Deferred — [reason] — revisit at [Phase 2 trigger]`
+- Proposed deferral format: `Deferred — [reason] — revisit at [next-phase trigger]`
 - **Pause here.** Human reviews and confirms: close each remaining decision or approve deferral with reason.
 
 **Step 1b — Alignment verification sweep**
@@ -36,29 +36,30 @@ Flags anything blocking the transition (especially meta-doc drift, contradiction
 
 **Step 3 — Writer: phase summary**
 Using `session.conclusions-template.md` as structural reference:
-- File: `conclusions/phase-NN-summary.md`
+- File: `conclusions/phase-NN-summary.md` (where NN = current phase number)
 - Author: AI
-- Content: full Phase 1 synthesis — what was proven (POC 01, 02), what was confirmed (client decisions), what was learned (session findings), what goes into Phase 2 (open items, deferred observations, first POCs/sessions)
+- Content: full phase synthesis — what was proven (POCs), what was confirmed (client decisions), what was learned (session findings), what goes into the next phase (open items, deferred observations, first POCs/sessions)
 - Derived from: all session conclusions, POC conclusions, and the decisions tracker state
 
 **Step 4 — node_modules/@nicolas-botero-mejia/canon/lib/scripts/phase-transition.sh**
 Skip this step if `/phase-new` already ran the transition script for the new phase.
-Executes: `bash node_modules/@nicolas-botero-mejia/canon/lib/scripts/phase-transition.sh 01 02`
-- Archives current phase plans → `plans/_archive/phase-01/`
+Executes: `bash node_modules/@nicolas-botero-mejia/canon/lib/scripts/phase-transition.sh <current> <next>`
+(substitute actual phase numbers, e.g. `01 02`)
+- Archives current phase plans → `plans/_archive/phase-NN/`
 - Scaffolds next phase index from template
 - Updates CONTENT_INDEX.md and CLAUDE.md pointers
 - Appends to log.md
 
 **Step 5 — Librarian: meta-doc currency check**
-Confirms `system-architecture.md (framework wiki)` and `system-operations.md (framework wiki)` are current for the new phase. If any structural changes happened during Phase 1 that weren't reflected, flags them now.
+Confirms `system-architecture.md (framework wiki)` and `system-operations.md (framework wiki)` are current for the new phase. If any structural changes happened during the concluded phase that weren't reflected, flags them now.
 
 **Step 6 — Register and log**
 - Add phase summary to CONTENT_INDEX.md
-- Final log.md entry: *"Phase 1 → Phase 2 transition complete. [N] decisions closed. [M] deferred. Phase summary written."*
+- Final log.md entry: *"Phase NN → Phase MM transition complete. [N] decisions closed. [M] deferred. Phase summary written."*
 
 ## Output
-- `conclusions/phase-01-summary.md` — full phase synthesis
-- `tmp/phase-01-knowledge-audit-pre-wrap-YYYY-MM-DD.md` — final audit
+- `conclusions/phase-NN-summary.md` — full phase synthesis
+- `tmp/phase-NN-knowledge-audit-pre-wrap-YYYY-MM-DD.md` — final audit
 - Decisions tracker fully resolved (all Open → Closed or Deferred)
 - Phase transition executed (archive + new phase scaffolded)
 - Both check scripts pass

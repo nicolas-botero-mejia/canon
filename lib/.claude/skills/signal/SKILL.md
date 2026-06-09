@@ -44,7 +44,8 @@ Create `findings/phase-NN-signal-NN-[slug]-results.md` using `signal.results-tem
 - Source fields filled from the description
 - Assessment pre-checked based on Step 3 suggestion
 
-**Step 5 — Add to backlog and log**
+**Step 5 — Register, add to backlog, and log**
+- Add the results file to `CONTENT_INDEX.md` (standard entry format)
 - Add entry to `plans/discovery-backlog.md`: signal number, slug, assessment type, date
 - Append to `log.md`: `[date] create | findings/phase-NN-signal-NN-[slug]-results.md | Signal captured: [slug]. Assessment: [type].`
 

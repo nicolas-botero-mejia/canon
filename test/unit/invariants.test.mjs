@@ -447,14 +447,6 @@ test('ADR-014: examples/consumer/.cursor/hooks.json uses dispatcher not wrapper 
   }
 })
 
-test('lib/.cursor/hooks/stop-check.sh: no dirname "$0" pattern (PROJECT_ROOT bug)', () => {
-  const s = read('lib/.cursor/hooks/stop-check.sh')
-  assert.ok(
-    !s.includes('"$(dirname "$0"'),
-    'lib/.cursor/hooks/stop-check.sh uses dirname "$0" — resolves to package root in node_modules; use $(pwd)'
-  )
-})
-
 test('system-architecture.md: Stop hooks not described as "blocks on exit 2" (ADR-013)', () => {
   const s = read('lib/wiki/system-architecture.md')
   assert.ok(
