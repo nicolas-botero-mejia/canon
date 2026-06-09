@@ -41,13 +41,13 @@ How we work and how we maintain this knowledge system.
 - **Five conceptual layers:** Input (raw/) → Process (plans/ + findings/ + conclusions/) → Knowledge (wiki/) → Output (deliverables/) → Transient (tmp/)
 - **CLAUDE.md target:** Under 200 lines; no research content; behavioral rules at principle level only
 - **Prefix naming convention:** Phase prefix on all findings/, conclusions/, and plans/ files
-- **Wiki subdirectories:** standards/ (industry) | project/ (client decisions) | client/ (org knowledge) | user/ (user research) | meta/ (methodology)
+- **Wiki subdirectories:** standards/ (industry) | project/ (client decisions) | client/ (org knowledge) | user/ (user research)
 - **Update triggers:** Confirmed facts → CLAUDE.md; research → wiki; session outcomes → findings; synthesized activity conclusions → conclusions/; client-facing artifacts → deliverables/
 - **6-month test:** Could someone use this file in 6 months, without being in the project, to answer a real question?
 - **Active skills:** Phase: `/phase-new`, `/phase-update`, `/phase-deprecate`, `/phase-reorder`, `/phase-conclude` | Activity: `/activity-new [type]`, `/activity-update`, `/activity-deprecate`, `/activity-migrate`, `/activity-conclude [type]` | System: `/wiki-manage`, `/knowledge-audit`, `/conclusions-review`, `/signal`
 
 **Questions it answers:**
-- What belongs in CLAUDE.md vs. wiki vs. plans vs. findings vs. output?
+- What belongs in CLAUDE.md vs. wiki vs. plans vs. findings vs. deliverables?
 - When and how do I update CLAUDE.md after a session?
 - What is the naming convention for findings and output files?
 - How does our structure compare to Karpathy's LLM Wiki pattern?
@@ -72,9 +72,9 @@ How we work and how we maintain this knowledge system.
 - **§1.2 Session lifecycle diagram**: BACKGROUND → SESSION START → PRE-WORK SETUP → WORK PHASE → CLOSE → SESSION STOP → PERIODIC
 - **§1.3 Knowledge layer diagram**: raw/ → findings/ → conclusions/ feeds wiki/project/; standards/ from external knowledge; node_modules/.../lib/wiki/ + .claude/ are the system layer
 - **Scripts split:** `node_modules/@nicolas-botero-mejia/canon/lib/scripts/` (8 governance scripts) | `scripts/project/` (empty extension point — projects add deliverable scripts)
-- Stop hook (exit 2) blocks session close if index is stale, links are broken, or deprecated patterns found. Also warns on unverified conclusions.
+- Stop hook is **advisory** (always exits 0) — surfaces issues at session end but never blocks. Sub-checks exit non-zero; hook.sh absorbs them with `set +e` (ADR-013). A blocking Stop hook would loop forever on inherited debt.
 - PostToolUse hook covers wiki/ and plans/ (stale-ref block) AND findings/ and conclusions/ (CONTENT_INDEX advisory warning)
-- Stop hook chain: `node_modules/@nicolas-botero-mejia/canon/lib/scripts/check-index.sh` → `check-links.sh` → `check-stale-refs.sh` → `check-conclusions-alignment.sh`
+- Stop hook chain: `node_modules/@nicolas-botero-mejia/canon/lib/scripts/check-index.sh` → `check-links.sh` → `check-stale-refs.sh` → `check-conclusions-alignment.sh` → `check-contracts.sh` → `check-addendum-integrity.sh`
 - `watch-project.sh` requires `fswatch` (`brew install fswatch`); `check-links.sh` requires python3 (pre-installed macOS)
 - `/knowledge-audit` runs 15 dimensions; Librarian runs 8 consistency dimensions
 - **§7 Verification:** two levels required for governance changes — content check (text correct) + functional test (behavior correct). See Rule 15.

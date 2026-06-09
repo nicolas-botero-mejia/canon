@@ -101,6 +101,8 @@ Phase lifecycle
 ║  Hook [auto, advisory — never blocks]: scripts/check-contracts.sh║
 ║    → structural contract validation (frontmatter, tracker cols,       ║
 ║      roadmap emoji set, findings/conclusions required fields)         ║
+║  Hook [auto, advisory — never blocks]: scripts/check-addendum-integrity.sh║
+║    → standalone addendum files (✗) + unverified ## Addendum NN (⚠)    ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
@@ -184,7 +186,7 @@ mechanism is tool-specific — see `system-tool-integration.md` for how each too
 The three canonical lifecycle events the framework requires:
 - **Session open** — surface project state (`session-start-report.sh`)
 - **After write/edit** — stale-ref check on wiki/plans, CONTENT_INDEX advisory (`post-write-check.sh`)
-- **Session close** — five-script consistency chain (check-index → check-links → check-stale-refs → check-conclusions-alignment → check-contracts)
+- **Session close** — six-script consistency chain (check-index → check-links → check-stale-refs → check-conclusions-alignment → check-contracts → check-addendum-integrity)
 
 The hook dispatcher (`bin/hook.sh`) receives the event name and routes to the correct script.
 Tool-specific configuration (event names, JSON format, exit code behavior) → `system-tool-integration.md`.
@@ -257,6 +259,12 @@ Validates structural contracts on four file types — required for MCP query rel
 
 **Dependencies:** `grep`, `find`, `head` — standard POSIX.
 **Used by:** Stop hook (after `check-conclusions-alignment.sh`).
+
+### `scripts/check-addendum-integrity.sh`
+Validates the in-file addendum model (ADR-010, Dim 10–11). **FAIL (exit 1):** a standalone `*addendum*-conclusions.md` file in `conclusions/` — addenda must be appended as `## Addendum NN` sections in the parent POC conclusions file, never standalone files. **WARN (exit 0, ⚠):** a `## Addendum NN` section missing a dated `**Addendum alignment verified:**`. Cross-file checks (a roadmap addendum marked ✅ Complete with no parent section) are intentionally left to `/knowledge-audit` Dim 10 — bash checks stay local/mechanical.
+
+**Dependencies:** `grep`, `find`, `awk` — standard POSIX.
+**Used by:** Stop hook (after `check-contracts.sh`) and `canon doctor --deep`.
 
 ### `scripts/post-write-check.sh`
 PostToolUse hook wrapper. Reads the tool-use JSON payload from stdin, extracts `file_path` from `tool_input`. For `wiki/` and `plans/` files: calls `check-stale-refs.sh --file` and returns `{"decision":"block"}` if a deprecated pattern is found. For `findings/` and `conclusions/` files: emits ⚠ warning if the file is not yet in CONTENT_INDEX.md (advisory, non-blocking). Requires `python3` for JSON parsing.
