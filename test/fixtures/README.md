@@ -19,17 +19,18 @@ failure class from the CRC→Canon migration.
   one script trips. Each holds only the file(s) needed; other checks see "no files"
   and pass, so the failing script is unambiguous.
 
-## Tier model (see G2)
+## Tier model
 
-The scripts speak in three tiers, but their callers (`doctor --deep`, the Stop banner)
-currently collapse WARN into PASS because they read exit codes only:
+Three tiers, consistently implemented in both `runContentChecks()` (doctor.mjs) and
+the Stop hook banner (bin/hook.sh). Both detect WARN by reading stdout for `⚠`.
 
-| Tier | Example | Script exit |
-|------|---------|-------------|
-| PASS | compliant | 0 |
-| WARN | Complete conclusion missing alignment **date**; index mtime stale | 0 (+ stdout warning) |
-| FAIL | broken link, contract violation, unregistered file | 1 (contracts) / 2 (index, links) |
+| Tier | Example | Script exit | Caller behaviour |
+|------|---------|-------------|-----------------|
+| PASS | compliant | 0 | silent |
+| WARN | Complete conclusion missing alignment **date**; index mtime stale | 0 (+ `⚠` in stdout) | surfaced as advisory in banner / doctor |
+| FAIL | broken link, contract violation, unregistered file | 1 (contracts) / 2 (index, links) | surfaced as "requires attention" |
 
 `bad/conclusions-empty-alignment/` documents the WARN tier: it **passes**
 `check-contracts` (the field is present) yet **warns** in `check-conclusions-alignment`
-(no date) — the gap that lets unverified stubs through.
+(no date) — the gap that lets unverified stubs through `check-contracts` but not
+through the alignment check.

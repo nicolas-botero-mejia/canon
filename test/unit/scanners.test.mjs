@@ -248,3 +248,24 @@ test('roster: every CONTENT_CHECKS entry maps to a real lib/scripts/*.sh', () =>
     assert.ok(existsSync(join(PKG, 'lib', 'scripts', `${s}.sh`)), `CONTENT_CHECKS lists "${s}" but lib/scripts/${s}.sh does not exist`)
   }
 })
+
+// ─── 6. Stop-hook tier parity with runContentChecks() ─────────────────────────
+// runContentChecks() in doctor.mjs detects WARN by reading stdout for '⚠'.
+// bin/hook.sh must use the same signal — otherwise a WARN that doctor surfaces
+// stays silent at session end. This is a structural invariant: both runners must
+// share the '⚠' stdout convention so the tier logic can't silently diverge.
+
+test('hook.sh Stop chain uses ⚠ stdout signal to detect WARN tier (mirrors runContentChecks)', () => {
+  assert.ok(
+    hookSrc.includes("grep -q '⚠'"),
+    "bin/hook.sh Stop chain does not check stdout for '⚠' — WARN-tier issues would be swallowed at session end"
+  )
+})
+
+test('runContentChecks uses ⚠ stdout signal to detect WARN tier', () => {
+  const doctorSrc = readFileSync(join(PKG, 'bin', 'commands', 'doctor.mjs'), 'utf8')
+  assert.ok(
+    doctorSrc.includes("'⚠'") || doctorSrc.includes('"⚠"'),
+    "runContentChecks() in doctor.mjs does not check output for '⚠' — WARN tier would be misclassified"
+  )
+})

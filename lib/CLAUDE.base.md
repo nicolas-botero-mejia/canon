@@ -59,8 +59,7 @@ scripts/
   settings.json     → Claude hook configuration. Wiring — delegates to package dispatcher.
 .cursor/
   rules/            → Behavioral rules (Cursor — alwaysApply). Framework — vendored on sync.
-  hooks.json        → Cursor hook configuration. Wiring — delegates to package dispatcher.
-  hooks/            → Cursor hook scripts. Framework — vendored on sync.
+  hooks.json        → Cursor hook configuration. Wiring — delegates to bin/hook.sh dispatcher.
 
 log.md              → Append-only project ledger. Every significant change logged here.
 ```

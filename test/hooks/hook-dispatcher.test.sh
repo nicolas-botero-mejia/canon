@@ -93,6 +93,41 @@ else
   fail "Stop → unexpected non-zero exit ($BANNER_EXIT) — advisory contract violated"
 fi
 
+# ── Stop WARN tier ────────────────────────────────────────────────────────────
+# Stage a consumer with a WARN condition: a Complete conclusion missing its
+# alignment date. check-conclusions-alignment exits 0 (advisory by design) but
+# emits ⚠ to stdout. The banner must surface it in the "Advisory only" section —
+# this was the G2 gap where WARN was swallowed because the hook only read exit codes.
+STAGED3=$(mktemp -d)
+mkdir -p "$STAGED3/conclusions"
+printf "**Status:** Complete\n\n**Alignment verified:**\n\nConclusion body.\n" \
+  > "$STAGED3/conclusions/phase-01-poc-01-conclusions.md"
+
+WARN_BANNER=$(cd "$STAGED3" && bash "$HOOK" Stop 2>/dev/null)
+rm -rf "$STAGED3"
+
+if [[ -z "$WARN_BANNER" ]]; then
+  fail "Stop WARN → no banner output (WARN tier swallowed — G2 regression)"
+else
+  if echo "$WARN_BANNER" | grep -q 'Advisory only'; then
+    pass "Stop WARN → banner contains 'Advisory only' section (WARN tier surfaced)"
+  else
+    fail "Stop WARN → banner missing 'Advisory only' section: $WARN_BANNER"
+  fi
+  if echo "$WARN_BANNER" | grep -q 'alignment verification'; then
+    pass "Stop WARN → banner names the check-conclusions-alignment advisory"
+  else
+    fail "Stop WARN → banner missing alignment label: $WARN_BANNER"
+  fi
+  if command -v python3 >/dev/null 2>&1; then
+    if echo "$WARN_BANNER" | python3 -c "import json,sys; json.load(sys.stdin)" 2>/dev/null; then
+      pass "Stop WARN → banner JSON is syntactically valid"
+    else
+      fail "Stop WARN → banner JSON is malformed: $WARN_BANNER"
+    fi
+  fi
+fi
+
 # ── UnknownEvent ─────────────────────────────────────────────────────────────
 if bash "$HOOK" UnknownEvent >/dev/null 2>&1; then
   fail "UnknownEvent → should have exited non-zero"

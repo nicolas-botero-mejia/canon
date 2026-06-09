@@ -115,16 +115,18 @@ How we work and how we maintain this knowledge system.
 
 ## Framework Governance Scripts (node_modules/.../lib/scripts/)
 
-Framework scripts that power the hooks and consistency checks. Invoked by `.claude/settings.json` and `.cursor/hooks.json`.
+Framework scripts that power the hooks and consistency checks. All invoked via `bin/hook.sh` dispatcher (wired into `.claude/settings.json` and `.cursor/hooks.json`).
 
 | Script | Role |
 |--------|------|
 | `session-start-report.sh` | SessionStart — prints project state (file counts, pending updates) |
-| `post-write-check.sh` | PostToolUse — stale-ref block on wiki/plans, CONTENT_INDEX advisory on findings/output |
+| `post-write-check.sh` | PostToolUse — stale-ref block on wiki/plans, CONTENT_INDEX advisory on findings/conclusions |
 | `check-index.sh` | Stop — every `.md` is listed in CONTENT_INDEX.md |
 | `check-links.sh` | Stop — no broken relative markdown links (requires python3) |
 | `check-stale-refs.sh` | Stop — no deprecated tool/pattern references in wiki/ |
 | `check-conclusions-alignment.sh` | Stop — Complete conclusions carry an Alignment verified date |
+| `check-contracts.sh` | Stop — document format/contract compliance (roadmap statuses, findings headers, etc.) |
+| `check-addendum-integrity.sh` | Stop — addenda appended as `## Addendum NN` sections in parent file (ADR-010) |
 | `phase-transition.sh` | Phase rollover helper (invoked by `/phase-new`, `/phase-conclude`) |
 | `watch-project.sh` | Optional background file watcher (requires `fswatch`) |
 
@@ -134,8 +136,7 @@ Framework scripts that power the hooks and consistency checks. Invoked by `.clau
 
 Mirrors the Claude hook + rule layer for the Cursor editor.
 
-- `.cursor/hooks.json` — sessionStart / postToolUse / stop hooks pointing at `.cursor/hooks/`
-- `.cursor/hooks/` — `session-start.sh`, `post-write-check.sh`, `stop-check.sh` (wrap the same `node_modules/@nicolas-botero-mejia/canon/lib/scripts/` checks; advisory, not hard-blocking)
+- `.cursor/hooks.json` — sessionStart / postToolUse / stop hooks; all delegate directly to `node_modules/@nicolas-botero-mejia/canon/bin/hook.sh` (same unified dispatcher as `.claude/settings.json`)
 - `.cursor/rules/behavioral.mdc` — Cursor translation of the behavioral rules (alwaysApply)
 
 ---
