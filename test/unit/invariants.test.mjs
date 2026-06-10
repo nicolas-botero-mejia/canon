@@ -601,3 +601,41 @@ test('ADR-017: no active test is named for a superseded ADR', () => {
     }
   }
 })
+
+// ─── R-014: doc-currency bindings — Rule 10's mechanical half ─────────────────
+// The enumerable halves of the architecture docs are bound to the filesystem:
+// a script, skill, or unit suite that exists but isn't documented fails CI.
+// Prose can still rot; rosters of names cannot. (Motivating drift: docs §12
+// listed 4 of 11 unit suites and nothing noticed until a manual audit.)
+
+const SYS_ARCH = readFileSync(join(PKG, 'lib/wiki/system-architecture.md'), 'utf8')
+
+test('R-014 doc currency: every lib/scripts/*.sh is named in system-architecture.md', () => {
+  for (const f of readdirSync(join(PKG, 'lib/scripts')).filter((x) => x.endsWith('.sh'))) {
+    assert.ok(
+      SYS_ARCH.includes(f),
+      `lib/scripts/${f} is not mentioned in system-architecture.md — add it to §3 Scripts Inventory (and the §1.2 lifecycle box if hook-run)`
+    )
+  }
+})
+
+test('R-014 doc currency: every vendored skill is named in system-architecture.md', () => {
+  const skills = readdirSync(join(PKG, 'lib/.claude/skills'), { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+  for (const d of skills) {
+    assert.ok(
+      SYS_ARCH.includes(d.name),
+      `skill ${d.name} is not mentioned in system-architecture.md — add it to the §1.2 skill roster`
+    )
+  }
+})
+
+test('R-014 doc currency: every test/unit suite is named in docs/architecture.md §12', () => {
+  const docs = readFileSync(join(PKG, 'docs/architecture.md'), 'utf8')
+  for (const f of readdirSync(join(PKG, 'test/unit')).filter((x) => x.endsWith('.test.mjs'))) {
+    assert.ok(
+      docs.includes(f),
+      `test/unit/${f} is not named in docs/architecture.md §12 — the testing map is the canonical layer reference; add it`
+    )
+  }
+})

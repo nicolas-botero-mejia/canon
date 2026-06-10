@@ -159,21 +159,23 @@ The tools registry (`bin/lib/tools-registry.mjs`) is the single place to add a n
 This is the concrete map of governance layer 3 (`system-architecture.md §7.1` has the four-layer stack this enforces). Three suites, run separately and all in CI (`.github/workflows/ci.yml`):
 
 ```
-┌─ unit — npm test ────────────────────────────────────────────────────┐
-│ invariants.test.mjs    string/structure asserts binding sources to   │
-│                        the registries; includes the ADR-017          │
-│                        meta-guard (ADR index ↔ real guards, no tests │
-│                        named for superseded ADRs)                    │
-│ scanners.test.mjs      repo-wide forbidden-value denylist            │
-│                        (gravestones: R-011/012/013, ADR-009) +       │
-│                        roster completeness (every check-*.sh wired   │
-│                        into doctor AND the Stop chain)               │
-│ content-scripts        EXECUTES lib/scripts/check-*.sh against       │
-│   .test.mjs            test/fixtures/ — one violation per bad/*      │
-│                        tree; clean-populated/ is the golden          │
-│                        no-false-positive consumer                    │
-│ doctor-deep.test.mjs   runContentChecks() PASS/WARN/FAIL tiers       │
-│ doctor / sync / init unit suites                                     │
+┌─ unit — npm test (every test/unit/*.test.mjs named here — CI-bound) ─┐
+│ invariants.test.mjs        string/structure asserts binding sources  │
+│                            to the registries; ADR-017 meta-guard;    │
+│                            doc-currency bindings (incl. this list)   │
+│ scanners.test.mjs          repo-wide forbidden-value denylist        │
+│                            (gravestones: R-011/012/013, ADR-009) +   │
+│                            roster completeness (every check-*.sh     │
+│                            wired into doctor AND the Stop chain)     │
+│ content-scripts.test.mjs   EXECUTES lib/scripts/check-*.sh against   │
+│                            test/fixtures/ — one violation per bad/*  │
+│                            tree; clean-populated/ is the golden      │
+│                            no-false-positive consumer                │
+│ doctor-deep.test.mjs       runContentChecks() PASS/WARN/FAIL tiers   │
+│ doctor.test.mjs · sync.test.mjs · init.test.mjs — CLI command units  │
+│ skill-structure.test.mjs · skill-addendum-append.test.mjs            │
+│ knowledge-audit-addendum-dims.test.mjs                               │
+│ phase-reorder-script.test.mjs — skill/script content + behavior      │
 ├─ integration — npm run test:integration ─────────────────────────────┤
 │ update-safety.sh       pack → install → init → sync, real CLI:       │
 │                        user files byte-identical across update;      │

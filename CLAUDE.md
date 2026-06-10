@@ -31,3 +31,23 @@ package.json        → bin, files, version, scope/name
 - What ships in the package: `manifest.json`
 - Consumer reference: run `canon init` in a scratch dir — output verified by `test/integration/update-safety.sh` (ADR-016)
 - Framework methodology: `lib/wiki/system-index.md`
+
+## Working on this repo — read first, then change
+
+The architecture knowledge lives in the repo, not in any session. Load the relevant layer **before** structural work:
+
+- **Decisions (why)** → `lib/wiki/system-decisions.md` — ADR Index first (Scope · Status · Guard)
+- **Cross-file facts (what)** → `lib/wiki/system-invariants.md` — read before touching any listed concept
+- **Stack + lifecycle** → `lib/wiki/system-architecture.md` §7.1 (governance stack), §1.2 (session), §3 (scripts)
+- **Testing layers** → `docs/architecture.md §12` — includes the "Adding a content check" checklist
+
+When you change X, update Y — the enumerable parts are CI-enforced (R-014 doc-currency guards), the rest is on you:
+
+| Change | Must update |
+|--------|-------------|
+| new / superseded ADR | ADR Index row + resolving guard (meta-guard enforces); supersede = back-search checklist |
+| new or changed check | docs §12 checklist: roster wiring, fixture pair, both-direction tests, §1.2 + §3 + §9 |
+| new script / skill / unit suite | name it in system-architecture / docs §12 (R-014 fails CI otherwise) |
+| new template | `lib/templates/template-index.md` row |
+| new cross-cutting value | `system-invariants.md` row + guard ("Adding a new invariant" checklist there) |
+| retired value or claim | scanners denylist gravestone |
