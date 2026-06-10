@@ -151,3 +151,51 @@ Per-tool hook formats differ — see `lib/wiki/system-tool-integration.md` for t
 - **Gemini CLI:** SKILL.md (`.gemini/skills/` or `.agents/skills/`), AGENTS.md, MCP confirmed.
 
 The tools registry (`bin/lib/tools-registry.mjs`) is the single place to add a new tool. It covers prompting, wiring, and installed-check logic. Cross-tool paths (AGENTS.md, `.agents/skills/`) are written unconditionally by `canon init`, not gated on any registry entry.
+
+---
+
+## 12. Testing architecture — the guard layers
+
+This is the concrete map of governance layer 3 (`system-architecture.md §7.1` has the four-layer stack this enforces). Three suites, run separately and all in CI (`.github/workflows/ci.yml`):
+
+```
+┌─ unit — npm test ────────────────────────────────────────────────────┐
+│ invariants.test.mjs    string/structure asserts binding sources to   │
+│                        the registries; includes the ADR-017          │
+│                        meta-guard (ADR index ↔ real guards, no tests │
+│                        named for superseded ADRs)                    │
+│ scanners.test.mjs      repo-wide forbidden-value denylist            │
+│                        (gravestones: R-011/012/013, ADR-009) +       │
+│                        roster completeness (every check-*.sh wired   │
+│                        into doctor AND the Stop chain)               │
+│ content-scripts        EXECUTES lib/scripts/check-*.sh against       │
+│   .test.mjs            test/fixtures/ — one violation per bad/*      │
+│                        tree; clean-populated/ is the golden          │
+│                        no-false-positive consumer                    │
+│ doctor-deep.test.mjs   runContentChecks() PASS/WARN/FAIL tiers       │
+│ doctor / sync / init unit suites                                     │
+├─ integration — npm run test:integration ─────────────────────────────┤
+│ update-safety.sh       pack → install → init → sync, real CLI:       │
+│                        user files byte-identical across update;      │
+│                        init wiring asserted; fresh init must pass    │
+│                        doctor --deep (seed validity gate)            │
+│ doctor-deep-cli.sh     real CLI stdout: clean ✓ / WARN ⚠ / FAIL ✗    │
+├─ hooks — npm run test:hooks ─────────────────────────────────────────┤
+│ hook-dispatcher        event routing, banner JSON validity,          │
+│   .test.sh             advisory contract (always exit 0), WARN tier  │
+│                        surfaced in the Stop banner                   │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Where does a new test go?** Rule of thumb by failure class:
+
+| You want to assert… | Layer |
+|---------------------|-------|
+| a retired value/claim never reappears anywhere | scanners denylist (gravestone) |
+| two sources must state the same fact | invariants binding |
+| a check script detects X / stays silent on clean | content-scripts + a `bad/*` fixture pair (Rule 15: both directions) |
+| an ADR's enforcement exists | ADR index Guard cell — the meta-guard checks it |
+| a CLI flow works end-to-end | integration |
+| hook routing / banner behavior | hooks suite |
+
+Fixture model and PASS/WARN/FAIL tier semantics → `test/fixtures/README.md`. Every new `lib/scripts/check-*.sh` is forced into both runtime rosters by the completeness guard — it cannot exist half-wired.

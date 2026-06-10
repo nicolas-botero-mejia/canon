@@ -403,6 +403,49 @@ Functional test → Invoke the changed mechanism against a controlled case. Obse
 
 **Rule:** Never close a session that adds or modifies governance mechanisms without running both levels. See `behavioral.md Rule 15` and `system-operations.md §14`.
 
+### §7.1 — The Governance Stack
+
+Four layers keep the framework honest. Each layer is verified by the one below it; the bottom layer governs the consumer's knowledge base day-to-day.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│ LAYER 1 — DECISIONS (why)                      system-decisions.md   │
+│ Append-only ADR ledger: Context → Decision → Rationale →             │
+│ Consequences. Status: Accepted | Superseded by ADR-NNN.              │
+│ Supersede = new ADR + back-search checklist, never a rewrite.        │
+└───────────────┬──────────────────────────────────────────────────────┘
+                │ every Accepted ADR names its Guard (index table, ADR-017)
+┌───────────────▼──────────────────────────────────────────────────────┐
+│ LAYER 2 — INVARIANTS (what must agree)         system-invariants.md  │
+│ Registry: canonical value · canonical home · must-agree locations ·  │
+│ guard. Canonical homes include ADRs, templates, and                  │
+│ system-tool-integration.md (the per-tool behavior matrix).           │
+└───────────────┬──────────────────────────────────────────────────────┘
+                │ every registry row names its Guard
+┌───────────────▼──────────────────────────────────────────────────────┐
+│ LAYER 3 — GUARDS (proof)                       test/ in CI           │
+│ Static invariants · forbidden-value scanners (gravestones) ·         │
+│ behavioral fixture checks · integration e2e · hook tests ·           │
+│ meta-guard (asserts every Accepted ADR's guard actually exists).     │
+│ Full layer map → docs/architecture.md §12 (package repo).            │
+└───────────────┬──────────────────────────────────────────────────────┘
+                │ guards prove the mechanisms below match layers 1 + 2
+┌───────────────▼──────────────────────────────────────────────────────┐
+│ LAYER 4 — RUNTIME GOVERNANCE (practice)        lib/scripts · skills  │
+│ Stop chain · PostToolUse · doctor --deep · /knowledge-audit ·        │
+│ /conclusions-review · Librarian — these govern the project           │
+│ knowledge base every session.                                        │
+└──────────────────────────────────────────────────────────────────────┘
+
+Feedback loop (how the system learns from mistakes):
+  drift found (audit, regression, review)
+    → record it      (new ADR or invariant row — layer 1/2)
+    → pin it         (test, fixture pair, or denylist gravestone — layer 3)
+    → bind it        (meta-guard keeps record ↔ guard agreeing forever)
+```
+
+Layers 1–3 govern the governors; layer 4 governs the knowledge. `system-tool-integration.md` is not a separate layer — it is a canonical-value home inside layer 2: the per-tool matrix that hook wiring and skill paths must agree with.
+
 ---
 
 ## 9. Parsing Contracts

@@ -10,6 +10,9 @@ This registry is the authoritative answer to "where does changing X land?" — r
 touching any concept listed here. It is the data source for `test/unit/invariants.test.mjs`
 which asserts agreement across locations automatically.
 
+This file is layer 2 of the four-layer governance stack (decisions → invariants → guards →
+runtime) — diagram and layer map in `system-architecture.md §7.1`.
+
 > Promoted and completed from `system-architecture.md §9 "Parsing Contracts"` — that section
 > contains the template/parsing contract subset; this file is the full registry. The §9 column
 > count (4) diverges from the poc-roadmap template (6) — that is the first confirmed invariant
