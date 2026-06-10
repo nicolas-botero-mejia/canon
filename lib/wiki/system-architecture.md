@@ -47,73 +47,76 @@ Phase lifecycle
 
 ```
 ╔══════════════════════════════════════════════════════════════════════╗
-║  BACKGROUND (always running, outside sessions)                       ║
-║  scripts/watch-project.sh → .claude/pending-updates.log         ║
+║ BACKGROUND (always running, outside sessions)                        ║
+║ watch-project.sh → .claude/pending-updates.log                       ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
 ╔══════════════════════════════════════════════════════════════════════╗
-║  SESSION START                                                        ║
-║  Hook [auto]: date/time                                              ║
-║  Hook [auto]: scripts/session-start-report.sh                   ║
-║    → file counts, pending external updates, CLAUDE.md age warning    ║
-║  Rules [always-on]: behavioral.md (19 rules) loaded via CLAUDE.md    ║
+║ SESSION START                                                        ║
+║ Hook [auto]: date/time                                               ║
+║ Hook [auto]: session-start-report.sh                                 ║
+║   → file counts, pending external updates, CLAUDE.md age warning     ║
+║ Rules [always-on]: behavioral.md (19 rules) loaded via CLAUDE.md     ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
 ╔══════════════════════════════════════════════════════════════════════╗
-║  PRE-WORK SETUP (rule-governed, manually triggered)                  ║
-║  Rule 8 + Rule 12: load prior conclusions, run /conclusions-review   ║
-║  Skill [manual]: /activity-new [type]                                ║
-║    → type: poc | addendum | research | session                       ║
+║ PRE-WORK SETUP (rule-governed, manually triggered)                   ║
+║ Rule 8 + Rule 12: load prior conclusions, run /conclusions-review    ║
+║ Skill [manual]: /activity-new [type]                                 ║
+║   → type: poc | addendum | research | session                        ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
 ╔══════════════════════════════════════════════════════════════════════╗
-║  WORK PHASE (POC execution, session content, research)               ║
-║  Agents [manually spawned]: librarian, pm, writer                    ║
-║  Hook [PostToolUse, auto]: scripts/post-write-check.sh          ║
-║    → wiki/ + plans/: blocks on deprecated tool names                 ║
-║    → findings/ + conclusions/: warns if file not in CONTENT_INDEX         ║
+║ WORK PHASE (POC execution, session content, research)                ║
+║ Agents [manually spawned]: librarian, pm, writer                     ║
+║ Hook [PostToolUse, auto]: post-write-check.sh                        ║
+║   → wiki/ + plans/: blocks on deprecated tool names                  ║
+║   → findings/ + conclusions/: warns if file not in CONTENT_INDEX     ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
 ╔══════════════════════════════════════════════════════════════════════╗
-║  CLOSE PHASE (manually triggered)                                    ║
-║  Skill [manual]: /activity-conclude [type]                           ║
-║    → synthesizes findings → conclusions (poc/addendum/research)      ║
-║    → creates results stub + updates tracker (session type)           ║
-║    /conclusions-review: 4 passes (patch · stub fills · new coverage  ║
-║      · forward signals) + CONTENT_INDEX pre-check                    ║
-║  Skill [manual]: /wiki-manage (add / update / deprecate / move)      ║
-║    → required for all wiki lifecycle changes including content moves  ║
-║  Rule 15 [manual]: functional test required for governance changes    ║
+║ CLOSE PHASE (manually triggered)                                     ║
+║ Skill [manual]: /activity-conclude [type]                            ║
+║   → synthesizes findings → conclusions (poc/addendum/research)       ║
+║   → creates results stub + updates tracker (session type)            ║
+║   /conclusions-review: 4 passes (patch · stub fills · new coverage   ║
+║     · forward signals) + CONTENT_INDEX pre-check                     ║
+║ Skill [manual]: /wiki-manage (add / update / deprecate / move)       ║
+║   → required for all wiki lifecycle changes including content moves  ║
+║ Rule 15 [manual]: functional test required for governance changes    ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
 ╔══════════════════════════════════════════════════════════════════════╗
-║  SESSION STOP                                                         ║
-║  Hook [auto, advisory — never blocks]: scripts/check-index.sh   ║
-║    → missing files + ⚠ mtime drift (stale entries)                   ║
-║  Hook [auto, advisory — never blocks]: scripts/check-links.sh   ║
-║  Hook [auto, advisory — never blocks]: scripts/check-stale-refs.sh║
-║  Hook [auto, advisory — never blocks]: scripts/check-conclusions-alignment.sh║
-║  Hook [auto, advisory — never blocks]: scripts/check-contracts.sh║
-║    → structural contract validation (frontmatter, tracker cols,       ║
-║      roadmap emoji set, findings/conclusions required fields)         ║
-║  Hook [auto, advisory — never blocks]: scripts/check-addendum-integrity.sh║
-║    → standalone addendum files (✗) + unverified ## Addendum NN (⚠)    ║
+║ SESSION STOP — advisory chain, never blocks close (ADR-013)          ║
+║ check-index.sh           → unlisted files + ⚠ mtime drift            ║
+║ check-links.sh           → broken relative markdown links            ║
+║ check-stale-refs.sh      → retired tool/pattern names in wiki/       ║
+║ check-conclusions-alignment.sh → Complete without alignment date     ║
+║ check-contracts.sh       → structural contracts (index entry form,   ║
+║   tracker cols, roadmap statuses, required header fields,            ║
+║   client/user frontmatter ban)                                       ║
+║ check-addendum-integrity.sh → standalone addendum files (✗) +        ║
+║   unverified ## Addendum NN sections (⚠)                             ║
+║ Results aggregate into ONE banner: ✗ require attention / ⚠ advisory  ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
 ╔══════════════════════════════════════════════════════════════════════╗
-║  PERIODIC (manually triggered, not session-bound)                    ║
-║  Skill [manual]: /knowledge-audit                                     ║
-║    → 15-dimension consistency check across all files                 ║
-║  Phase operations (when phase ends / new phase begins):              ║
-║    /phase-conclude → /phase-new                                       ║
+║ PERIODIC (manually triggered, not session-bound)                     ║
+║ Skill [manual]: /knowledge-audit                                     ║
+║   → 15-dimension consistency check across all files                  ║
+║ CLI: canon doctor --deep runs the same content chain on demand / CI  ║
+║ Phase operations (when phase ends / new phase begins):               ║
+║   /phase-conclude → /phase-new                                       ║
 ╚══════════════════════════════════════════════════════════════════════╝
 ```
+
+All hook scripts run from `node_modules/@nicolas-botero-mejia/canon/lib/scripts/`, routed by the single `bin/hook.sh` dispatcher wired into `.claude/settings.json`, `.cursor/hooks.json`, and `.codex/hooks.json` (ADR-018).
 
 Agent + skill layer (`.claude/`):
 - `agents/librarian.md` — knowledge steward: 8-dimension consistency audit, context surfacing, tmp/ lifecycle
