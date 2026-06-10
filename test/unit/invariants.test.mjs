@@ -227,7 +227,7 @@ test('R-011: system-tool-integration.md Stop row says advisory only (not blockin
 // ─── SKILL.md standard compliance ────────────────────────────────────────────
 // Verify all framework SKILL.md files pass the open standard spec (agentskills.io)
 
-import { readdirSync, statSync, lstatSync } from 'node:fs'
+import { readdirSync, statSync } from 'node:fs'
 
 const SKILLS_DIR = join(PKG, 'lib', '.claude', 'skills')
 const skillDirs = readdirSync(SKILLS_DIR).filter(d =>
@@ -275,25 +275,27 @@ test('R-009: research.results-template naming comment matches template-index (re
   )
 })
 
-// ─── ADR-014: examples/consumer matches canon init output ────────────────────
-// examples/consumer must be a generated reference matching `canon init` defaults.
-// After 2E changes init writes AGENTS.md and .agents/skills/ — consumer must have both.
+// ─── ADR-016: no checked-in consumer reference — pin the init wiring sources ──
+// examples/consumer/ was removed (ADR-016). Init output is verified end-to-end in
+// test/integration/update-safety.sh; these guards pin the wiring *sources* so a
+// refactor can't silently drop a wiring step.
 
-test('ADR-014: examples/consumer has AGENTS.md', () => {
-  assert.ok(
-    existsSync(join(PKG, 'examples/consumer/AGENTS.md')),
-    'examples/consumer/AGENTS.md missing — canon init now writes it (writeAgentsMd); examples/consumer must match init output (ADR-014)'
-  )
+test('ADR-016: init.mjs writes AGENTS.md and the .agents/skills symlink', () => {
+  const s = read('bin/commands/init.mjs')
+  assert.ok(s.includes('writeAgentsMd('), 'init.mjs must call writeAgentsMd — AGENTS.md is unconditional cross-tool wiring')
+  assert.ok(s.includes('writeAgentsSymlink('), 'init.mjs must call writeAgentsSymlink — .agents/skills covers Codex/Gemini hosts')
 })
 
-test('ADR-014: examples/consumer has .agents/skills symlink', () => {
-  const p = join(PKG, 'examples/consumer/.agents/skills')
-  // Use lstatSync (not existsSync) — existsSync follows the symlink and returns false
-  // if the target dir doesn't exist; lstatSync checks the symlink entry itself.
-  let stat
-  try { stat = lstatSync(p) } catch { stat = null }
-  assert.ok(stat !== null, 'examples/consumer/.agents/skills missing — canon init now writes this symlink; examples/consumer must match init output (ADR-014)')
-  assert.ok(stat.isSymbolicLink(), 'examples/consumer/.agents/skills must be a symlink, not a plain directory')
+test('ADR-016: init.mjs seeds CONTENT_INDEX.md from the shipped template', () => {
+  const s = read('bin/commands/init.mjs')
+  assert.ok(
+    s.includes('init.content-index-template.md'),
+    'init.mjs must write CONTENT_INDEX.md from lib/templates/init.content-index-template.md (ADR-016 salvaged the framework-layer entries into init)'
+  )
+  assert.ok(
+    existsSync(join(PKG, 'lib/templates/init.content-index-template.md')),
+    'lib/templates/init.content-index-template.md missing — init would crash writing the index seed'
+  )
 })
 
 // ─── PROJECT_ROOT runtime fix ─────────────────────────────────────────────────
@@ -432,19 +434,14 @@ test('behavioral.mdc Rule 14: lists /signal, /phase-new, /phase-conclude (mirror
   assert.ok(rule14.includes('/phase-conclude'), 'behavioral.mdc Rule 14 missing /phase-conclude (must mirror behavioral.md)')
 })
 
-test('ADR-014: examples/consumer/.cursor/hooks.json uses dispatcher not wrapper scripts', () => {
-  const h = JSON.parse(read('examples/consumer/.cursor/hooks.json'))
-  const cmds = [
-    h.hooks?.sessionStart?.[0]?.command ?? '',
-    h.hooks?.postToolUse?.[0]?.command ?? '',
-    h.hooks?.stop?.[0]?.command ?? '',
-  ]
-  for (const cmd of cmds) {
-    assert.ok(
-      !cmd.includes('.cursor/hooks/'),
-      `examples/consumer/.cursor/hooks.json command "${cmd}" points at vendored wrapper — must use dispatcher (bin/hook.sh)`
-    )
-  }
+test('Cursor wiring: writeCursorHooks delegates to bin/hook.sh, not wrapper scripts', () => {
+  const s = read('bin/lib/sync-ops.mjs')
+  const start = s.indexOf('export function writeCursorHooks')
+  assert.ok(start !== -1, 'writeCursorHooks not found in bin/lib/sync-ops.mjs')
+  const end = s.indexOf('export function', start + 1)
+  const fn = s.slice(start, end === -1 ? undefined : end)
+  assert.ok(fn.includes('bin/hook.sh'), 'writeCursorHooks must wire hooks.json to the package dispatcher (bin/hook.sh)')
+  assert.ok(!fn.includes('.cursor/hooks/'), 'writeCursorHooks must not point hooks.json at vendored wrapper scripts (.cursor/hooks/)')
 })
 
 test('system-architecture.md: Stop hooks not described as "blocks on exit 2" (ADR-013)', () => {

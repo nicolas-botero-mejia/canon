@@ -78,7 +78,10 @@ export async function run(args) {
   if (!existsSync(logPath)) writeFileSync(logPath, '# Project Log\n\n')
 
   const idxPath = join(consumerRoot, 'CONTENT_INDEX.md')
-  if (!existsSync(idxPath)) writeFileSync(idxPath, '# Content Index\n\n')
+  if (!existsSync(idxPath)) {
+    const seed = readFileSync(join(PACKAGE_ROOT, 'lib', 'templates', 'init.content-index-template.md'), 'utf8')
+    writeFileSync(idxPath, seed)
+  }
 
   writeFileSync(join(consumerRoot, '.framework-version'), version)
 

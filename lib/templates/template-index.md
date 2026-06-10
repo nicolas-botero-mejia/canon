@@ -1,6 +1,6 @@
 # Template Map
 
-**Last updated:** 2026-06-06
+**Last updated:** 2026-06-09
 **Purpose:** Maps every template to its destination folder, file suffix, and when to use it.
 
 > **Rule:** Every file type must have a template before more files of that type are created.
@@ -34,6 +34,7 @@
 | `session.conclusions-template.md` | `conclusions/` | `phase-NN-session-NN-[topic]-conclusions.md` | After session results are reviewed — decisions confirmed, wiki updates, tracker updates |
 | `handoff.results-template.md` | `findings/` | `phase-NN-handoff-[source]-to-[dest]-handoff.md` | Transitional context-transfer between phases or POCs — what was settled, what is left open, what the next stage must do. NOT a conclusions file. |
 | `tmp.working-file-template.md` | `tmp/` | `[descriptive-name].md` | Any transient project management file — audits, status trackers, coverage checks |
+| `init.content-index-template.md` | consumer root (written by `canon init`) | `CONTENT_INDEX.md` | Seed content index written once at init — framework-layer entries pre-registered. Consumer owns the file afterward; sync never touches it (ADR-016). |
 
 ---
 

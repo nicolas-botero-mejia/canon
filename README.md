@@ -112,11 +112,10 @@ bin/                → CLI (canon init / sync / doctor)
 lib/                → Framework IP shipped in the package
   CLAUDE.base.md    → @imported by consumer CLAUDE.md
   .claude/          → agents, skills, rules — vendored on sync
-  .cursor/          → rules, hooks — vendored on sync
+  .cursor/          → rules — vendored on sync
   scripts/          → hook scripts dispatched by bin/hook.sh
   templates/        → all templates (knowledge + script-generated)
   wiki/             → methodology docs (system-*.md)
 manifest.json       → declares every path sync may write
-examples/consumer/  → reference consumer project
 docs/               → contributor docs (not shipped) — architecture.md
 ```

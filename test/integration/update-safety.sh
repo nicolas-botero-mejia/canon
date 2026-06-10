@@ -89,6 +89,29 @@ echo "[2b] Verify init created all expected directories"
   && pass "system-tool-integration.md accessible in node_modules" \
   || fail "system-tool-integration.md missing from node_modules"
 
+# ── Step 2c: init wiring + seeded index (ADR-016 — no checked-in consumer) ──
+echo "[2c] Verify init wiring and seeded CONTENT_INDEX"
+[ -f "${WORK_DIR}/AGENTS.md" ] \
+  && pass "AGENTS.md written on init" \
+  || fail "AGENTS.md missing after init"
+
+[ -L "${WORK_DIR}/.agents/skills" ] \
+  && pass ".agents/skills symlink written on init" \
+  || fail ".agents/skills symlink missing after init"
+
+grep -q "system-principles.md" "${WORK_DIR}/CONTENT_INDEX.md" \
+  && pass "CONTENT_INDEX.md seeded with framework-layer entries" \
+  || fail "CONTENT_INDEX.md not seeded from init.content-index-template.md"
+
+# A fresh consumer must pass its own governance checks (seed validity gate).
+if command -v python3 >/dev/null 2>&1; then
+  node "${WORK_DIR}/node_modules/@nicolas-botero-mejia/canon/bin/cli.mjs" doctor --deep >/dev/null \
+    && pass "doctor --deep green on fresh init (seed passes all content checks)" \
+    || fail "doctor --deep failed on fresh init — seed or wiring violates a content check"
+else
+  pass "doctor --deep on fresh init skipped (python3 not available)"
+fi
+
 # ── Step 3: write junk into user dirs and CLAUDE.md body ────────────────────
 echo "[3] Write user content"
 echo "my plans" > "${WORK_DIR}/plans/my-plan.md"
