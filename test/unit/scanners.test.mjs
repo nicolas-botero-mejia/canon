@@ -110,6 +110,11 @@ const FORBIDDEN = [
     match: (line) => line.includes('blocks on exit 2'),
     allow: ['lib/wiki/system-invariants.md'],
   },
+  {
+    id: 'ADR-009 changelog in **Last updated:** header (date only)',
+    match: (line) => /\*\*Last updated:\*\* *[0-9]{4}-[0-9]{2}-[0-9]{2} *\(/.test(line),
+    allow: ['lib/wiki/system-decisions.md'],
+  },
 ]
 
 for (const rule of FORBIDDEN) {

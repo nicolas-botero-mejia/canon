@@ -504,3 +504,82 @@ for (const skillName of skillDirs) {
     }
   })
 }
+
+// ─── ADR-005 / ADR-011: CLI surface + tooling decisions ───────────────────────
+
+test('ADR-005: migrate command absent from the CLI', () => {
+  const cli = read('bin/cli.mjs')
+  assert.ok(!cli.toLowerCase().includes('migrate'), 'bin/cli.mjs references migrate — ADR-005 removed it from the CLI surface')
+  assert.ok(!existsSync(join(PKG, 'bin/commands/migrate.mjs')), 'bin/commands/migrate.mjs exists — ADR-005 deleted it')
+})
+
+test('ADR-011: node:test only — no test-runner dependency', () => {
+  const pkg = JSON.parse(read('package.json'))
+  const deps = Object.keys({ ...(pkg.dependencies ?? {}), ...(pkg.devDependencies ?? {}) })
+  const runners = deps.filter((d) => /jest|vitest|mocha|\bava\b/.test(d))
+  assert.deepEqual(runners, [], `test-runner dependency found (${runners.join(', ')}) — ADR-011 mandates node:test`)
+  assert.match(pkg.scripts.test, /node --test/, 'npm test must invoke node --test (ADR-011)')
+})
+
+// ─── ADR-017: ADR index — every decision binds to a real guard ────────────────
+// The index table in system-decisions.md is the enforcement contract: every
+// Accepted ADR names a guard whose backticked tokens literally appear in test
+// sources, or explicitly declares "none — <why>". This meta-guard turns "ADR
+// promises a test that never gets built" (the ADR-014 failure mode) into a CI
+// failure instead of a future audit finding.
+
+const DECISIONS = readFileSync(join(PKG, 'lib/wiki/system-decisions.md'), 'utf8')
+const ADR_ROWS = [...DECISIONS.matchAll(/^\| (ADR-\d{3}) \| ([^|]+) \| ([^|]+) \| ([^|]+) \| (.+) \|$/gm)]
+  .map(([, id, title, scope, status, guard]) => ({
+    id, title: title.trim(), scope: scope.trim(), status: status.trim(), guard: guard.trim(),
+  }))
+
+test('ADR-017: index table and ADR headings cover the same set', () => {
+  const headings = [...DECISIONS.matchAll(/^## (ADR-\d{3}) /gm)].map((m) => m[1])
+  assert.deepEqual(
+    [...new Set(ADR_ROWS.map((r) => r.id))].sort(),
+    [...new Set(headings)].sort(),
+    'every ## ADR-NNN heading needs an index row, and every index row a heading'
+  )
+  assert.ok(ADR_ROWS.length > 0, 'no ADR index rows parsed — table format changed?')
+})
+
+test('ADR-017: every index row has a valid Scope and Status', () => {
+  const SCOPES = new Set(['methodology', 'package-internal', 'tool:claude', 'tool:cursor'])
+  for (const r of ADR_ROWS) {
+    assert.ok(SCOPES.has(r.scope), `${r.id}: invalid Scope "${r.scope}" — allowed: ${[...SCOPES].join(', ')}`)
+    assert.ok(
+      /^(Accepted|Superseded by ADR-\d{3})/.test(r.status),
+      `${r.id}: invalid Status "${r.status}" — must be Accepted or Superseded by ADR-NNN`
+    )
+  }
+})
+
+test('ADR-017: every Accepted ADR has a guard resolvable in test sources (or explicit none)', () => {
+  const sources = [
+    ['test/unit', '.mjs'],
+    ['test/integration', '.sh'],
+    ['test/hooks', '.sh'],
+  ].flatMap(([dir, ext]) =>
+    readdirSync(join(PKG, dir))
+      .filter((f) => f.endsWith(ext))
+      .map((f) => readFileSync(join(PKG, dir, f), 'utf8'))
+  ).join('\n')
+
+  for (const r of ADR_ROWS) {
+    if (!r.status.startsWith('Accepted')) continue
+    assert.ok(r.guard && r.guard !== '—', `${r.id}: Accepted but Guard cell is empty`)
+    if (r.guard.startsWith('none')) {
+      assert.match(r.guard, /^none — .+/, `${r.id}: bare "none" — state why no guard is needed`)
+      continue
+    }
+    const tokens = [...r.guard.matchAll(/`([^`]+)`/g)].map((t) => t[1])
+    assert.ok(tokens.length > 0, `${r.id}: Guard "${r.guard}" has no backticked tokens — name the mechanism or use "none — <why>"`)
+    for (const tok of tokens) {
+      assert.ok(
+        sources.includes(tok),
+        `${r.id}: guard token \`${tok}\` not found in any test source — the named guard does not exist (ADR-014 failure mode)`
+      )
+    }
+  }
+})

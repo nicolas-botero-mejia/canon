@@ -148,6 +148,27 @@ elif [ "$CONCLUSIONS_FAIL" -eq 0 ]; then
   pass "conclusions: ${CONCLUSIONS_COUNT} file(s) — all have required header fields"
 fi
 
+# ── wiki/client + wiki/user: no YAML frontmatter (ADR-012) ───────────────────
+# MCP serves these layers as whole documents; frontmatter breaks the read model.
+FM_COUNT=0
+FM_FAIL=0
+for dir in "wiki/client" "wiki/user"; do
+  for f in "${CONSUMER_ROOT}/${dir}/"*.md; do
+    [ -f "$f" ] || continue
+    case "$(basename "$f")" in README.md) continue ;; esac
+    FM_COUNT=$((FM_COUNT + 1))
+    if head -1 "$f" | grep -q "^---$"; then
+      fail "${dir}/$(basename "$f"): YAML frontmatter not allowed (ADR-012 — client/user wiki files are read whole)"
+      FM_FAIL=$((FM_FAIL + 1))
+    fi
+  done
+done
+if [ "$FM_COUNT" -eq 0 ]; then
+  pass "wiki client/user frontmatter: no files to check (ok for new projects)"
+elif [ "$FM_FAIL" -eq 0 ]; then
+  pass "wiki client/user frontmatter: ${FM_COUNT} file(s) — none carry frontmatter (ADR-012)"
+fi
+
 # ── Result ───────────────────────────────────────────────────────────────────
 echo ""
 if [ "$ERRORS" -gt 0 ]; then
