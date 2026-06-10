@@ -39,10 +39,13 @@ if [[ -z "$FILE_PATH" ]]; then
     exit 0
 fi
 
-# For findings/ and conclusions/ files: warn if not yet in CONTENT_INDEX (advisory, non-blocking)
+# For findings/ and conclusions/ files: warn if not yet in CONTENT_INDEX (advisory, non-blocking).
+# Registered = the file's relative path appears on a line with markdown-link syntax — same
+# matching as check-index.sh (G3): a prose mention of the filename does not count.
 if [[ "$FILE_PATH" == *"/findings/"* || "$FILE_PATH" == *"/conclusions/"* ]]; then
     FILENAME=$(basename "$FILE_PATH")
-    if [[ -f "$INDEX" ]] && ! grep -qF "$FILENAME" "$INDEX"; then
+    RELPATH="${FILE_PATH#$PROJECT_ROOT/}"
+    if [[ -f "$INDEX" ]] && ! grep -F "$RELPATH" "$INDEX" | grep -qE '\]\(' ; then
         python3 -c "
 import json, sys
 filename = sys.argv[1]

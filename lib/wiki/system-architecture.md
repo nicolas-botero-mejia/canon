@@ -271,7 +271,7 @@ Validates the in-file addendum model (ADR-010, Dim 10–11). **FAIL (exit 1):** 
 **Used by:** Stop hook (after `check-contracts.sh`) and `canon doctor --deep`.
 
 ### `scripts/post-write-check.sh`
-PostToolUse hook wrapper. Reads the tool-use JSON payload from stdin, extracts `file_path` from `tool_input`. For `wiki/` and `plans/` files: calls `check-stale-refs.sh --file` and returns `{"decision":"block"}` if a deprecated pattern is found. For `findings/` and `conclusions/` files: emits ⚠ warning if the file is not yet in CONTENT_INDEX.md (advisory, non-blocking). Requires `python3` for JSON parsing.
+PostToolUse hook wrapper. Reads the tool-use JSON payload from stdin, extracts `file_path` (or Cursor's `path`) from `tool_input`. For `wiki/` and `plans/` files: calls `check-stale-refs.sh --file` and returns `{"decision":"block"}` if a deprecated pattern is found. For `findings/` and `conclusions/` files: emits ⚠ warning if the file is not yet in CONTENT_INDEX.md (advisory, non-blocking) — registered means the full relative path appears in a markdown link, same matching as check-index.sh; a prose mention of the filename does not count. Requires `python3` for JSON parsing.
 
 **Dependencies:** `python3`, `bash` — standard on macOS.
 **Used by:** PostToolUse hook (matcher: `Write|Edit`).
