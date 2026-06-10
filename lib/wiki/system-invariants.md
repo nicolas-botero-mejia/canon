@@ -13,6 +13,11 @@ which asserts agreement across locations automatically.
 This file is layer 2 of the four-layer governance stack (decisions → invariants → guards →
 runtime) — diagram and layer map in `system-architecture.md §7.1`.
 
+**Audience routing (ADR-022):** this registry is maintainer-layer — it governs canon's own
+files and tests. During consumer-project knowledge work it is not part of the read path;
+ignore it unless explicitly asked. Consumer-relevant contracts surface through the
+methodology ADRs and the runtime checks themselves.
+
 > Promoted and completed from `system-architecture.md §9 "Parsing Contracts"` — that section
 > contains the template/parsing contract subset; this file is the full registry. The §9 column
 > count (4) diverges from the poc-roadmap template (6) — that is the first confirmed invariant

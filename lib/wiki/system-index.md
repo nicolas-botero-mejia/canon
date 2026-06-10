@@ -1,6 +1,6 @@
 # System Index — Framework Meta-Documentation
 
-**Last updated:** 2026-06-06
+**Last updated:** 2026-06-10
 
 This file is the entry point for the framework's own documentation. Read it first when navigating the meta layer.
 
@@ -12,7 +12,8 @@ This file is the entry point for the framework's own documentation. Read it firs
 |------|-----------------|
 | [`system-index.md`](./system-index.md) | This file — where to look for what |
 | [`system-architecture.md`](./system-architecture.md) | How the knowledge system is structured (hooks, scripts, templates, dependencies) |
-| [`system-decisions.md`](./system-decisions.md) | Why key design decisions were made (ADR log — newest first) |
+| [`system-decisions.md`](./system-decisions.md) | Why key design decisions were made (ADR log — newest first). Scope-tagged: `package-internal` rows are maintainer-layer, ignore during consumer work (ADR-022) |
+| [`system-invariants.md`](./system-invariants.md) | Cross-file fact registry — canonical values, must-agree locations, guards. Maintainer layer (ADR-022) |
 | [`system-operations.md`](./system-operations.md) | How to maintain it (naming, CLAUDE.md, wiki, plans, findings, log) |
 | [`system-principles.md`](./system-principles.md) | The prompting and thinking model behind the methodology |
 | [`system-template-standards.md`](./system-template-standards.md) | Template philosophy, naming conventions, and how to add new templates |
