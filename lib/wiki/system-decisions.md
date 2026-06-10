@@ -1,11 +1,54 @@
 # System Decisions
 
-**Last updated:** 2026-06-08
+**Last updated:** 2026-06-09
 
 Architectural and methodology decisions for the Canon framework.
 Newest first. One entry per decision.
 
 > For design questions — check here before opening an issue or redesigning something. These decisions have already been through the tradeoff analysis.
+
+## Index
+
+Every row binds a decision to its enforcement. **Guard contract (ADR-017):** the Guard cell of every `Accepted` ADR either names its mechanism with backticked tokens that literally appear in `test/` sources, or states `none — <why>`. A meta-guard test parses this table and fails CI when a heading lacks a row, a Scope is invalid, or a guard token doesn't resolve.
+
+| ID | Title | Scope | Status | Guard |
+|----|-------|-------|--------|-------|
+| ADR-017 | ADR index with machine-checked Guard contract | package-internal | Accepted | `ADR-017` meta-guard tests in invariants |
+| ADR-016 | examples/ removed; init output is the reference | package-internal | Accepted | `ADR-016` invariants; `update-safety` step 2c |
+| ADR-015 | Cursor hook architecture | tool:cursor | Accepted | `writeCursorHooks` dispatcher invariant (enforces the implemented model) |
+| ADR-014 | examples/consumer purpose: generated reference | package-internal | Superseded by ADR-016 | — |
+| ADR-013 | Stop hook advisory only | tool:claude | Accepted | `ADR-013` invariants; scanners `R-011`; hook-dispatcher advisory tests |
+| ADR-012 | No frontmatter on wiki/client + wiki/user | methodology | Accepted | `ADR-012` check-contracts behavioral test |
+| ADR-011 | Test runner: node:test | package-internal | Accepted | `ADR-011` invariant (no runner dep; node --test) |
+| ADR-010 | Addendum conclusions appended to parent | methodology | Accepted | `ADR-010` invariants; `check-addendum-integrity` behavioral tests |
+| ADR-009 | Changelogs stripped from Last updated headers | methodology | Accepted | scanners `ADR-009` denylist rule |
+| ADR-008 | output/ renamed to conclusions/ | methodology | Accepted | invariants `R-001` trio |
+| ADR-007 | wiki/meta flattened in package | methodology | Accepted | `ADR-007` invariants; scanners `R-012` |
+| ADR-006 | Templates consolidated to lib/templates/ | package-internal | Accepted | indirect — `template-index` naming tests resolve lib/templates paths |
+| ADR-005 | migrate command removed from CLI | package-internal | Accepted | `ADR-005` invariant (no migrate in CLI) |
+| ADR-004 | Update-safety contract | methodology | Accepted | `update-safety` integration suite (entire) |
+| ADR-003 | lib/ as package IP container name | package-internal | Accepted | none — structural; every suite path resolves lib/ |
+| ADR-002 | manifest.json single source for sync boundaries | methodology | Accepted | `manifest` checks in doctor + sync tests |
+| ADR-001 | Thin-vendor over symlinks | methodology | Accepted | `update-safety` vendoring + user-file asserts |
+
+> ⚠ ADR-015's decision text predates the implemented dispatcher model — the guard enforces the implementation; the text correction is tracked separately.
+
+---
+
+## ADR-017 — ADR index with Scope and machine-checked Guard contract
+
+**Date:** 2026-06-09
+**Status:** Accepted
+
+**Context:** ADRs recorded decisions but enforced nothing — enforcement existed only where someone separately wrote a guard, and nothing bound the two. The 2026-06-09 audit measured the result: 6 of 14 active ADRs explicitly guarded, 4 unguarded, one (ADR-014) promising in its own Consequences a test that was never built, and one (ADR-015) whose text contradicts the implementation while the existing guard enforces the opposite. A decision record that names no enforcement becomes fiction at the first refactor.
+
+**Decision:** `system-decisions.md` carries an Index table — `ID | Title | Scope | Status | Guard` — covering every ADR. Scope ∈ {methodology, package-internal, tool:claude, tool:cursor}. The Guard cell of every `Accepted` ADR either names its mechanism with backticked tokens that literally appear in `test/` sources, or explicitly states `none — <why>`. A meta-guard test parses the table and fails when an ADR heading lacks an index row, a Scope is invalid, or a guard token doesn't resolve in the test suite.
+
+**Rationale:** The repo's measured pattern is "guards stop regressions, prose doesn't": ADR-013 (fully guarded) stopped regressing; ADR-014/015 (unguarded or diverged) rotted. Making the guard declaration mandatory and machine-checked moves "ADR promises a test" from a future audit finding to a CI failure. Scope tags separate consumer-facing methodology from package-internal engineering and mark tool-specific decisions explicitly.
+
+**Consequences:** New ADRs must add an index row with a resolvable Guard (or explicit `none — <why>`) — the meta-guard fails otherwise. ADR IDs remain append-only chronological; the index is for navigation and contract, never renumbering. Superseded ADRs keep their rows with Status `Superseded by ADR-NNN`.
+
+---
 
 ## ADR-016 — `examples/consumer/` removed; `canon init` output is the consumer reference
 
@@ -91,7 +134,7 @@ Newest first. One entry per decision.
 
 **Decision:** `node:test` (Node.js built-in). No test runner dependency added to `package.json`.
 
-**Rationale:** The framework is a zero-runtime-dependency package — adding jest or vitest would introduce a dev-dependency with its own transitive tree, configuration surface, and upgrade burden. `node:test` is native ESM, ships with Node.js 18+ (the project's minimum), and covers all needed assertions via `node:assert/strict`. The test suite is structural validation (file existence, keyword presence, script behavior) — not a complex test harness that needs jest's ecosystem (snapshots, mocking, parallel runners). Rejected: jest — large dependency, CommonJS-first by default; vitest — lighter but still a dependency with its own config layer.
+**Rationale:** The framework was dependency-free at decision time (the MCP server later added `@modelcontextprotocol/sdk` as the sole runtime dependency) — adding jest or vitest would introduce a dev-dependency with its own transitive tree, configuration surface, and upgrade burden. `node:test` is native ESM, ships with Node.js 18+ (the project's minimum), and covers all needed assertions via `node:assert/strict`. The test suite is structural validation (file existence, keyword presence, script behavior) — not a complex test harness that needs jest's ecosystem (snapshots, mocking, parallel runners). Rejected: jest — large dependency, CommonJS-first by default; vitest — lighter but still a dependency with its own config layer.
 
 **Consequences:** Tests run via `node --test test/unit/*.test.mjs`. No `jest.config.*` or `vitest.config.*` file. Contributors unfamiliar with `node:test` can reference the Node.js docs directly — no framework-specific test runner to learn.
 
@@ -194,7 +237,7 @@ Newest first. One entry per decision.
 
 **Context:** Framework updates need to be safe to apply without human review of every file. Users must trust that `npm update` + `canon sync` will not destroy their work.
 
-**Decision:** `sync` is structurally prevented from writing any file not declared in `manifest.json`. Vendored dirs are framework-owned by definition (any user modification is a policy violation). The test in `test/update-safety.sh` verifies this contract mechanically.
+**Decision:** `sync` is structurally prevented from writing any file not declared in `manifest.json`. Vendored dirs are framework-owned by definition (any user modification is a policy violation). The test in `test/integration/update-safety.sh` verifies this contract mechanically.
 
 **Rationale:** Without this guarantee, users would be afraid to update the framework, defeating the purpose of the npm distribution model. The manifest makes the write boundary explicit and auditable.
 
@@ -239,7 +282,7 @@ Newest first. One entry per decision.
 **Date:** 2026-05-28
 **Status:** Accepted
 
-**Context:** Framework-owned dirs (`.claude/agents`, `.claude/skills`, `.claude/rules`, `.cursor/rules`, `.cursor/hooks`) need to be available in the consumer project root where Claude Code and Cursor look for them. Options: symlink from consumer root into `node_modules/`, or copy (thin-vendor) on init/sync.
+**Context:** Framework-owned dirs (`.claude/agents`, `.claude/skills`, `.claude/rules`, `.cursor/rules`; at decision time also `.cursor/hooks`, since dropped — `manifest.json` is the live list) need to be available in the consumer project root where Claude Code and Cursor look for them. Options: symlink from consumer root into `node_modules/`, or copy (thin-vendor) on init/sync.
 
 **Decision:** Thin-vendor. Framework dirs are copied into the consumer on `canon init` and updated on `canon sync`.
 

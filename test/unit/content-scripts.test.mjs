@@ -131,6 +131,17 @@ test('bad/content-index-variant-label → check-contracts FAILs (wrong label dro
   assert.match(out, /missing required parts/)
 })
 
+// ─── ADR-012: wiki/client + wiki/user files must not carry YAML frontmatter ───
+// One bad file (frontmatter) + one good file (none) in the same fixture: the
+// check must name only the violating file.
+test('bad/wiki-client-frontmatter → check-contracts FAILs (ADR-012)', () => {
+  const { status, out } = runScript('check-contracts', 'bad/wiki-client-frontmatter')
+  assert.equal(status, 1, out)
+  assert.match(out, /frontmatter not allowed/)
+  assert.match(out, /profile-bad\.md/)
+  assert.doesNotMatch(out, /profile-good\.md: YAML/)
+})
+
 // ─── G14 fixed: roadmap status check is now scoped to the POC table only.
 // A secondary table in the same file no longer triggers false positives. ──────────
 test('bad/roadmap-secondary-table → check-contracts PASSes (secondary table no longer trips status check, G14 fixed)', () => {

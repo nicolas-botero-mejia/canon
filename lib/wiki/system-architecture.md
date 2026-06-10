@@ -256,6 +256,7 @@ Validates structural contracts on four file types — required for MCP query rel
 - `plans/phase-NN-poc-roadmap.md`: status values are from the allowed set — core emojis (🔜 ⏳ 🔄 ✅ ⏭️) plus terminal text statuses (`Deprecated`, `~~In Progress~~ Deprecated`, `Migrated → Phase NN`)
 - `findings/*.md`: `**Author:**` and `**Date:**` present in first 10 lines
 - `conclusions/*.md`: `**Author:**`, `**Date:**`/`**Synthesis date:**`, and `**Alignment verified:**` present in first 10 lines
+- `wiki/client/` + `wiki/user/` `.md` files: no YAML frontmatter (ADR-012 — these layers are read whole by MCP)
 
 **Dependencies:** `grep`, `find`, `head` — standard POSIX.
 **Used by:** Stop hook (after `check-conclusions-alignment.sh`).
