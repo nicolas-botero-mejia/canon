@@ -115,6 +115,14 @@ const FORBIDDEN = [
     match: (line) => /\*\*Last updated:\*\* *[0-9]{4}-[0-9]{2}-[0-9]{2} *\(/.test(line),
     allow: ['lib/wiki/system-decisions.md'],
   },
+  {
+    // BSD-first stat order is a dead idiom: GNU `stat -f %m` "succeeds" printing the
+    // mount point, so the `||` fallback never runs and the value is garbage on Linux.
+    // Cross-platform order is GNU-first: stat -c %Y ... || stat -f %m ...
+    id: 'cross-platform stat: BSD-first fallback chain (stat -f %m ... ||) is broken on Linux',
+    match: (line) => /stat -f %m[^|]*\|\|/.test(line),
+    allow: [],
+  },
 ]
 
 for (const rule of FORBIDDEN) {

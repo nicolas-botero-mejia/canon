@@ -15,6 +15,8 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync, execSync } from 'node:child_process'
 import { join } from 'node:path'
+import { mkdtempSync, cpSync, utimesSync, rmSync, readdirSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 
 const PKG = new URL('../../', import.meta.url).pathname.replace(/\/$/, '')
 const SCRIPTS = join(PKG, 'lib', 'scripts')
@@ -263,4 +265,70 @@ test('G8: post-write-check: wiki/ file with no pattern match → exits 0, no out
   const { status, out } = runPostWrite('clean-populated', filePath)
   assert.equal(status, 0)
   assert.equal(out.trim(), '', `unexpected output: ${out}`)
+})
+
+test('G8: post-write-check: conclusions/ file not in index → advisory JSON emitted', { skip: needsPython }, () => {
+  const fixtureDir = join(FIXTURES, 'bad/post-write-conclusions-unindexed')
+  const filePath = join(fixtureDir, 'conclusions/phase-01-poc-01-conclusions.md')
+  const { status, out } = runPostWrite('bad/post-write-conclusions-unindexed', filePath)
+  assert.equal(status, 0, out)
+  const parsed = JSON.parse(out.trim())
+  assert.match(parsed.hookSpecificOutput.additionalContext, /not yet in CONTENT_INDEX/)
+})
+
+test('G8: post-write-check: Cursor payload shape (tool_input.path) → advisory fires', { skip: needsPython }, () => {
+  const fixtureDir = join(FIXTURES, 'bad/post-write-findings-unindexed')
+  const filePath = join(fixtureDir, 'findings/phase-01-poc-01-results.md')
+  const payload = JSON.stringify({ tool_input: { path: filePath } })
+  const res = spawnSync('bash', [join(SCRIPTS, 'post-write-check.sh')], {
+    cwd: fixtureDir,
+    input: payload,
+    encoding: 'utf8',
+  })
+  assert.equal(res.status, 0, `${res.stdout}${res.stderr}`)
+  const parsed = JSON.parse(res.stdout.trim())
+  assert.match(parsed.hookSpecificOutput.additionalContext, /not yet in CONTENT_INDEX/)
+})
+
+// Behavior flip (basename fix): a prose mention of the filename in CONTENT_INDEX
+// used to suppress the advisory (substring match). Registered means a markdown
+// link with the full relative path — same contract as check-index (G3).
+test('G8: post-write-check: prose-only mention in index → advisory STILL fires', { skip: needsPython }, () => {
+  const fixtureDir = join(FIXTURES, 'bad/post-write-prose-mention')
+  const filePath = join(fixtureDir, 'findings/notes.md')
+  const { status, out } = runPostWrite('bad/post-write-prose-mention', filePath)
+  assert.equal(status, 0, out)
+  const parsed = JSON.parse(out.trim())
+  assert.match(parsed.hookSpecificOutput.additionalContext, /not yet in CONTENT_INDEX/)
+})
+
+test('G8: post-write-check: properly registered findings file → silent', { skip: needsPython }, () => {
+  const fixtureDir = join(FIXTURES, 'clean-populated')
+  const target = readdirSync(join(fixtureDir, 'findings')).find((f) => f.endsWith('.md') && f !== 'README.md')
+  const { status, out } = runPostWrite('clean-populated', join(fixtureDir, 'findings', target))
+  assert.equal(status, 0)
+  assert.equal(out.trim(), '', `registered file must not warn: ${out}`)
+})
+
+// ─── check-index mtime branch (advisory ⚠, exit 0) ─────────────────────────────
+// A watched file newer than CONTENT_INDEX.md warns that entries may be stale.
+// Runs against a temp copy of clean-populated so fixture mtimes stay untouched.
+
+test('check-index mtime: file newer than CONTENT_INDEX → ⚠ warns, exits 0', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'canon-mtime-'))
+  try {
+    cpSync(join(FIXTURES, 'clean-populated'), dir, { recursive: true })
+    const past = new Date(Date.now() - 60_000)
+    utimesSync(join(dir, 'CONTENT_INDEX.md'), past, past)
+    const target = readdirSync(join(dir, 'findings')).find((f) => f.endsWith('.md') && f !== 'README.md')
+    const now = new Date()
+    utimesSync(join(dir, 'findings', target), now, now)
+
+    const res = spawnSync('bash', [join(SCRIPTS, 'check-index.sh')], { cwd: dir, encoding: 'utf8' })
+    assert.equal(res.status, 0, `mtime drift is advisory — must exit 0:\n${res.stdout}${res.stderr}`)
+    assert.match(res.stdout, /modified after/, 'expected the mtime-drift warning')
+    assert.match(res.stdout, new RegExp(`findings/${target}`))
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })
