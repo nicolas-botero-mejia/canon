@@ -43,7 +43,10 @@ if [[ ${#MISSING[@]} -gt 0 ]]; then
 fi
 
 # --- Mtime check: files newer than CONTENT_INDEX.md may have stale index entries ---
-INDEX_MTIME=$(stat -f %m "$INDEX" 2>/dev/null || stat -c %Y "$INDEX" 2>/dev/null)
+# GNU first, BSD fallback — never the reverse: GNU `stat -f %m` "succeeds" printing
+# the mount point, which poisons the chain (mtime branch was dead on Linux until the
+# unit test caught it in CI).
+INDEX_MTIME=$(stat -c %Y "$INDEX" 2>/dev/null || stat -f %m "$INDEX" 2>/dev/null)
 POSSIBLY_STALE=()
 
 if [[ -n "$INDEX_MTIME" ]]; then
@@ -56,7 +59,7 @@ if [[ -n "$INDEX_MTIME" ]]; then
       [[ "$filename" == "README.md" ]] && continue
       [[ "$file" == *"/_archive/"* ]] && continue
 
-      FILE_MTIME=$(stat -f %m "$file" 2>/dev/null || stat -c %Y "$file" 2>/dev/null)
+      FILE_MTIME=$(stat -c %Y "$file" 2>/dev/null || stat -f %m "$file" 2>/dev/null)
       if [[ -n "$FILE_MTIME" && "$FILE_MTIME" -gt "$INDEX_MTIME" ]]; then
         POSSIBLY_STALE+=("${file#$PROJECT_ROOT/}")
       fi

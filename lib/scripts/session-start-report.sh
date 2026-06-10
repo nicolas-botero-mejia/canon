@@ -36,7 +36,8 @@ fi
 # --- CLAUDE.md age ---
 claude_age_warning=""
 if [[ -f "$CLAUDE_MD" ]]; then
-  mod_epoch=$(stat -f %m "$CLAUDE_MD" 2>/dev/null || stat -c %Y "$CLAUDE_MD" 2>/dev/null)
+  # GNU first, BSD fallback (GNU `stat -f %m` wrongly succeeds — prints mount point)
+  mod_epoch=$(stat -c %Y "$CLAUDE_MD" 2>/dev/null || stat -f %m "$CLAUDE_MD" 2>/dev/null)
   now_epoch=$(date +%s)
   age_days=$(( (now_epoch - mod_epoch) / 86400 ))
   if [[ $age_days -gt 14 ]]; then
