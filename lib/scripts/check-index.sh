@@ -4,7 +4,7 @@
 
 PROJECT_ROOT="$(pwd)"
 INDEX="$PROJECT_ROOT/CONTENT_INDEX.md"
-DIRS=("wiki" "findings" "plans" "conclusions")
+DIRS=("wiki" "findings" "plans" "conclusions" "deliverables")
 MISSING=()
 
 if [[ ! -f "$INDEX" ]]; then
@@ -24,7 +24,9 @@ for dir in "${DIRS[@]}"; do
     [[ "$file" == *"/_archive/"* ]] && continue
 
     RELPATH="${file#$PROJECT_ROOT/}"
-    if ! grep -qF "$RELPATH" "$INDEX"; then
+    # Only count a path as registered if it appears in a markdown link — not merely
+    # mentioned in prose — prevents substring false-positives (G3).
+    if ! grep -F "$RELPATH" "$INDEX" | grep -qE '\]\(\.?/?' ; then
       MISSING+=("$RELPATH")
     fi
   done < <(find "$dir_path" -name "*.md" -print0)

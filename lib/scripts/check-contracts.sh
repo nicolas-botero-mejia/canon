@@ -72,7 +72,10 @@ for f in "${CONSUMER_ROOT}/plans/phase-"*"-poc-roadmap.md"; do
   # Allowed status values: core emojis + terminal text statuses
   # Core: 🔜 Planned | ⏳ In Progress | 🔄 | ✅ Complete | ⏭️
   # Terminal: Deprecated | ~~In Progress~~ Deprecated | Migrated → Phase NN
-  BAD=$(grep "^|" "$f" | grep -v "^| POC\|^| Addendum\|^|---\|^| #" | awk -F'|' '{print $3}' | grep -v "^[[:space:]]*$" | grep -v "Status" | \
+  # Extract only rows from the POC table (between the "| POC #" header and the next ## heading)
+  # to avoid false-positives from secondary tables in the same file (G14).
+  POC_TABLE=$(awk '/^\| POC #/{found=1} found && /^##/{exit} found{print}' "$f")
+  BAD=$(echo "$POC_TABLE" | grep "^|" | grep -v "^| POC\|^| Addendum\|^|---\|^| #" | awk -F'|' '{print $3}' | grep -v "^[[:space:]]*$" | grep -v "Status" | \
     grep -v "🔜\|⏳\|🔄\|✅\|⏭️\|^[[:space:]]*$\|Deprecated\|Migrated\|~~In Progress~~" || true)
   if [ -n "$BAD" ]; then
     fail "$(basename "$f"): unknown status values found: $BAD"
