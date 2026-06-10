@@ -58,9 +58,13 @@ How we work and how we maintain this knowledge system.
 ### template-index.md (framework templates — node_modules/.../lib/templates/)
 **What it is:** Template map and index for all project templates. Naming convention: `[process-type].[file-type]-template.md`. Full template listing in the Templates section below.
 
-**Mandatory sections in every POC session plan:** Prerequisites (with roadmap link), Context, Validation table, Hypotheses table, External Validation step (second-to-last), Conclusion Synthesis + Wiki Update step (last), Success Criteria, POC Roadmap Position.
+**Key facts:**
+- **Mandatory sections in every POC session plan:** Prerequisites (with roadmap link), Context, Validation table, Hypotheses table, External Validation step (second-to-last), Conclusion Synthesis + Wiki Update step (last), Success Criteria, POC Roadmap Position.
+- **Mandatory sections in every POC conclusions file:** Per-hypothesis blocks (status / finding / decision / wiki update), Decisions Closed table, Wiki Files Updated table, Addendum Candidates table (forward signals for /conclusions-review pass 4).
 
-**Mandatory sections in every POC conclusions file:** Per-hypothesis blocks (status / finding / decision / wiki update), Decisions Closed table, Wiki Files Updated table, Addendum Candidates table (forward signals for /conclusions-review pass 4).
+**Questions it answers:**
+- What template should I use for a new POC, session, research activity, or addendum?
+- What sections are required in a conclusions file or session plan?
 
 ---
 

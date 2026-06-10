@@ -422,8 +422,8 @@ Structural guarantees for template-generated files. Required for MCP query relia
 
 ### `CONTENT_INDEX.md` entries
 
-- **Required format:** `### [filename](./path/to/file)`, `**What it is:** [one sentence]`, `**Key facts:**` list, `**Questions it answers:**` list
-- **Contract:** every entry has all four parts; `**What it is:**` is always a single sentence
+- **Required format:** `### [filename](./path/to/file)` followed by either: (a) full four-part block — `**What it is:**`, `**Key facts:**`, `**Questions it answers:**`; or (b) lightweight single-line description (0 markers — valid for mechanism files: agents, skills, templates, scripts)
+- **Contract:** entries with 1–2 of 3 markers are invalid (partial/broken block); entries demoted below `###` level are an error; entries with 0 or 3/3 markers are valid. Validated per-entry, not by global count.
 
 ### `findings/*.md`
 

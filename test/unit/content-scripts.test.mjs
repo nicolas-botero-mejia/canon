@@ -143,11 +143,11 @@ test('bad/roadmap-secondary-table → check-contracts PASSes (secondary table no
 // pin the blind spots so that when a check is tightened, the test flips and is
 // updated (the same RED-first convention invariants.test.mjs uses). ─────────────
 
-// Count-balancing: a heading demoted to #### is not counted as an entry, so the
-// four-part check skips it entirely even though it carries no blocks.
-test('bad/content-index-demoted-heading → check-contracts PASSES (#### heading evades the count)', () => {
+// Demoted heading: per-entry check catches #### .md headings regardless of markers.
+test('bad/content-index-demoted-heading → check-contracts FAILs (#### heading caught by per-entry check)', () => {
   const { status, out } = runScript('check-contracts', 'bad/content-index-demoted-heading')
-  assert.equal(status, 0, out)
+  assert.equal(status, 1, out)
+  assert.match(out, /demoted/)
 })
 
 // G7 fixed: check-links now scans conclusions/ and CLAUDE.md too.
