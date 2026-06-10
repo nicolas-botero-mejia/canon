@@ -1,6 +1,6 @@
 # System Decisions
 
-**Last updated:** 2026-06-09
+**Last updated:** 2026-06-10
 
 Architectural and methodology decisions for the Canon framework.
 Newest first. One entry per decision.
@@ -11,11 +11,31 @@ Newest first. One entry per decision.
 
 Every row binds a decision to its enforcement. **Guard contract (ADR-017):** the Guard cell of every `Accepted` ADR either names its mechanism with backticked tokens that literally appear in `test/` sources, or states `none — <why>`. A meta-guard test parses this table and fails CI when a heading lacks a row, a Scope is invalid, or a guard token doesn't resolve.
 
+### Adding an ADR
+
+1. Append the entry (newest-first) with Context / Decision / Rationale / Consequences.
+2. Add its Index row — Scope, Status `Accepted`, and a Guard (backticked tokens that resolve in `test/`, or `none — <why>`).
+3. Land the guard in the same change — the meta-guard fails CI if the named guard doesn't exist yet.
+
+### Superseding an ADR
+
+Flipping Status is the **last** step, not the whole move:
+
+1. **Write the new ADR** — Context explains what failed or changed; Consequences enumerate the artifact disposal (the cleanup manifest).
+2. **Back-search the old decision's artifacts** — grep the old ID and the old decision's values/paths across code, tests, configs, and docs:
+   - Tests *named* for the old ADR → rename/re-point to the new one. Mechanically enforced: the ADR-017 meta-guard fails CI on any test named for a superseded ADR (comments may cite old IDs as history; test names may not).
+   - Each guard gets an explicit fate: **transfer** (still protects the new world — re-label it under the new ADR), **gravestone** (denylist-style rules that must outlive the decision — keep), or **delete** (protected only the old world).
+   - Config/doc remnants (ignore entries, allowlists, layout claims) → remove or correct.
+3. **Flip the old ADR's Status** to `Superseded by ADR-NNN` and update its index row (Guard cell → `—`).
+
+Worked examples: ADR-016 (Consequences as disposal manifest), ADR-018 (guard transfer, gravestone kept, remnant removed).
+
 | ID | Title | Scope | Status | Guard |
 |----|-------|-------|--------|-------|
+| ADR-018 | Cursor hooks delegate to the package dispatcher | tool:cursor | Accepted | `writeCursorHooks` dispatcher invariant (gravestone for the wrapper model) |
 | ADR-017 | ADR index with machine-checked Guard contract | package-internal | Accepted | `ADR-017` meta-guard tests in invariants |
 | ADR-016 | examples/ removed; init output is the reference | package-internal | Accepted | `ADR-016` invariants; `update-safety` step 2c |
-| ADR-015 | Cursor hook architecture | tool:cursor | Accepted | `writeCursorHooks` dispatcher invariant (enforces the implemented model) |
+| ADR-015 | Cursor hook architecture: vendored wrapper scripts | tool:cursor | Superseded by ADR-018 | — |
 | ADR-014 | examples/consumer purpose: generated reference | package-internal | Superseded by ADR-016 | — |
 | ADR-013 | Stop hook advisory only | tool:claude | Accepted | `ADR-013` invariants; scanners `R-011`; hook-dispatcher advisory tests |
 | ADR-012 | No frontmatter on wiki/client + wiki/user | methodology | Accepted | `ADR-012` check-contracts behavioral test |
@@ -31,7 +51,20 @@ Every row binds a decision to its enforcement. **Guard contract (ADR-017):** the
 | ADR-002 | manifest.json single source for sync boundaries | methodology | Accepted | `manifest` checks in doctor + sync tests |
 | ADR-001 | Thin-vendor over symlinks | methodology | Accepted | `update-safety` vendoring + user-file asserts |
 
-> ⚠ ADR-015's decision text predates the implemented dispatcher model — the guard enforces the implementation; the text correction is tracked separately.
+---
+
+## ADR-018 — Cursor hooks delegate to the package dispatcher
+
+**Date:** 2026-06-10
+**Status:** Accepted — supersedes ADR-015
+
+**Context:** ADR-015 chose vendored wrapper scripts in `.cursor/hooks/` on the premise that Cursor could not reference a dispatcher inside `node_modules`. The implementation went the other way and the premise proved wrong: `writeCursorHooks()` (`bin/lib/sync-ops.mjs`) writes `.cursor/hooks.json` whose commands run `bash node_modules/<pkg>/bin/hook.sh <Event>` directly — Cursor executes hooks.json commands from the project root, so a node_modules path works. `lib/.cursor/` never contained a `hooks/` directory, `manifest.json` never vendored one, and a unit invariant enforced the dispatcher form while ADR-015's text said the opposite. The decision was reversed in practice without a record — the exact failure mode ADR-017 now exists to catch.
+
+**Decision:** Cursor hook wiring is a single `.cursor/hooks.json` written by init/sync (manifest `wiring` bucket), with every event delegating to the same `bin/hook.sh` dispatcher that Claude Code and Codex use. No vendored hook scripts; no `lib/.cursor/hooks/`.
+
+**Rationale:** One dispatcher means one wiring surface across all tools — `.claude/settings.json`, `.cursor/hooks.json`, and `.codex/hooks.json` call the identical entry point, so hook behavior cannot fork per tool and a new check lands everywhere at once. No per-script vendoring to keep in sync. ADR-001's portability argument applies to content dirs; executable hook wiring is better referenced than copied.
+
+**Consequences:** `.cursor/hooks.json` is overwritten on sync (wiring, not user content). The `writeCursorHooks` invariant — asserts dispatcher form, forbids `.cursor/hooks/` references — transfers to this ADR as its guard; it is a gravestone that deliberately survives the supersede. Remnant removed: the package `.gitignore`'s dead `/.cursor/hooks/` entry. ADR-015 marked superseded.
 
 ---
 
@@ -68,7 +101,7 @@ Every row binds a decision to its enforcement. **Guard contract (ADR-017):** the
 ## ADR-015 — Cursor hook architecture: vendored dispatcher scripts
 
 **Date:** 2026-06-08
-**Status:** Accepted
+**Status:** Superseded by ADR-018 (2026-06-10) — the wrapper-script model recorded here was never implemented; see ADR-018
 
 **Context:** Three competing models existed in the codebase for how Cursor executes framework hooks: (1) vendored hook scripts in `.cursor/hooks/` called directly by `hooks.json`; (2) a single dispatcher script (like `bin/hook.sh` for Claude Code) that routes events; (3) lightweight wrapper scripts in `examples/consumer/` that delegate to node_modules. No single model was declared canonical, creating ambiguity about what to maintain.
 

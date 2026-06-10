@@ -1,6 +1,6 @@
 # System Invariants — Concept Registry
 
-**Last updated:** 2026-06-08
+**Last updated:** 2026-06-10
 
 **Scope:** Every cross-cutting fact in the framework that appears in more than one representation.
 Each row names the canonical value, every location that must agree, whether the duplication is
@@ -9,6 +9,9 @@ accidental (collapse to reference) or intentional (declared mirror), and the mec
 This registry is the authoritative answer to "where does changing X land?" — read it before
 touching any concept listed here. It is the data source for `test/unit/invariants.test.mjs`
 which asserts agreement across locations automatically.
+
+This file is layer 2 of the four-layer governance stack (decisions → invariants → guards →
+runtime) — diagram and layer map in `system-architecture.md §7.1`.
 
 > Promoted and completed from `system-architecture.md §9 "Parsing Contracts"` — that section
 > contains the template/parsing contract subset; this file is the full registry. The §9 column
@@ -194,6 +197,19 @@ which asserts agreement across locations automatically.
 | **Dup kind** | accidental — all derive from the phase-conclude synthesis step |
 | **Guard** | `invariants.test.mjs` R-013; `scanners.test.mjs` forbidden-scan (dead names `synthesis-conclusions`, `phase-NN-conclusions.md`) |
 | **Known drift** | None — fixed 2026-06-08 |
+
+---
+
+### R-014 — Architecture-doc enumerations (scripts · skills · unit suites)
+
+| | |
+|---|---|
+| **Canonical value** | The filesystem itself: `lib/scripts/*.sh`, `lib/.claude/skills/*/`, `test/unit/*.test.mjs` — source of truth by existence |
+| **Canonical home** | the directories (self-enumerating) |
+| **Must agree** | `system-architecture.md` (§1.2 lifecycle boxes + skill roster, §3 Scripts Inventory); package `docs/architecture.md §12` testing map |
+| **Dup kind** | intentional — the docs must restate the rosters for readers; names must match exactly |
+| **Guard** | `invariants.test.mjs` R-014 doc-currency trio — a script/skill/suite that exists but is undocumented fails CI (Rule 10's mechanical half) |
+| **Known drift** | 2026-06-10: docs §8/§12 named 4 of 11 unit suites — found by manual audit, fixed when this guard landed |
 
 ---
 

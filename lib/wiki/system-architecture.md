@@ -47,73 +47,76 @@ Phase lifecycle
 
 ```
 ╔══════════════════════════════════════════════════════════════════════╗
-║  BACKGROUND (always running, outside sessions)                       ║
-║  scripts/watch-project.sh → .claude/pending-updates.log         ║
+║ BACKGROUND (always running, outside sessions)                        ║
+║ watch-project.sh → .claude/pending-updates.log                       ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
 ╔══════════════════════════════════════════════════════════════════════╗
-║  SESSION START                                                        ║
-║  Hook [auto]: date/time                                              ║
-║  Hook [auto]: scripts/session-start-report.sh                   ║
-║    → file counts, pending external updates, CLAUDE.md age warning    ║
-║  Rules [always-on]: behavioral.md (19 rules) loaded via CLAUDE.md    ║
+║ SESSION START                                                        ║
+║ Hook [auto]: date/time                                               ║
+║ Hook [auto]: session-start-report.sh                                 ║
+║   → file counts, pending external updates, CLAUDE.md age warning     ║
+║ Rules [always-on]: behavioral.md (19 rules) loaded via CLAUDE.md     ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
 ╔══════════════════════════════════════════════════════════════════════╗
-║  PRE-WORK SETUP (rule-governed, manually triggered)                  ║
-║  Rule 8 + Rule 12: load prior conclusions, run /conclusions-review   ║
-║  Skill [manual]: /activity-new [type]                                ║
-║    → type: poc | addendum | research | session                       ║
+║ PRE-WORK SETUP (rule-governed, manually triggered)                   ║
+║ Rule 8 + Rule 12: load prior conclusions, run /conclusions-review    ║
+║ Skill [manual]: /activity-new [type]                                 ║
+║   → type: poc | addendum | research | session                        ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
 ╔══════════════════════════════════════════════════════════════════════╗
-║  WORK PHASE (POC execution, session content, research)               ║
-║  Agents [manually spawned]: librarian, pm, writer                    ║
-║  Hook [PostToolUse, auto]: scripts/post-write-check.sh          ║
-║    → wiki/ + plans/: blocks on deprecated tool names                 ║
-║    → findings/ + conclusions/: warns if file not in CONTENT_INDEX         ║
+║ WORK PHASE (POC execution, session content, research)                ║
+║ Agents [manually spawned]: librarian, pm, writer                     ║
+║ Hook [PostToolUse, auto]: post-write-check.sh                        ║
+║   → wiki/ + plans/: blocks on deprecated tool names                  ║
+║   → findings/ + conclusions/: warns if file not in CONTENT_INDEX     ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
 ╔══════════════════════════════════════════════════════════════════════╗
-║  CLOSE PHASE (manually triggered)                                    ║
-║  Skill [manual]: /activity-conclude [type]                           ║
-║    → synthesizes findings → conclusions (poc/addendum/research)      ║
-║    → creates results stub + updates tracker (session type)           ║
-║    /conclusions-review: 4 passes (patch · stub fills · new coverage  ║
-║      · forward signals) + CONTENT_INDEX pre-check                    ║
-║  Skill [manual]: /wiki-manage (add / update / deprecate / move)      ║
-║    → required for all wiki lifecycle changes including content moves  ║
-║  Rule 15 [manual]: functional test required for governance changes    ║
+║ CLOSE PHASE (manually triggered)                                     ║
+║ Skill [manual]: /activity-conclude [type]                            ║
+║   → synthesizes findings → conclusions (poc/addendum/research)       ║
+║   → creates results stub + updates tracker (session type)            ║
+║   /conclusions-review: 4 passes (patch · stub fills · new coverage   ║
+║     · forward signals) + CONTENT_INDEX pre-check                     ║
+║ Skill [manual]: /wiki-manage (add / update / deprecate / move)       ║
+║   → required for all wiki lifecycle changes including content moves  ║
+║ Rule 15 [manual]: functional test required for governance changes    ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
 ╔══════════════════════════════════════════════════════════════════════╗
-║  SESSION STOP                                                         ║
-║  Hook [auto, advisory — never blocks]: scripts/check-index.sh   ║
-║    → missing files + ⚠ mtime drift (stale entries)                   ║
-║  Hook [auto, advisory — never blocks]: scripts/check-links.sh   ║
-║  Hook [auto, advisory — never blocks]: scripts/check-stale-refs.sh║
-║  Hook [auto, advisory — never blocks]: scripts/check-conclusions-alignment.sh║
-║  Hook [auto, advisory — never blocks]: scripts/check-contracts.sh║
-║    → structural contract validation (frontmatter, tracker cols,       ║
-║      roadmap emoji set, findings/conclusions required fields)         ║
-║  Hook [auto, advisory — never blocks]: scripts/check-addendum-integrity.sh║
-║    → standalone addendum files (✗) + unverified ## Addendum NN (⚠)    ║
+║ SESSION STOP — advisory chain, never blocks close (ADR-013)          ║
+║ check-index.sh           → unlisted files + ⚠ mtime drift            ║
+║ check-links.sh           → broken relative markdown links            ║
+║ check-stale-refs.sh      → retired tool/pattern names in wiki/       ║
+║ check-conclusions-alignment.sh → Complete without alignment date     ║
+║ check-contracts.sh       → structural contracts (index entry form,   ║
+║   tracker cols, roadmap statuses, required header fields,            ║
+║   client/user frontmatter ban)                                       ║
+║ check-addendum-integrity.sh → standalone addendum files (✗) +        ║
+║   unverified ## Addendum NN sections (⚠)                             ║
+║ Results aggregate into ONE banner: ✗ require attention / ⚠ advisory  ║
 ╚══════════════════════════════════════════════════════════════════════╝
                               │
                               ▼
 ╔══════════════════════════════════════════════════════════════════════╗
-║  PERIODIC (manually triggered, not session-bound)                    ║
-║  Skill [manual]: /knowledge-audit                                     ║
-║    → 15-dimension consistency check across all files                 ║
-║  Phase operations (when phase ends / new phase begins):              ║
-║    /phase-conclude → /phase-new                                       ║
+║ PERIODIC (manually triggered, not session-bound)                     ║
+║ Skill [manual]: /knowledge-audit                                     ║
+║   → 15-dimension consistency check across all files                  ║
+║ CLI: canon doctor --deep runs the same content chain on demand / CI  ║
+║ Phase operations (when phase ends / new phase begins):               ║
+║   /phase-conclude → /phase-new                                       ║
 ╚══════════════════════════════════════════════════════════════════════╝
 ```
+
+All hook scripts run from `node_modules/@nicolas-botero-mejia/canon/lib/scripts/`, routed by the single `bin/hook.sh` dispatcher wired into `.claude/settings.json`, `.cursor/hooks.json`, and `.codex/hooks.json` (ADR-018).
 
 Agent + skill layer (`.claude/`):
 - `agents/librarian.md` — knowledge steward: 8-dimension consistency audit, context surfacing, tmp/ lifecycle
@@ -403,6 +406,111 @@ Functional test → Invoke the changed mechanism against a controlled case. Obse
 
 **Rule:** Never close a session that adds or modifies governance mechanisms without running both levels. See `behavioral.md Rule 15` and `system-operations.md §14`.
 
+### §7.1 — The Governance Stack
+
+Four layers keep the framework honest. Each layer is verified by the one below it; the bottom layer governs the consumer's knowledge base day-to-day.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│ LAYER 1 — DECISIONS (why)                      system-decisions.md   │
+│ Append-only ADR ledger: Context → Decision → Rationale →             │
+│ Consequences. Status: Accepted | Superseded by ADR-NNN.              │
+│ Supersede = new ADR + back-search checklist, never a rewrite.        │
+└───────────────┬──────────────────────────────────────────────────────┘
+                │ every Accepted ADR names its Guard (index table, ADR-017)
+┌───────────────▼──────────────────────────────────────────────────────┐
+│ LAYER 2 — INVARIANTS (what must agree)         system-invariants.md  │
+│ Registry: canonical value · canonical home · must-agree locations ·  │
+│ guard. Canonical homes include ADRs, templates, and                  │
+│ system-tool-integration.md (the per-tool behavior matrix).           │
+└───────────────┬──────────────────────────────────────────────────────┘
+                │ every registry row names its Guard
+┌───────────────▼──────────────────────────────────────────────────────┐
+│ LAYER 3 — GUARDS (proof)                       test/ in CI           │
+│ Static invariants · forbidden-value scanners (gravestones) ·         │
+│ behavioral fixture checks · integration e2e · hook tests ·           │
+│ meta-guard (asserts every Accepted ADR's guard actually exists).     │
+│ Full layer map → docs/architecture.md §12 (package repo).            │
+└───────────────┬──────────────────────────────────────────────────────┘
+                │ guards prove the mechanisms below match layers 1 + 2
+┌───────────────▼──────────────────────────────────────────────────────┐
+│ LAYER 4 — RUNTIME GOVERNANCE (practice)        lib/scripts · skills  │
+│ Stop chain · PostToolUse · doctor --deep · /knowledge-audit ·        │
+│ /conclusions-review · Librarian — these govern the project           │
+│ knowledge base every session.                                        │
+└──────────────────────────────────────────────────────────────────────┘
+
+Feedback loop (how the system learns from mistakes):
+  drift found (audit, regression, review)
+    → record it      (new ADR or invariant row — layer 1/2)
+    → pin it         (test, fixture pair, or denylist gravestone — layer 3)
+    → bind it        (meta-guard keeps record ↔ guard agreeing forever)
+```
+
+Layers 1–3 govern the governors; layer 4 governs the knowledge. `system-tool-integration.md` is not a separate layer — it is a canonical-value home inside layer 2: the per-tool matrix that hook wiring and skill paths must agree with.
+
+---
+
+## 8. Cloud / GitHub Migration Path
+
+### Multi-repo workflow
+
+The consumer project and framework package are separate repositories. The framework lives in `node_modules/` — updated via `npm update` + `canon sync`. User content (`plans/`, `findings/`, `conclusions/`, `raw/`, `wiki/project/`, etc.) lives in the consumer repo and is never written by framework tooling. This boundary is enforced by `manifest.json` and checked by `canon doctor`.
+
+### Script migration — local to CI
+
+When moving to CI, the governance scripts stay unchanged. Only the invocation changes:
+
+| Current (local) | CI equivalent |
+|----------------|--------------|
+| Stop hook → `check-index.sh` | CI step on push to `wiki/` or `plans/` |
+| Stop hook → `check-links.sh` | Same CI step |
+| Stop hook → `check-stale-refs.sh` | Same CI step |
+| `watch-project.sh` | GitHub Actions trigger on any `.md` push to monitored paths |
+| `phase-transition.sh` | Called manually or as a workflow dispatch action |
+| `scripts/project/*` | Called manually or as a workflow dispatch action |
+
+Recommended CI trigger: push to `wiki/` or `plans/`. The `check-conclusions-alignment.sh` check can stay local (advisory only — exit 0).
+
+### Branching
+
+- `main` is always publishable (consumer) or publishable to npm (package repo).
+- Feature branches for structural changes (new folder layout, naming convention changes).
+- Package repo: tag `v0.1.x` on publish; never push directly to `main` without a passing test run.
+
+### CD pipeline (package repo)
+
+`npm publish` is triggered manually after the full test suite passes. No automatic publish on push. The publish step:
+1. `npm run test:all` — runs unit tests (node --test), integration test (pack → install → init → sync → doctor), and hook dispatcher tests
+2. `npm version patch|minor|major` — bumps version, creates git tag
+3. `npm publish` — publishes to npm registry
+
+**Test suite structure:**
+```
+npm test                 → test/unit/*.test.mjs  (node --test)
+                           invariants (registry bindings + ADR-017 meta-guard) ·
+                           scanners (forbidden-value denylist + check roster) ·
+                           content-scripts (check-*.sh executed against fixtures) ·
+                           doctor-deep tiers · doctor · sync · init
+npm run test:integration → update-safety.sh (pack → install → init → sync e2e;
+                           fresh init must pass doctor --deep)
+                           + doctor-deep-cli.sh (real CLI stdout: ✓ / ⚠ / ✗)
+npm run test:hooks       → hook-dispatcher.test.sh (routing, banner, advisory)
+npm run test:all         → all three in sequence
+```
+
+Layer-by-layer map of what each suite catches → package repo `docs/architecture.md §12`.
+
+### Consumer `.gitignore` for CI
+
+```
+tmp/                  # never commit transient working files
+node_modules/
+.framework-version    # DO commit — version pinning contract between init and doctor
+```
+
+`raw/` may be gitignored for client confidentiality. If gitignored, CI checks that scan `raw/` will silently pass (no files to scan). Document this if the project uses CI link-checking.
+
 ---
 
 ## 9. Parsing Contracts
@@ -438,61 +546,8 @@ Structural guarantees for template-generated files. Required for MCP query relia
 - **YAML frontmatter:** `type`, `phase`, `topic`, `status`, `alignment_verified`
 - **Contract:** `**Alignment verified:**` must be present somewhere in the file; left empty (``) until verified
 
+### `wiki/client/*.md` + `wiki/user/*.md`
+
+- **Contract:** no YAML frontmatter (ADR-012 — these layers are served whole by MCP)
+
 These contracts are validated by `lib/scripts/check-contracts.sh` (runs in the Stop hook chain after every session).
-
----
-
-## 8. Cloud / GitHub Migration Path
-
-### Multi-repo workflow
-
-The consumer project and framework package are separate repositories. The framework lives in `node_modules/` — updated via `npm update` + `canon sync`. User content (`plans/`, `findings/`, `conclusions/`, `raw/`, `wiki/project/`, etc.) lives in the consumer repo and is never written by framework tooling. This boundary is enforced by `manifest.json` and checked by `canon doctor`.
-
-### Script migration — local to CI
-
-When moving to CI, the governance scripts stay unchanged. Only the invocation changes:
-
-| Current (local) | CI equivalent |
-|----------------|--------------|
-| Stop hook → `scripts/check-index.sh` | CI step on push to `wiki/` or `plans/` |
-| Stop hook → `scripts/check-links.sh` | Same CI step |
-| Stop hook → `scripts/check-stale-refs.sh` | Same CI step |
-| `scripts/watch-project.sh` | GitHub Actions trigger on any `.md` push to monitored paths |
-| `scripts/phase-transition.sh` | Called manually or as a workflow dispatch action |
-| `scripts/project/*` | Called manually or as a workflow dispatch action |
-
-Recommended CI trigger: push to `wiki/` or `plans/`. The `check-conclusions-alignment.sh` check can stay local (advisory only — exit 0).
-
-### Branching
-
-- `main` is always publishable (consumer) or publishable to npm (package repo).
-- Feature branches for structural changes (new folder layout, naming convention changes).
-- Package repo: tag `v0.1.x` on publish; never push directly to `main` without a passing test run.
-
-### CD pipeline (package repo)
-
-`npm publish` is triggered manually after the full test suite passes. No automatic publish on push. The publish step:
-1. `npm run test:all` — runs unit tests (node --test), integration test (pack → install → init → sync → doctor), and hook dispatcher tests
-2. `npm version patch|minor|major` — bumps version, creates git tag
-3. `npm publish` — publishes to npm registry
-
-**Test suite structure:**
-```
-npm test              → test/unit/**/*.test.mjs  (node --test)
-                        ├─ invariants.test.mjs  — agreement across hand-listed locations (registry rows)
-                        └─ scanners.test.mjs    — whole-repo forbidden-value scan + self-enumerating
-                                                  skill/template coverage (completeness by construction)
-npm run test:integration → test/integration/update-safety.sh
-npm run test:hooks    → test/hooks/run.sh (hook routing + script existence)
-npm run test:all      → all three in sequence
-```
-
-### Consumer `.gitignore` for CI
-
-```
-tmp/                  # never commit transient working files
-node_modules/
-.framework-version    # DO commit — version pinning contract between init and doctor
-```
-
-`raw/` may be gitignored for client confidentiality. If gitignored, CI checks that scan `raw/` will silently pass (no files to scan). Document this if the project uses CI link-checking.

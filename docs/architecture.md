@@ -47,14 +47,14 @@ The whole design problem reduces to: **keep the wiring bucket as small and as pu
 |------------|------------------------------|--------------------|-------|------------------------------|
 | `AGENTS.md` | framework base in `node_modules`; copy written at init | content from `lib/CLAUDE.base.md` written once by `canon init` | **User** | nothing — written once, never re-written by sync |
 | `CLAUDE.md` | user's facts in the repo; framework base in `node_modules` | one `@import node_modules/@nicolas-botero-mejia/canon/CLAUDE.base.md` line | **User** | nothing — the imported file changes, the user's file doesn't |
-| `CONTENT_INDEX.md` | indexes user dirs only | n/a — framework wiki isn't in monitored dirs | **User** | nothing |
+| `CONTENT_INDEX.md` | seeded at init from `lib/templates/init.content-index-template.md` — framework-layer entries pre-registered (ADR-016); user-dir entries added by the consumer | written once by `canon init` | **User** | nothing — consumer-owned after init |
 | `.claude/settings.json` | hook logic in `node_modules` | hooks call `bin/hook.sh <event>` dispatcher | Wiring | optional re-sync if the dispatcher contract changes |
 | `.claude/skills`, `.claude/agents`, `.claude/rules` | the package | **thin-vendor** (see §5); `.claude/skills/` is the cross-tool path (read natively by Claude Code, Cursor v2.4+, and all Copilot hosts — no extra vendoring needed for these tools) | Framework (discovered) | overwrite — safe, no user content |
 | `.agents/skills` | symlink → `.claude/skills/` | written by `canon init`; makes `.agents/skills/` available as the convergent path for Codex and Gemini CLI | Framework (wiring) | no-op if symlink exists |
 | `.cursor/rules` | the package | thin-vendor | Framework (discovered) | overwrite — safe |
 | `.cursor/hooks.json` | dispatcher path in package | written by `canon init`/`sync` (wiring, not vendored) | Framework (wiring) | rewritten on sync |
 | `lib/scripts/` | `node_modules` | referenced by the hook dispatcher | Framework | not present in repo |
-| `lib/wiki/., .lib/templates/, templates | `node_modules` | referenced by skills + index links | Framework | not present in repo |
+| `lib/wiki/`, `lib/templates/` | `node_modules` | referenced by skills + index links | Framework | not present in repo |
 | `plans/ findings/ conclusions/ raw/ wiki/project/ wiki/standards/ tmp/` | the repo | n/a | **User** | **never touched** |
 
 The rule of thumb a human can verify at a glance: **anything pointing into `node_modules/` is framework; everything else in the repo is yours.**
@@ -151,3 +151,62 @@ Per-tool hook formats differ — see `lib/wiki/system-tool-integration.md` for t
 - **Gemini CLI:** SKILL.md (`.gemini/skills/` or `.agents/skills/`), AGENTS.md, MCP confirmed.
 
 The tools registry (`bin/lib/tools-registry.mjs`) is the single place to add a new tool. It covers prompting, wiring, and installed-check logic. Cross-tool paths (AGENTS.md, `.agents/skills/`) are written unconditionally by `canon init`, not gated on any registry entry.
+
+---
+
+## 12. Testing architecture — the guard layers
+
+This is the concrete map of governance layer 3 (`system-architecture.md §7.1` has the four-layer stack this enforces). Three suites, run separately and all in CI (`.github/workflows/ci.yml`):
+
+```
+┌─ unit — npm test (every test/unit/*.test.mjs named here — CI-bound) ─┐
+│ invariants.test.mjs        string/structure asserts binding sources  │
+│                            to the registries; ADR-017 meta-guard;    │
+│                            doc-currency bindings (incl. this list)   │
+│ scanners.test.mjs          repo-wide forbidden-value denylist        │
+│                            (gravestones: R-011/012/013, ADR-009) +   │
+│                            roster completeness (every check-*.sh     │
+│                            wired into doctor AND the Stop chain)     │
+│ content-scripts.test.mjs   EXECUTES lib/scripts/check-*.sh against   │
+│                            test/fixtures/ — one violation per bad/*  │
+│                            tree; clean-populated/ is the golden      │
+│                            no-false-positive consumer                │
+│ doctor-deep.test.mjs       runContentChecks() PASS/WARN/FAIL tiers   │
+│ doctor.test.mjs · sync.test.mjs · init.test.mjs — CLI command units  │
+│ skill-structure.test.mjs · skill-addendum-append.test.mjs            │
+│ knowledge-audit-addendum-dims.test.mjs                               │
+│ phase-reorder-script.test.mjs — skill/script content + behavior      │
+├─ integration — npm run test:integration ─────────────────────────────┤
+│ update-safety.sh       pack → install → init → sync, real CLI:       │
+│                        user files byte-identical across update;      │
+│                        init wiring asserted; fresh init must pass    │
+│                        doctor --deep (seed validity gate)            │
+│ doctor-deep-cli.sh     real CLI stdout: clean ✓ / WARN ⚠ / FAIL ✗    │
+├─ hooks — npm run test:hooks ─────────────────────────────────────────┤
+│ hook-dispatcher        event routing, banner JSON validity,          │
+│   .test.sh             advisory contract (always exit 0), WARN tier  │
+│                        surfaced in the Stop banner                   │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Where does a new test go?** Rule of thumb by failure class:
+
+| You want to assert… | Layer |
+|---------------------|-------|
+| a retired value/claim never reappears anywhere | scanners denylist (gravestone) |
+| two sources must state the same fact | invariants binding |
+| a check script detects X / stays silent on clean | content-scripts + a `bad/*` fixture pair (Rule 15: both directions) |
+| an ADR's enforcement exists | ADR index Guard cell — the meta-guard checks it |
+| a CLI flow works end-to-end | integration |
+| hook routing / banner behavior | hooks suite |
+
+Fixture model and PASS/WARN/FAIL tier semantics → `test/fixtures/README.md`. Every new `lib/scripts/check-*.sh` is forced into both runtime rosters by the completeness guard — it cannot exist half-wired.
+
+### Adding a content check (new dimension or new script)
+
+1. **Implement** — a new block in an existing `check-*.sh`, or a new `lib/scripts/check-*.sh`.
+2. **New script?** Wire it into `doctor.mjs` `CONTENT_CHECKS` *and* the `bin/hook.sh` Stop chain — the roster test fails until both are done (a check cannot exist half-wired).
+3. **Fixture pair** — `test/fixtures/bad/<violation-class>/` with exactly one violation; include a clean sibling file in the same tree when the check could plausibly false-positive.
+4. **Behavioral tests** in `content-scripts.test.mjs`, both directions (Rule 15): fires on the bad fixture, silent on the clean file — and `clean-populated/` must stay green.
+5. **Docs (Rule 10)** — `system-architecture.md`: §3 Scripts Inventory entry, §1.2 Stop-box line, §9 contract row if it's a parsing contract.
+6. **Governance linkage** — if the check enforces an ADR or invariant, point the ADR's Guard cell / registry row at it (the meta-guard verifies it resolves).

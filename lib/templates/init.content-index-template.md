@@ -80,10 +80,11 @@ How we work and how we maintain this knowledge system.
 - PostToolUse hook covers wiki/ and plans/ (stale-ref block) AND findings/ and conclusions/ (CONTENT_INDEX advisory warning)
 - Stop hook chain: `check-index.sh` → `check-links.sh` → `check-stale-refs.sh` → `check-conclusions-alignment.sh` → `check-contracts.sh` → `check-addendum-integrity.sh`
 - `watch-project.sh` requires `fswatch` (`brew install fswatch`); `check-links.sh` requires python3 (pre-installed macOS)
-- **§7 Verification:** two levels required for governance changes — content check (text correct) + functional test (behavior correct).
+- **§7 Verification:** two levels required for governance changes — content check (text correct) + functional test (behavior correct). **§7.1** maps the four-layer governance stack: decisions → invariants → guards → runtime.
 
 **Questions it answers:**
 - What is the full session lifecycle and what runs at each phase?
+- How do decisions (ADRs), invariants, and tests relate to each other?
 - How do the wiki/ folder layers relate to each other compositionally?
 - What scripts exist and what do each of them do?
 - What are the dependencies and how do I install them on a new machine?
