@@ -555,16 +555,18 @@ test('ADR-017: every index row has a valid Scope and Status', () => {
   }
 })
 
+const TEST_FILES = [
+  ['test/unit', '.mjs'],
+  ['test/integration', '.sh'],
+  ['test/hooks', '.sh'],
+].flatMap(([dir, ext]) =>
+  readdirSync(join(PKG, dir))
+    .filter((f) => f.endsWith(ext))
+    .map((f) => ({ path: `${dir}/${f}`, src: readFileSync(join(PKG, dir, f), 'utf8') }))
+)
+
 test('ADR-017: every Accepted ADR has a guard resolvable in test sources (or explicit none)', () => {
-  const sources = [
-    ['test/unit', '.mjs'],
-    ['test/integration', '.sh'],
-    ['test/hooks', '.sh'],
-  ].flatMap(([dir, ext]) =>
-    readdirSync(join(PKG, dir))
-      .filter((f) => f.endsWith(ext))
-      .map((f) => readFileSync(join(PKG, dir, f), 'utf8'))
-  ).join('\n')
+  const sources = TEST_FILES.map((t) => t.src).join('\n')
 
   for (const r of ADR_ROWS) {
     if (!r.status.startsWith('Accepted')) continue
@@ -579,6 +581,22 @@ test('ADR-017: every Accepted ADR has a guard resolvable in test sources (or exp
       assert.ok(
         sources.includes(tok),
         `${r.id}: guard token \`${tok}\` not found in any test source — the named guard does not exist (ADR-014 failure mode)`
+      )
+    }
+  }
+})
+
+test('ADR-017: no active test is named for a superseded ADR', () => {
+  // Comments may reference old IDs (history); test NAMES may not — a test named
+  // for a superseded decision claims to enforce something that no longer applies.
+  // Forces the rename/re-point step of the supersede checklist.
+  const superseded = ADR_ROWS.filter((r) => r.status.startsWith('Superseded')).map((r) => r.id)
+  for (const id of superseded) {
+    const namePattern = new RegExp(`test\\(\\s*['"\`]${id}[:\\s]`)
+    for (const { path, src } of TEST_FILES) {
+      assert.ok(
+        !namePattern.test(src),
+        `${path} has a test named for superseded ${id} — rename it to the superseding ADR or remove it`
       )
     }
   }
