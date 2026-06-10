@@ -13,31 +13,49 @@ pass() { echo "  ✓ $1"; }
 fail() { echo "  ✗ $1"; ERRORS=$((ERRORS + 1)); }
 warn() { echo "  ⚠  $1"; }
 
-# ── CONTENT_INDEX.md: four-part entry format ─────────────────────────────────
+# ── CONTENT_INDEX.md: per-entry validation (path-tiered two-form model) ──────
+# Valid entry forms: full four-part (all three markers present) OR lightweight
+# (zero markers — acceptable for mechanism files like agents, skills, templates).
+# Invalid: partial block (1–2 of 3 markers) or an entry heading below ### level.
 if [ -f "${CONSUMER_ROOT}/CONTENT_INDEX.md" ]; then
-  # Each entry block should have: ### heading, **What it is:**, **Key facts:**, **Questions it answers:**
-  MISSING_PARTS=0
-  # Find all ### headings in CONTENT_INDEX.md
-  while IFS= read -r heading; do
-    # Use grep to check that the file contains each required part after the heading
-    # (Simple approach: check that the file contains all four required markers at least once)
-    :
-  done < <(grep "^### " "${CONSUMER_ROOT}/CONTENT_INDEX.md" || true)
-
-  # Check that required parts exist in file (at least one entry must have all parts)
-  if grep -q "^### " "${CONSUMER_ROOT}/CONTENT_INDEX.md"; then
-    ENTRY_COUNT=$(grep -c "^### " "${CONSUMER_ROOT}/CONTENT_INDEX.md" || true)
-    WIT_COUNT=$(grep -c "^\*\*What it is:\*\*" "${CONSUMER_ROOT}/CONTENT_INDEX.md" || true)
-    KF_COUNT=$(grep -c "^\*\*Key facts:\*\*" "${CONSUMER_ROOT}/CONTENT_INDEX.md" || true)
-    QA_COUNT=$(grep -c "^\*\*Questions it answers:\*\*" "${CONSUMER_ROOT}/CONTENT_INDEX.md" || true)
-
-    if [ "$WIT_COUNT" -lt "$ENTRY_COUNT" ] || [ "$KF_COUNT" -lt "$ENTRY_COUNT" ] || [ "$QA_COUNT" -lt "$ENTRY_COUNT" ]; then
-      fail "CONTENT_INDEX.md: ${ENTRY_COUNT} entries found but some are missing required parts (What it is: ${WIT_COUNT}, Key facts: ${KF_COUNT}, Questions it answers: ${QA_COUNT})"
-    else
-      pass "CONTENT_INDEX.md: ${ENTRY_COUNT} entries — all have required four parts"
-    fi
-  else
+  if ! grep -q "^### " "${CONSUMER_ROOT}/CONTENT_INDEX.md"; then
     pass "CONTENT_INDEX.md: no entries yet (empty index)"
+  else
+    ENTRY_ISSUES=$(awk '
+    BEGIN { heading=""; level=0; wii=0; kf=0; qia=0; in_block=0 }
+    function check_block(    total) {
+      if (!in_block) return
+      if (level >= 4 && index(heading, ".md") > 0) {
+        print "CONTENT_INDEX.md: entry demoted below ### level (all file entries must use ###): " heading
+        return
+      }
+      total = wii + kf + qia
+      if (total >= 1 && total <= 2) {
+        print "CONTENT_INDEX.md: entry is missing required parts (" total "/3 found — need all of What it is, Key facts, Questions it answers): " heading
+      }
+    }
+    /^#+/ {
+      check_block()
+      heading = substr($0, 1, 80)
+      match($0, /^#+/)
+      level = RLENGTH
+      wii = 0; kf = 0; qia = 0
+      in_block = 1
+    }
+    /^\*\*What it is:\*\*/      { wii = 1 }
+    /^\*\*Key facts:\*\*/       { kf  = 1 }
+    /^\*\*Questions it answers:\*\*/ { qia = 1 }
+    END { check_block() }
+    ' "${CONSUMER_ROOT}/CONTENT_INDEX.md")
+
+    if [ -n "$ENTRY_ISSUES" ]; then
+      while IFS= read -r issue; do
+        fail "$issue"
+      done <<< "$ENTRY_ISSUES"
+    else
+      ENTRY_COUNT=$(grep -c "^### " "${CONSUMER_ROOT}/CONTENT_INDEX.md" || true)
+      pass "CONTENT_INDEX.md: ${ENTRY_COUNT} entr$([ "$ENTRY_COUNT" -eq 1 ] && echo y || echo ies) — all valid (per-entry structure check)"
+    fi
   fi
 else
   warn "CONTENT_INDEX.md not found — skipping entry format check"
