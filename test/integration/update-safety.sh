@@ -9,6 +9,9 @@
 
 set -euo pipefail
 
+# Cross-platform md5 hash: macOS has `md5 -q`, Linux has `md5sum` (prints "hash file")
+_md5() { md5sum "$1" 2>/dev/null | awk '{print $1}' || _md5 "$1" 2>/dev/null; }
+
 PKG_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "$WORK_DIR"' EXIT
@@ -105,16 +108,16 @@ echo "## My Project Facts" >> "${WORK_DIR}/CLAUDE.md"
 echo "Client: Acme Corp" >> "${WORK_DIR}/CLAUDE.md"
 
 # Snapshot user file checksums
-USER_PLAN_SUM="$(md5 -q "${WORK_DIR}/plans/my-plan.md")"
-USER_FIND_SUM="$(md5 -q "${WORK_DIR}/findings/finding-01.md")"
-USER_OUT_SUM="$(md5 -q "${WORK_DIR}/conclusions/conclusions.md")"
-USER_CLAUDE_SUM="$(md5 -q "${WORK_DIR}/CLAUDE.md")"
-USER_CLIENT_SUM="$(md5 -q "${WORK_DIR}/wiki/client/client-profile.md")"
-USER_USER_SUM="$(md5 -q "${WORK_DIR}/wiki/user/user-research.md")"
-USER_DELIV_SUM="$(md5 -q "${WORK_DIR}/deliverables/report-v1.md")"
+USER_PLAN_SUM="$(_md5 "${WORK_DIR}/plans/my-plan.md")"
+USER_FIND_SUM="$(_md5 "${WORK_DIR}/findings/finding-01.md")"
+USER_OUT_SUM="$(_md5 "${WORK_DIR}/conclusions/conclusions.md")"
+USER_CLAUDE_SUM="$(_md5 "${WORK_DIR}/CLAUDE.md")"
+USER_CLIENT_SUM="$(_md5 "${WORK_DIR}/wiki/client/client-profile.md")"
+USER_USER_SUM="$(_md5 "${WORK_DIR}/wiki/user/user-research.md")"
+USER_DELIV_SUM="$(_md5 "${WORK_DIR}/deliverables/report-v1.md")"
 
 # Snapshot a framework skill file before the "update"
-SKILL_BEFORE="$(md5 -q "${WORK_DIR}/.claude/skills/wiki-manage/SKILL.md")"
+SKILL_BEFORE="$(_md5 "${WORK_DIR}/.claude/skills/wiki-manage/SKILL.md")"
 
 pass "user content written and snapshotted"
 
@@ -150,32 +153,32 @@ pass "sync ran"
 
 # ── Step 6: assert user files untouched ─────────────────────────────────────
 echo "[6] Assert user files byte-identical"
-[ "$(md5 -q "${WORK_DIR}/plans/my-plan.md")" = "$USER_PLAN_SUM" ] \
+[ "$(_md5 "${WORK_DIR}/plans/my-plan.md")" = "$USER_PLAN_SUM" ] \
   && pass "plans/my-plan.md unchanged" \
   || fail "plans/my-plan.md was modified by sync"
 
-[ "$(md5 -q "${WORK_DIR}/findings/finding-01.md")" = "$USER_FIND_SUM" ] \
+[ "$(_md5 "${WORK_DIR}/findings/finding-01.md")" = "$USER_FIND_SUM" ] \
   && pass "findings/finding-01.md unchanged" \
   || fail "findings/finding-01.md was modified by sync"
 
-[ "$(md5 -q "${WORK_DIR}/conclusions/conclusions.md")" = "$USER_OUT_SUM" ] \
+[ "$(_md5 "${WORK_DIR}/conclusions/conclusions.md")" = "$USER_OUT_SUM" ] \
   && pass "conclusions/conclusions.md unchanged" \
   || fail "conclusions/conclusions.md was modified by sync"
 
-[ "$(md5 -q "${WORK_DIR}/CLAUDE.md")" = "$USER_CLAUDE_SUM" ] \
+[ "$(_md5 "${WORK_DIR}/CLAUDE.md")" = "$USER_CLAUDE_SUM" ] \
   && pass "CLAUDE.md body unchanged" \
   || fail "CLAUDE.md was modified by sync"
 
 # Assert wiki/client and wiki/user are NOT overwritten by sync (user-owned)
-[ "$(md5 -q "${WORK_DIR}/wiki/client/client-profile.md")" = "$USER_CLIENT_SUM" ] \
+[ "$(_md5 "${WORK_DIR}/wiki/client/client-profile.md")" = "$USER_CLIENT_SUM" ] \
   && pass "wiki/client/ NOT overwritten by sync" \
   || fail "wiki/client/client-profile.md was modified by sync"
 
-[ "$(md5 -q "${WORK_DIR}/wiki/user/user-research.md")" = "$USER_USER_SUM" ] \
+[ "$(_md5 "${WORK_DIR}/wiki/user/user-research.md")" = "$USER_USER_SUM" ] \
   && pass "wiki/user/ NOT overwritten by sync" \
   || fail "wiki/user/user-research.md was modified by sync"
 
-[ "$(md5 -q "${WORK_DIR}/deliverables/report-v1.md")" = "$USER_DELIV_SUM" ] \
+[ "$(_md5 "${WORK_DIR}/deliverables/report-v1.md")" = "$USER_DELIV_SUM" ] \
   && pass "deliverables/ NOT overwritten by sync" \
   || fail "deliverables/report-v1.md was modified by sync"
 
