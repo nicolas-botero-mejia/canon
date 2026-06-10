@@ -10,6 +10,9 @@
 
 set -euo pipefail
 
+# Cross-platform in-place sed: macOS BSD sed requires a suffix after -i; GNU sed does not.
+_sedi() { sed -i.bak "$@" && rm -f "${@: -1}.bak"; }
+
 FROM="${1:-}"
 TO="${2:-}"
 DRY_RUN=false
@@ -81,11 +84,11 @@ else
   # Add archive note before the old phase entry (simple append to plans section)
   # The actual editing is done surgically — we add a note that phase-FROM is archived
   if grep -q "phase-$FROM-index.md" "$INDEX"; then
-    sed -i '' "s|phase-$FROM-index.md|phase-$FROM-index.md _(archived)_|g" "$INDEX"
+    _sedi "s|phase-$FROM-index.md|phase-$FROM-index.md _(archived)_|g" "$INDEX"
     say "   marked phase-$FROM entries as archived"
   fi
   # Append new phase placeholder to plans table
-  sed -i '' "s|plans/_archive/.*do not edit.*|plans/_archive/         → Superseded plans (do not edit)\n| \`plans/phase-$TO-index.md\` | **Active.** Phase $TO overview: decisions tracker, session mapping, risk register |" "$INDEX"
+  _sedi "s|plans/_archive/.*do not edit.*|plans/_archive/         → Superseded plans (do not edit)\n| \`plans/phase-$TO-index.md\` | **Active.** Phase $TO overview: decisions tracker, session mapping, risk register |" "$INDEX"
   say "   added phase-$TO-index.md entry"
 fi
 

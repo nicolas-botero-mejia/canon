@@ -15,6 +15,10 @@
 
 set -euo pipefail
 
+# Cross-platform in-place sed: macOS BSD sed requires a suffix after -i; GNU sed does not.
+# Using -i.bak + cleanup works on both without detecting the platform.
+_sedi() { sed -i.bak "$@" && rm -f "${@: -1}.bak"; }
+
 A="${1:-}"
 B="${2:-}"
 DRY_RUN=false
@@ -132,11 +136,11 @@ for dir in "${DIRS[@]}"; do
   while IFS= read -r -d '' file; do
     if grep -q "phase-$A\b\|phase-$B\b" "$file" 2>/dev/null; then
       # Three-pass sed: A→TMP, B→A, TMP→B
-      sed -i '' "s/phase-$A-/phase-TMP-/g" "$file"
-      sed -i '' "s/phase-$B-/phase-$A-/g" "$file"
-      sed -i '' "s/phase-TMP-/phase-$B-/g" "$file"
+      _sedi "s/phase-$A-/phase-TMP-/g" "$file"
+      _sedi "s/phase-$B-/phase-$A-/g" "$file"
+      _sedi "s/phase-TMP-/phase-$B-/g" "$file"
       # Also handle bare phase references (e.g. "Phase 02" or "phase: \"02\"")
-      sed -i '' "s/phase-$A\b/phase-TMP/g; s/phase-$B\b/phase-$A/g; s/phase-TMP\b/phase-$B/g" "$file" 2>/dev/null || true
+      _sedi "s/phase-$A\b/phase-TMP/g; s/phase-$B\b/phase-$A/g; s/phase-TMP\b/phase-$B/g" "$file" 2>/dev/null || true
       say "  updated refs: $(basename "$file")"
     fi
   done < <(find "$dir" -maxdepth 1 -name "phase-$A-*" -o -name "phase-$B-*" -print0 2>/dev/null)
@@ -146,8 +150,8 @@ done
 say ""
 say "Step 5: Updating CONTENT_INDEX.md section headers"
 if [[ -f "$INDEX" ]]; then
-  sed -i '' "s/Phase $A /Phase TMP /g; s/Phase $B /Phase $A /g; s/Phase TMP /Phase $B /g" "$INDEX"
-  sed -i '' "s/phase-$A-/phase-TMP-/g; s/phase-$B-/phase-$A-/g; s/phase-TMP-/phase-$B-/g" "$INDEX"
+  _sedi "s/Phase $A /Phase TMP /g; s/Phase $B /Phase $A /g; s/Phase TMP /Phase $B /g" "$INDEX"
+  _sedi "s/phase-$A-/phase-TMP-/g; s/phase-$B-/phase-$A-/g; s/phase-TMP-/phase-$B-/g" "$INDEX"
   say "  updated CONTENT_INDEX.md"
 fi
 
@@ -155,8 +159,8 @@ fi
 say ""
 say "Step 6: Checking CLAUDE.md for phase references"
 if [[ -f "$CLAUDE_MD" ]] && grep -q "phase-$A\|Phase $A\|phase-$B\|Phase $B" "$CLAUDE_MD" 2>/dev/null; then
-  sed -i '' "s/Phase $A /Phase TMP /g; s/Phase $B /Phase $A /g; s/Phase TMP /Phase $B /g" "$CLAUDE_MD"
-  sed -i '' "s/phase-$A\b/phase-TMP/g; s/phase-$B\b/phase-$A/g; s/phase-TMP\b/phase-$B/g" "$CLAUDE_MD"
+  _sedi "s/Phase $A /Phase TMP /g; s/Phase $B /Phase $A /g; s/Phase TMP /Phase $B /g" "$CLAUDE_MD"
+  _sedi "s/phase-$A\b/phase-TMP/g; s/phase-$B\b/phase-$A/g; s/phase-TMP\b/phase-$B/g" "$CLAUDE_MD"
   say "  updated CLAUDE.md"
 else
   say "  CLAUDE.md — no phase references found"
@@ -165,8 +169,7 @@ fi
 # Step 7: Append log entry
 say ""
 say "Step 7: Appending log.md entry"
-LOG_ENTRY="\n## [$TODAY] reorder | phase-$A ↔ phase-$B | phases swapped"
-echo -e "$LOG_ENTRY" >> "$LOG"
+printf '\n## [%s] reorder | phase-%s ↔ phase-%s | phases swapped\n' "$TODAY" "$A" "$B" >> "$LOG"
 say "  appended to log.md"
 
 say ""
