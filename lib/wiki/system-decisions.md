@@ -11,6 +11,12 @@ Newest first. One entry per decision.
 
 Every row binds a decision to its enforcement. **Guard contract (ADR-017):** the Guard cell of every `Accepted` ADR either names its mechanism with backticked tokens that literally appear in `test/` sources, or states `none — <why>`. A meta-guard test parses this table and fails CI when a heading lacks a row, a Scope is invalid, or a guard token doesn't resolve.
 
+### Adding an ADR
+
+1. Append the entry (newest-first) with Context / Decision / Rationale / Consequences.
+2. Add its Index row — Scope, Status `Accepted`, and a Guard (backticked tokens that resolve in `test/`, or `none — <why>`).
+3. Land the guard in the same change — the meta-guard fails CI if the named guard doesn't exist yet.
+
 ### Superseding an ADR
 
 Flipping Status is the **last** step, not the whole move:

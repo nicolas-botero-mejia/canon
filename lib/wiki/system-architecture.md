@@ -451,6 +451,68 @@ Layers 1–3 govern the governors; layer 4 governs the knowledge. `system-tool-i
 
 ---
 
+## 8. Cloud / GitHub Migration Path
+
+### Multi-repo workflow
+
+The consumer project and framework package are separate repositories. The framework lives in `node_modules/` — updated via `npm update` + `canon sync`. User content (`plans/`, `findings/`, `conclusions/`, `raw/`, `wiki/project/`, etc.) lives in the consumer repo and is never written by framework tooling. This boundary is enforced by `manifest.json` and checked by `canon doctor`.
+
+### Script migration — local to CI
+
+When moving to CI, the governance scripts stay unchanged. Only the invocation changes:
+
+| Current (local) | CI equivalent |
+|----------------|--------------|
+| Stop hook → `check-index.sh` | CI step on push to `wiki/` or `plans/` |
+| Stop hook → `check-links.sh` | Same CI step |
+| Stop hook → `check-stale-refs.sh` | Same CI step |
+| `watch-project.sh` | GitHub Actions trigger on any `.md` push to monitored paths |
+| `phase-transition.sh` | Called manually or as a workflow dispatch action |
+| `scripts/project/*` | Called manually or as a workflow dispatch action |
+
+Recommended CI trigger: push to `wiki/` or `plans/`. The `check-conclusions-alignment.sh` check can stay local (advisory only — exit 0).
+
+### Branching
+
+- `main` is always publishable (consumer) or publishable to npm (package repo).
+- Feature branches for structural changes (new folder layout, naming convention changes).
+- Package repo: tag `v0.1.x` on publish; never push directly to `main` without a passing test run.
+
+### CD pipeline (package repo)
+
+`npm publish` is triggered manually after the full test suite passes. No automatic publish on push. The publish step:
+1. `npm run test:all` — runs unit tests (node --test), integration test (pack → install → init → sync → doctor), and hook dispatcher tests
+2. `npm version patch|minor|major` — bumps version, creates git tag
+3. `npm publish` — publishes to npm registry
+
+**Test suite structure:**
+```
+npm test                 → test/unit/*.test.mjs  (node --test)
+                           invariants (registry bindings + ADR-017 meta-guard) ·
+                           scanners (forbidden-value denylist + check roster) ·
+                           content-scripts (check-*.sh executed against fixtures) ·
+                           doctor-deep tiers · doctor · sync · init
+npm run test:integration → update-safety.sh (pack → install → init → sync e2e;
+                           fresh init must pass doctor --deep)
+                           + doctor-deep-cli.sh (real CLI stdout: ✓ / ⚠ / ✗)
+npm run test:hooks       → hook-dispatcher.test.sh (routing, banner, advisory)
+npm run test:all         → all three in sequence
+```
+
+Layer-by-layer map of what each suite catches → package repo `docs/architecture.md §12`.
+
+### Consumer `.gitignore` for CI
+
+```
+tmp/                  # never commit transient working files
+node_modules/
+.framework-version    # DO commit — version pinning contract between init and doctor
+```
+
+`raw/` may be gitignored for client confidentiality. If gitignored, CI checks that scan `raw/` will silently pass (no files to scan). Document this if the project uses CI link-checking.
+
+---
+
 ## 9. Parsing Contracts
 
 Structural guarantees for template-generated files. Required for MCP query reliability (`check-contracts.sh` enforces these at session close).
@@ -484,61 +546,8 @@ Structural guarantees for template-generated files. Required for MCP query relia
 - **YAML frontmatter:** `type`, `phase`, `topic`, `status`, `alignment_verified`
 - **Contract:** `**Alignment verified:**` must be present somewhere in the file; left empty (``) until verified
 
+### `wiki/client/*.md` + `wiki/user/*.md`
+
+- **Contract:** no YAML frontmatter (ADR-012 — these layers are served whole by MCP)
+
 These contracts are validated by `lib/scripts/check-contracts.sh` (runs in the Stop hook chain after every session).
-
----
-
-## 8. Cloud / GitHub Migration Path
-
-### Multi-repo workflow
-
-The consumer project and framework package are separate repositories. The framework lives in `node_modules/` — updated via `npm update` + `canon sync`. User content (`plans/`, `findings/`, `conclusions/`, `raw/`, `wiki/project/`, etc.) lives in the consumer repo and is never written by framework tooling. This boundary is enforced by `manifest.json` and checked by `canon doctor`.
-
-### Script migration — local to CI
-
-When moving to CI, the governance scripts stay unchanged. Only the invocation changes:
-
-| Current (local) | CI equivalent |
-|----------------|--------------|
-| Stop hook → `scripts/check-index.sh` | CI step on push to `wiki/` or `plans/` |
-| Stop hook → `scripts/check-links.sh` | Same CI step |
-| Stop hook → `scripts/check-stale-refs.sh` | Same CI step |
-| `scripts/watch-project.sh` | GitHub Actions trigger on any `.md` push to monitored paths |
-| `scripts/phase-transition.sh` | Called manually or as a workflow dispatch action |
-| `scripts/project/*` | Called manually or as a workflow dispatch action |
-
-Recommended CI trigger: push to `wiki/` or `plans/`. The `check-conclusions-alignment.sh` check can stay local (advisory only — exit 0).
-
-### Branching
-
-- `main` is always publishable (consumer) or publishable to npm (package repo).
-- Feature branches for structural changes (new folder layout, naming convention changes).
-- Package repo: tag `v0.1.x` on publish; never push directly to `main` without a passing test run.
-
-### CD pipeline (package repo)
-
-`npm publish` is triggered manually after the full test suite passes. No automatic publish on push. The publish step:
-1. `npm run test:all` — runs unit tests (node --test), integration test (pack → install → init → sync → doctor), and hook dispatcher tests
-2. `npm version patch|minor|major` — bumps version, creates git tag
-3. `npm publish` — publishes to npm registry
-
-**Test suite structure:**
-```
-npm test              → test/unit/**/*.test.mjs  (node --test)
-                        ├─ invariants.test.mjs  — agreement across hand-listed locations (registry rows)
-                        └─ scanners.test.mjs    — whole-repo forbidden-value scan + self-enumerating
-                                                  skill/template coverage (completeness by construction)
-npm run test:integration → test/integration/update-safety.sh
-npm run test:hooks    → test/hooks/run.sh (hook routing + script existence)
-npm run test:all      → all three in sequence
-```
-
-### Consumer `.gitignore` for CI
-
-```
-tmp/                  # never commit transient working files
-node_modules/
-.framework-version    # DO commit — version pinning contract between init and doctor
-```
-
-`raw/` may be gitignored for client confidentiality. If gitignored, CI checks that scan `raw/` will silently pass (no files to scan). Document this if the project uses CI link-checking.

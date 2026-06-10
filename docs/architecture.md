@@ -199,3 +199,12 @@ This is the concrete map of governance layer 3 (`system-architecture.md §7.1` h
 | hook routing / banner behavior | hooks suite |
 
 Fixture model and PASS/WARN/FAIL tier semantics → `test/fixtures/README.md`. Every new `lib/scripts/check-*.sh` is forced into both runtime rosters by the completeness guard — it cannot exist half-wired.
+
+### Adding a content check (new dimension or new script)
+
+1. **Implement** — a new block in an existing `check-*.sh`, or a new `lib/scripts/check-*.sh`.
+2. **New script?** Wire it into `doctor.mjs` `CONTENT_CHECKS` *and* the `bin/hook.sh` Stop chain — the roster test fails until both are done (a check cannot exist half-wired).
+3. **Fixture pair** — `test/fixtures/bad/<violation-class>/` with exactly one violation; include a clean sibling file in the same tree when the check could plausibly false-positive.
+4. **Behavioral tests** in `content-scripts.test.mjs`, both directions (Rule 15): fires on the bad fixture, silent on the clean file — and `clean-populated/` must stay green.
+5. **Docs (Rule 10)** — `system-architecture.md`: §3 Scripts Inventory entry, §1.2 Stop-box line, §9 contract row if it's a parsing contract.
+6. **Governance linkage** — if the check enforces an ADR or invariant, point the ADR's Guard cell / registry row at it (the meta-guard verifies it resolves).
