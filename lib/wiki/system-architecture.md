@@ -10,7 +10,7 @@
 
 ## 1. Overview
 
-The knowledge system is self-enforcing: sessions cannot close with a stale index or broken links. Out-of-session file changes are detected by a background watcher. Phase transitions and component scaffolding are scripted to eliminate boilerplate. An agent and skill layer orchestrates recurring workflows and enforces knowledge currency.
+The knowledge system is self-checking: a stale index or broken links are flagged at session close by the advisory Stop hook and by `canon doctor --deep` (ADR-013 — surfaced, never blocking). Out-of-session file changes are detected by a background watcher. Phase transitions and component scaffolding are scripted to eliminate boilerplate. An agent and skill layer orchestrates recurring workflows and enforces knowledge currency.
 
 ### §1.1 — Phase vs. Activity Model
 
@@ -251,7 +251,7 @@ Finds all `conclusions/*.md` files with `**Status:** Complete` and checks each f
 Validates structural contracts on four file types — required for MCP query reliability. Runs at session close (Stop hook chain) as a warning, not a hard block.
 
 **What it validates:**
-- `CONTENT_INDEX.md` entries: all four parts present (`###`, `**What it is:**`, `**Key facts:**`, `**Questions it answers:**`)
+- `CONTENT_INDEX.md` entries: per-entry two-form check — full four-part block (`###` heading + all three markers) or lightweight one-liner (0 markers); 1–2 of 3 markers = broken entry; file entries demoted below `###` are flagged
 - `plans/phase-NN-index.md §Decisions Tracker`: all four columns present (`ID`, `Description`, `Status`, `Closed`)
 - `plans/phase-NN-poc-roadmap.md`: status values are from the allowed set — core emojis (🔜 ⏳ 🔄 ✅ ⏭️) plus terminal text statuses (`Deprecated`, `~~In Progress~~ Deprecated`, `Migrated → Phase NN`)
 - `findings/*.md`: `**Author:**` and `**Date:**` present in first 10 lines

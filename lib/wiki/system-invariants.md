@@ -38,7 +38,7 @@ which asserts agreement across locations automatically.
 |---|---|
 | **Canonical value** | `conclusions/` |
 | **Canonical home** | `system-decisions.md ADR-008` |
-| **Must agree** | `lib/.claude/rules/behavioral.md` Rule 6; `lib/.cursor/rules/behavioral.mdc` Rule 6; `bin/commands/init.mjs` USER_DIRS; `lib/scripts/session-start-report.sh` (counts this folder); `lib/scripts/watch-project.sh` (watches this folder); `lib/CLAUDE.base.md` folder structure block; `examples/consumer/` scaffolded dirs; `system-architecture.md §1.2`; all skill SKILL.md files referencing routing |
+| **Must agree** | `lib/.claude/rules/behavioral.md` Rule 6; `lib/.cursor/rules/behavioral.mdc` Rule 6; `bin/commands/init.mjs` USER_DIRS; `lib/scripts/session-start-report.sh` (counts this folder); `lib/scripts/watch-project.sh` (watches this folder); `lib/CLAUDE.base.md` folder structure block; `lib/templates/init.content-index-template.md` (Project layer section); `system-architecture.md §1.2`; all skill SKILL.md files referencing routing |
 | **Dup kind** | accidental — all should reference ADR-008; no per-tool variation needed |
 | **Guard** | `invariants.test.mjs` R-001; grep for `output/` in non-archived source files |
 | **Known drift** | None — fixed 2026-06-08 |

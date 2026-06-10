@@ -21,7 +21,7 @@ A user's working repo contains **only their content plus thin references.** All 
 | **Package repo** (this one) | What we author and publish to npm | `bin/` (CLI), framework payload, `package.json`, `docs/` |
 | **Consumer project** | What `init` produces for a user | user content dirs + thin wiring + `node_modules/` |
 
-> **`examples/consumer/`** in this repo is a **generated reference** — it must exactly match what `canon init` produces for a default configuration (Claude Code layer + MCP enabled). It is not hand-maintained documentation. Verifiable by running `canon init` into a temp dir and diffing the output (ADR-014).
+> **No checked-in consumer reference** — `examples/consumer/` was removed (ADR-016, superseding ADR-014). The reference for what `init` produces is running `canon init` in a scratch dir; `test/integration/update-safety.sh` verifies init output end-to-end (wiring files, seeded CONTENT_INDEX, `doctor --deep` green). The index seed ships at `lib/templates/init.content-index-template.md`.
 
 > The current clean-slate folder is shaped like a *consumer's* framework-owned files. To become the package, the payload must be re-homed (see §10). The clean slate is the reference for *what gets shipped*, not the package itself.
 

@@ -7,6 +7,21 @@ Newest first. One entry per decision.
 
 > For design questions — check here before opening an issue or redesigning something. These decisions have already been through the tradeoff analysis.
 
+## ADR-016 — `examples/consumer/` removed; `canon init` output is the consumer reference
+
+**Date:** 2026-06-09
+**Status:** Accepted — supersedes ADR-014
+
+**Context:** ADR-014 declared `examples/consumer/` a generated reference that must byte-match `canon init` output, verified by an init-diff test. The diff test was never built, and the folder accumulated hand-curated content init never produced (a 212-line CONTENT_INDEX vs init's bare stub) plus drift-class defects: 15 malformed links, a stale "sessions cannot close" blocking claim, and a skills list covering 7 of the 14 vendored skills. Its "default configuration (Claude Code + Cursor + MCP enabled)" also contradicted the tools-registry defaults (cursor and mcp default off). Comparable frameworks (e.g. BMAD-METHOD) keep no checked-in installer output — they test installation into temp fixtures.
+
+**Decision:** Delete `examples/consumer/`. The reference for "what init produces" is running `canon init`, verified end-to-end by `test/integration/update-safety.sh` (pack → install → init → doctor → doctor --deep). The curated framework-layer index entries were salvaged into `lib/templates/init.content-index-template.md`, which `canon init` now writes as the consumer's starting `CONTENT_INDEX.md`.
+
+**Rationale:** A checked-in copy of generated output is a drift surface even when verified — every init change demands regeneration churn; unverified, it rots (ADR-014's own prediction came true). No copy beats a verified copy: the e2e test exercises the real generator, and the salvaged seed turns decorative content into a shipped, single-sourced, governance-checked feature.
+
+**Consequences:** No `examples/` directory. ADR-014's init-diff test obligation is void. `update-safety.sh` asserts init wiring (AGENTS.md, `.agents/skills` symlink, seeded index) and that a fresh consumer passes `doctor --deep`. Unit invariants pin the wiring sources (`writeCursorHooks` dispatcher form, init's seed write). Contributors inspect init output by running `canon init` in a scratch dir.
+
+---
+
 ## ADR-015 — Cursor hook architecture: vendored dispatcher scripts
 
 **Date:** 2026-06-08
@@ -25,7 +40,7 @@ Newest first. One entry per decision.
 ## ADR-014 — `examples/consumer/` purpose: generated reference, not hand-maintained docs
 
 **Date:** 2026-06-08
-**Status:** Accepted
+**Status:** Superseded by ADR-016 (2026-06-09)
 
 **Context:** Two conflicting descriptions existed: `docs/architecture.md` described `examples/consumer/` as "documentation" showing the consumer project shape; the root `CLAUDE.md` described it as "what `canon init` produces." These are materially different: "documentation" implies it can be curated; "what init produces" implies it must be mechanically faithful to init output.
 

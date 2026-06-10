@@ -26,7 +26,7 @@ const PKG = new URL('../../', import.meta.url).pathname.replace(/\/$/, '')
 
 // ─── File collection ─────────────────────────────────────────────────────────
 
-const SCAN_DIRS = ['lib', 'bin', 'docs', 'examples']
+const SCAN_DIRS = ['lib', 'bin', 'docs']
 const SCAN_ROOT_FILES = ['manifest.json']
 const SCAN_EXT = new Set(['.md', '.mdc', '.mjs', '.sh', '.json', '.toml'])
 const EXCLUDE_SEGMENTS = new Set(['node_modules', '.git', 'archive', 'deprecated', 'tmp'])
