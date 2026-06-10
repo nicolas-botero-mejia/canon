@@ -3,7 +3,7 @@
 # Exits 2 if broken links are found. (Advisory from the Stop hook — see bin/hook.sh.)
 
 PROJECT_ROOT="$(pwd)"
-DIRS=("wiki" "findings" "plans" "CONTENT_INDEX.md" ".claude")
+DIRS=("wiki" "findings" "plans" "conclusions" "CONTENT_INDEX.md" "CLAUDE.md" ".claude")
 
 # Dependency check — python3 required for link extraction
 if ! command -v python3 &>/dev/null; then

@@ -86,13 +86,12 @@ test('bad/broken-link → check-links FAILs (exit 2)', { skip: needsPython }, ()
   assert.match(out, /Broken markdown links/)
 })
 
-// ─── G3 gap: check-index uses substring matching (grep -qF), so a path merely
-// MENTIONED in prose counts as "registered" — it never binds a file to a real
-// four-part entry. This fixture passes when arguably it should not. ─────────────
-test('bad/index-substring-false-positive → check-index PASSES on a prose-only mention (G3 gap)', () => {
+// ─── G3 fixed: check-index now requires the path to appear in a markdown link,
+// not just anywhere in prose. A path only mentioned in plain text is flagged. ────
+test('bad/index-substring-false-positive → check-index FAILs on a prose-only mention (G3 fixed)', () => {
   const { status, out } = runScript('check-index', 'bad/index-substring-false-positive')
-  assert.equal(status, 0, 'substring match treats a bare prose mention as registration')
-  assert.doesNotMatch(out, /not listed/)
+  assert.equal(status, 2, 'prose-only path mention is not a registration')
+  assert.match(out, /not listed/)
 })
 
 // ─── WARN tier (G2): present-but-empty alignment passes contracts yet warns ────
@@ -132,15 +131,12 @@ test('bad/content-index-variant-label → check-contracts FAILs (wrong label dro
   assert.match(out, /missing required parts/)
 })
 
-// ─── Known FALSE POSITIVE (G14): the roadmap status check excludes "| POC …" rows
-// (so real POC statuses are never validated) and mis-reads the 2nd column of any
-// OTHER table as a status. A legitimate "Decisions this roadmap closes" table trips
-// it — which is exactly why the migration had to convert that table to bullets.
-// Flip to expect exit 0 once the roadmap check is scoped to the POC table only.
-test('bad/roadmap-secondary-table → check-contracts FALSE-POSITIVEs on a valid secondary table (G14)', () => {
+// ─── G14 fixed: roadmap status check is now scoped to the POC table only.
+// A secondary table in the same file no longer triggers false positives. ──────────
+test('bad/roadmap-secondary-table → check-contracts PASSes (secondary table no longer trips status check, G14 fixed)', () => {
   const { status, out } = runScript('check-contracts', 'bad/roadmap-secondary-table')
-  assert.equal(status, 1, out)
-  assert.match(out, /unknown status values/)
+  assert.equal(status, 0, out)
+  assert.doesNotMatch(out, /unknown status values/)
 })
 
 // ─── Known GAPS: these PASS today though the content is malformed/unwatched. They
@@ -154,21 +150,18 @@ test('bad/content-index-demoted-heading → check-contracts PASSES (#### heading
   assert.equal(status, 0, out)
 })
 
-// G7: check-links scans wiki/findings/plans/CONTENT_INDEX/.claude — NOT conclusions/
-// or CLAUDE.md. The identical broken link fails in bad/broken-link (wiki/).
-test('bad/links-unscanned-paths → check-links PASSES despite broken links in conclusions/ + CLAUDE.md (G7)', { skip: needsPython }, () => {
+// G7 fixed: check-links now scans conclusions/ and CLAUDE.md too.
+test('bad/links-unscanned-paths → check-links FAILs on broken links in conclusions/ + CLAUDE.md (G7 fixed)', { skip: needsPython }, () => {
   const { status, out } = runScript('check-links', 'bad/links-unscanned-paths')
-  assert.equal(status, 0, out)
-  assert.doesNotMatch(out, /Broken markdown links/)
+  assert.equal(status, 2, out)
+  assert.match(out, /Broken markdown links/)
 })
 
-// G9: check-index watches wiki/findings/plans/conclusions — NOT deliverables/. An
-// unregistered .md under deliverables/ is never flagged, even though the index is
-// otherwise enforced (the findings file here IS registered).
-test('bad/deliverables-unindexed → check-index PASSES despite an unregistered deliverables/*.md (G9)', () => {
+// G9 fixed: check-index now watches deliverables/ too.
+test('bad/deliverables-unindexed → check-index FAILs on an unregistered deliverables/*.md (G9 fixed)', () => {
   const { status, out } = runScript('check-index', 'bad/deliverables-unindexed')
-  assert.equal(status, 0, out)
-  assert.doesNotMatch(out, /not listed/)
+  assert.equal(status, 2, out)
+  assert.match(out, /not listed/)
 })
 
 // ─── Addendum integrity (check-addendum-integrity) ─────────────────────────────

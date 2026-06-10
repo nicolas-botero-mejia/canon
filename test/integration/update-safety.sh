@@ -10,7 +10,7 @@
 set -euo pipefail
 
 # Cross-platform md5 hash: macOS has `md5 -q`, Linux has `md5sum` (prints "hash file")
-_md5() { md5sum "$1" 2>/dev/null | awk '{print $1}' || _md5 "$1" 2>/dev/null; }
+_md5() { md5sum "$1" 2>/dev/null | awk '{print $1}' || md5 -q "$1" 2>/dev/null; }
 
 PKG_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 WORK_DIR="$(mktemp -d)"
