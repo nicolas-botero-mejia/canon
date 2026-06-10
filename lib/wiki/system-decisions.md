@@ -11,6 +11,19 @@ Newest first. One entry per decision.
 
 Every row binds a decision to its enforcement. **Guard contract (ADR-017):** the Guard cell of every `Accepted` ADR either names its mechanism with backticked tokens that literally appear in `test/` sources, or states `none — <why>`. A meta-guard test parses this table and fails CI when a heading lacks a row, a Scope is invalid, or a guard token doesn't resolve.
 
+### Superseding an ADR
+
+Flipping Status is the **last** step, not the whole move:
+
+1. **Write the new ADR** — Context explains what failed or changed; Consequences enumerate the artifact disposal (the cleanup manifest).
+2. **Back-search the old decision's artifacts** — grep the old ID and the old decision's values/paths across code, tests, configs, and docs:
+   - Tests *named* for the old ADR → rename/re-point to the new one. Mechanically enforced: the ADR-017 meta-guard fails CI on any test named for a superseded ADR (comments may cite old IDs as history; test names may not).
+   - Each guard gets an explicit fate: **transfer** (still protects the new world — re-label it under the new ADR), **gravestone** (denylist-style rules that must outlive the decision — keep), or **delete** (protected only the old world).
+   - Config/doc remnants (ignore entries, allowlists, layout claims) → remove or correct.
+3. **Flip the old ADR's Status** to `Superseded by ADR-NNN` and update its index row (Guard cell → `—`).
+
+Worked examples: ADR-016 (Consequences as disposal manifest), ADR-018 (guard transfer, gravestone kept, remnant removed).
+
 | ID | Title | Scope | Status | Guard |
 |----|-------|-------|--------|-------|
 | ADR-018 | Cursor hooks delegate to the package dispatcher | tool:cursor | Accepted | `writeCursorHooks` dispatcher invariant (gravestone for the wrapper model) |
