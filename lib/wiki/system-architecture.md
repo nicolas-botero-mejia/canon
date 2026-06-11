@@ -254,7 +254,7 @@ Finds all `conclusions/*.md` files with `**Status:** Complete` and checks each f
 Validates structural contracts on four file types — required for MCP query reliability. Runs at session close (Stop hook chain) as a warning, not a hard block.
 
 **What it validates:**
-- `CONTENT_INDEX.md` entries: per-entry two-form check — full four-part block (`###` heading + all three markers) or lightweight one-liner (0 markers); 1–2 of 3 markers = broken entry; file entries demoted below `###` are flagged
+- `CONTENT_INDEX.md` entries: per-entry two-form check — full four-part block (`###` heading + all three markers) or lightweight one-liner (0 markers); 1–2 of 3 markers = broken entry; file entries demoted below `###` are flagged. Validated by the Node core (`bin/validate-md.mjs`, fence-aware — ADR-019)
 - `plans/phase-NN-index.md §Decisions Tracker`: all four columns present (`ID`, `Description`, `Status`, `Closed`)
 - `plans/phase-NN-poc-roadmap.md`: status values are from the allowed set — core emojis (🔜 ⏳ 🔄 ✅ ⏭️) plus terminal text statuses (`Deprecated`, `~~In Progress~~ Deprecated`, `Migrated → Phase NN`)
 - `findings/*.md`: `**Author:**` and `**Date:**` present in first 10 lines
@@ -534,7 +534,7 @@ Structural guarantees for template-generated files. Required for MCP query relia
 ### `CONTENT_INDEX.md` entries
 
 - **Required format:** `### [filename](./path/to/file)` followed by either: (a) full four-part block — `**What it is:**`, `**Key facts:**`, `**Questions it answers:**`; or (b) lightweight single-line description (0 markers — valid for mechanism files: agents, skills, templates, scripts)
-- **Contract:** entries with 1–2 of 3 markers are invalid (partial/broken block); entries demoted below `###` level are an error; entries with 0 or 3/3 markers are valid. Validated per-entry, not by global count.
+- **Contract:** entries with 1–2 of 3 markers are invalid (partial/broken block); entries demoted below `###` level are an error; entries with 0 or 3/3 markers are valid. Validated per-entry, not by global count. Fence-aware: headings and markers inside code blocks are not entries (ADR-019 Node core).
 
 ### `findings/*.md`
 

@@ -36,3 +36,4 @@ Thumbs.db
 /.claude/skills/
 /.claude/settings.json
 /.cursor/rules/
+/.cursor/hooks.json

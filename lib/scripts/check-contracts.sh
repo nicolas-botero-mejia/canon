@@ -14,47 +14,31 @@ fail() { echo "  ✗ $1"; ERRORS=$((ERRORS + 1)); }
 warn() { echo "  ⚠  $1"; }
 
 # ── CONTENT_INDEX.md: per-entry validation (path-tiered two-form model) ──────
-# Valid entry forms: full four-part (all three markers present) OR lightweight
-# (zero markers — acceptable for mechanism files like agents, skills, templates).
-# Invalid: partial block (1–2 of 3 markers) or an entry heading below ### level.
+# Validation lives in the Node core (ADR-019): a fence-aware markdownlint rule —
+# headings and markers inside code blocks are not entries (the awk predecessor
+# could not see fences). This block is dispatch + ✓/✗ formatting only; the CLI
+# protocol is `OK <count>` on exit 0, issue lines on exit 1.
 if [ -f "${CONSUMER_ROOT}/CONTENT_INDEX.md" ]; then
   if ! grep -q "^### " "${CONSUMER_ROOT}/CONTENT_INDEX.md"; then
     pass "CONTENT_INDEX.md: no entries yet (empty index)"
+  elif ! command -v node >/dev/null 2>&1; then
+    warn "CONTENT_INDEX.md entry check skipped — node not on PATH (required since ADR-019)"
   else
-    ENTRY_ISSUES=$(awk '
-    BEGIN { heading=""; level=0; wii=0; kf=0; qia=0; in_block=0 }
-    function check_block(    total) {
-      if (!in_block) return
-      if (level >= 4 && index(heading, ".md") > 0) {
-        print "CONTENT_INDEX.md: entry demoted below ### level (all file entries must use ###): " heading
-        return
-      }
-      total = wii + kf + qia
-      if (total >= 1 && total <= 2) {
-        print "CONTENT_INDEX.md: entry is missing required parts (" total "/3 found — need all of What it is, Key facts, Questions it answers): " heading
-      }
-    }
-    /^#+/ {
-      check_block()
-      heading = substr($0, 1, 80)
-      match($0, /^#+/)
-      level = RLENGTH
-      wii = 0; kf = 0; qia = 0
-      in_block = 1
-    }
-    /^\*\*What it is:\*\*/      { wii = 1 }
-    /^\*\*Key facts:\*\*/       { kf  = 1 }
-    /^\*\*Questions it answers:\*\*/ { qia = 1 }
-    END { check_block() }
-    ' "${CONSUMER_ROOT}/CONTENT_INDEX.md")
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    ENTRY_OUT=$(node "${SCRIPT_DIR}/../../bin/validate-md.mjs" content-index "${CONSUMER_ROOT}/CONTENT_INDEX.md" 2>&1) \
+      && ENTRY_STATUS=0 || ENTRY_STATUS=$?
 
-    if [ -n "$ENTRY_ISSUES" ]; then
-      while IFS= read -r issue; do
-        fail "$issue"
-      done <<< "$ENTRY_ISSUES"
+    if [ "$ENTRY_STATUS" -eq 0 ]; then
+      ENTRY_COUNT="${ENTRY_OUT#OK }"
+      if [ "$ENTRY_COUNT" -eq 0 ] 2>/dev/null; then
+        pass "CONTENT_INDEX.md: no entries yet (empty index)"
+      else
+        pass "CONTENT_INDEX.md: ${ENTRY_COUNT} entr$([ "$ENTRY_COUNT" -eq 1 ] && echo y || echo ies) — all valid (per-entry structure check)"
+      fi
     else
-      ENTRY_COUNT=$(grep -c "^### " "${CONSUMER_ROOT}/CONTENT_INDEX.md" || true)
-      pass "CONTENT_INDEX.md: ${ENTRY_COUNT} entr$([ "$ENTRY_COUNT" -eq 1 ] && echo y || echo ies) — all valid (per-entry structure check)"
+      while IFS= read -r issue; do
+        [ -n "$issue" ] && fail "$issue"
+      done <<< "$ENTRY_OUT"
     fi
   fi
 else

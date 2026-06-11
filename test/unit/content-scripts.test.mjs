@@ -163,6 +163,14 @@ test('bad/content-index-demoted-heading → check-contracts FAILs (#### heading 
   assert.match(out, /demoted/)
 })
 
+// ADR-019 stage 1: validation moved to the Node core (fence-aware). A documentation
+// example inside a code block is not an entry — the awk predecessor false-positived here.
+test('bad/content-index-fenced-example → check-contracts PASSes (fenced ### is not an entry)', () => {
+  const { status, out } = runScript('check-contracts', 'bad/content-index-fenced-example')
+  assert.equal(status, 0, out)
+  assert.match(out, /1 entry — all valid/)
+})
+
 // G7 fixed: check-links now scans conclusions/ and CLAUDE.md too.
 test('bad/links-unscanned-paths → check-links FAILs on broken links in conclusions/ + CLAUDE.md (G7 fixed)', { skip: needsPython }, () => {
   const { status, out } = runScript('check-links', 'bad/links-unscanned-paths')
