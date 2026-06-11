@@ -7,6 +7,8 @@ Newest first. One entry per decision.
 
 > For design questions — check here before opening an issue or redesigning something. These decisions have already been through the tradeoff analysis.
 
+**Audience routing (ADR-022):** the Scope column separates two layers in one ledger. `methodology` and `tool:*` rows define contracts consumer projects rely on. `package-internal` rows govern the canon repo itself — during consumer-project work they are irrelevant unless explicitly asked about. The whole ledger ships because canon's runtime tooling cites ADR numbers in its output (ADR-010, ADR-012) and those citations must resolve in `node_modules`.
+
 ## Index
 
 Every row binds a decision to its enforcement. **Guard contract (ADR-017):** the Guard cell of every `Accepted` ADR either names its mechanism with backticked tokens that literally appear in `test/` sources, or states `none — <why>`. A meta-guard test parses this table and fails CI when a heading lacks a row, a Scope is invalid, or a guard token doesn't resolve.
@@ -24,6 +26,7 @@ Flipping Status is the **last** step, not the whole move:
 1. **Write the new ADR** — Context explains what failed or changed; Consequences enumerate the artifact disposal (the cleanup manifest).
 2. **Back-search the old decision's artifacts** — grep the old ID and the old decision's values/paths across code, tests, configs, and docs:
    - Tests *named* for the old ADR → rename/re-point to the new one. Mechanically enforced: the ADR-017 meta-guard fails CI on any test named for a superseded ADR (comments may cite old IDs as history; test names may not).
+   - Shipped citations → `lib/` and `bin/` may only cite **live** ADRs (script messages, comments, wiki, templates). Mechanically enforced: the meta-guard fails CI on any superseded-ADR citation outside this ledger — re-point each to the superseding ADR. Citations stay safe to write because IDs are immutable and a superseded entry here always carries its forward pointer.
    - Each guard gets an explicit fate: **transfer** (still protects the new world — re-label it under the new ADR), **gravestone** (denylist-style rules that must outlive the decision — keep), or **delete** (protected only the old world).
    - Config/doc remnants (ignore entries, allowlists, layout claims) → remove or correct.
 3. **Flip the old ADR's Status** to `Superseded by ADR-NNN` and update its index row (Guard cell → `—`).
@@ -32,6 +35,7 @@ Worked examples: ADR-016 (Consequences as disposal manifest), ADR-018 (guard tra
 
 | ID | Title | Scope | Status | Guard |
 |----|-------|-------|--------|-------|
+| ADR-022 | One scope-tagged ledger, shipped whole; audience boundary explicit | methodology | Accepted | `ADR-017` meta-guard Scope-enum check (tagging born-enforced) |
 | ADR-021 | CONTENT_INDEX project layer projected from frontmatter (target) | methodology | Accepted | none — directional; the generator PR lands the guard (builds on ADR-019's core) |
 | ADR-020 | Skill and agent evals: promptfoo scenarios via npx, not push-CI | package-internal | Accepted | none — directional; the first eval-suite PR lands configs + runner |
 | ADR-019 | Markdown validation moves to a Node core; bash stays dispatch | package-internal | Accepted | none — directional; the first migration (CONTENT_INDEX block) lands the core + tests |
@@ -53,6 +57,21 @@ Worked examples: ADR-016 (Consequences as disposal manifest), ADR-018 (guard tra
 | ADR-003 | lib/ as package IP container name | package-internal | Accepted | none — structural; every suite path resolves lib/ |
 | ADR-002 | manifest.json single source for sync boundaries | methodology | Accepted | `manifest` checks in doctor + sync tests |
 | ADR-001 | Thin-vendor over symlinks | methodology | Accepted | `update-safety` vendoring + user-file asserts |
+
+---
+
+## ADR-022 — One scope-tagged ledger, shipped whole; the audience boundary is explicit
+
+**Date:** 2026-06-10
+**Status:** Accepted
+
+**Context:** `lib/wiki/` ships whole, and the decision ledger + invariants registry mix audiences: as of 2026-06-10, 8 of 21 ADRs are `package-internal`, and most registry rows govern canon's own files and tests. A layering review asked whether maintainer content should be split out of the shipped payload. Three audiences were identified: (1) **consumer humans/agents** doing knowledge work — only `methodology`/`tool:*` rows define contracts they rely on; (2) **canon's own runtime tooling** — consumer-side scripts cite ADR numbers in their output (`check-addendum-integrity` → ADR-010, the frontmatter check → ADR-012), so citations must resolve inside `node_modules`; (3) **canon maintainers** — everything. Consumer exposure is already minimal: vendoring copies only the `.claude/`/`.cursor/` trees, and the seed CONTENT_INDEX deliberately points at principles/operations/template-index/architecture — not at this file or the registry.
+
+**Decision:** One ledger and one registry, shipped whole. The separation is **logical** — the Scope column, audience-routing notes at the top of both files, and maintainer-layer annotations in `system-index.md` — never physical. No second ledger; no pack-time filtering.
+
+**Rationale:** A split ledger is the dual-source failure mode ADR-016 was written to kill: two append-only logs sharing one ID sequence, supersedes that cross files, a meta-guard parsing both. Pack-time filtering requires a build step the repo deliberately lacks and makes the shipped file diverge from the repo file. The cost of shipping whole is inert kilobytes in `node_modules` — outside the consumer's repo, index, and default read path. Single scope-tagged logs are standard ADR practice for multi-audience repositories.
+
+**Consequences:** Audience-routing notes at the top of this file and `system-invariants.md`. `system-index.md` lists both files with maintainer-layer annotations. `CLAUDE.base.md` and the init seed deliberately do **not** point at them — adding pointers would invite the reads the index-first pattern avoids. Guard: the Scope enum is enforced by the ADR-017 meta-guard. Future cross-audience tension is a design review, not an ad-hoc split.
 
 ---
 

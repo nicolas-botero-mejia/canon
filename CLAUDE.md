@@ -45,7 +45,7 @@ When you change X, update Y — the enumerable parts are CI-enforced (R-014 doc-
 
 | Change | Must update |
 |--------|-------------|
-| new / superseded ADR | ADR Index row + resolving guard (meta-guard enforces); supersede = back-search checklist |
+| new / superseded ADR | ADR Index row + resolving guard (meta-guard enforces); supersede = back-search checklist; meta-guard blocks shipped citations of superseded IDs |
 | new or changed check | docs §12 checklist: roster wiring, fixture pair, both-direction tests, §1.2 + §3 + §9 |
 | new script / skill / unit suite | name it in system-architecture / docs §12 (R-014 fails CI otherwise) |
 | new template | `lib/templates/template-index.md` row |
