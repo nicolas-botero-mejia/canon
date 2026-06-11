@@ -96,6 +96,17 @@ test('bad/index-substring-false-positive → check-index FAILs on a prose-only m
   assert.match(out, /not listed/)
 })
 
+// ─── ADR-019 stage 2: registration runs on the Node core — target-exact and
+// fence-aware. The line-grep matcher counted "path in prose + unrelated link on
+// the same line" as registered (probe-confirmed false negative); now dead. ─────
+test('bad/index-sameline-prose → check-index FAILs (same-line false negative fixed)', () => {
+  const { status, out } = runScript('check-index', 'bad/index-sameline-prose')
+  assert.equal(status, 2, 'a prose mention sharing a line with an unrelated link is not registration')
+  assert.match(out, /not listed/)
+  assert.match(out, /findings\/phase-01-ghost-results\.md/)
+  assert.ok(!out.includes('phase-01-real-results.md'), 'the genuinely linked sibling must not be flagged')
+})
+
 // ─── WARN tier (G2): present-but-empty alignment passes contracts yet warns ────
 // This pair documents the gap that lets unverified stubs through doctor --deep,
 // which judges on exit code only and so reports a green check here.

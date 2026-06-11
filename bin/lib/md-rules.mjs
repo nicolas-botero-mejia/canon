@@ -64,6 +64,59 @@ export const contentIndexEntryRule = {
   },
 }
 
+// ── ADR-019 stage 2: index registration ──────────────────────────────────────
+
+// Normalize a link destination to root-relative form: drop #fragment, strip a
+// leading ./ or /, best-effort %XX decode. The index sits at the project root,
+// so targets compare directly against root-relative file paths.
+function normalizeTarget(raw) {
+  let t = raw.trim().replace(/#.*$/, '').replace(/^\.?\//, '')
+  try { t = decodeURIComponent(t) } catch { /* keep raw on malformed escapes */ }
+  return t
+}
+
+// Collect every markdown link target in a document — inline resources and
+// reference definitions — from micromark tokens. Fence-awareness is structural:
+// fenced code yields no link tokens at all, and a path in prose yields nothing
+// either, so "mentioned on a line that also has an unrelated link" can never
+// count as a target (the false negative the line-grep matcher had).
+export function extractLinkTargets(content) {
+  const targets = new Set()
+  const collector = {
+    names: ['canon-collect-link-targets'],
+    description: 'internal: collect link destinations',
+    tags: ['canon'],
+    parser: 'micromark',
+    function: (params) => {
+      const walk = (tokens) => {
+        for (const t of tokens) {
+          if (t.type === 'resourceDestinationString' || t.type === 'definitionDestinationString') {
+            targets.add(normalizeTarget(t.text))
+          }
+          if (t.children) walk(t.children)
+        }
+      }
+      walk(params.parsers.micromark.tokens)
+    },
+  }
+  lint({
+    strings: { f: content },
+    customRules: [collector],
+    config: { default: false, 'canon-collect-link-targets': true },
+  })
+  return targets
+}
+
+// Which of the given root-relative paths are not registered as link targets in
+// the index document? Returns { missing: string[], checkedCount }.
+export function runIndexRegistrationCheck(content, relpaths) {
+  const targets = extractLinkTargets(content)
+  return {
+    missing: relpaths.filter((p) => !targets.has(p)),
+    checkedCount: relpaths.length,
+  }
+}
+
 // Line-based fence toggle — used only for the cosmetic entry count (validation
 // above uses real parser tokens). Mirrors strip_code_blocks in check-stale-refs.sh.
 function countEntriesOutsideFences(content) {
