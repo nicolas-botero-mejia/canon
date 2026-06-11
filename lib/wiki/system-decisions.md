@@ -26,6 +26,7 @@ Flipping Status is the **last** step, not the whole move:
 1. **Write the new ADR** — Context explains what failed or changed; Consequences enumerate the artifact disposal (the cleanup manifest).
 2. **Back-search the old decision's artifacts** — grep the old ID and the old decision's values/paths across code, tests, configs, and docs:
    - Tests *named* for the old ADR → rename/re-point to the new one. Mechanically enforced: the ADR-017 meta-guard fails CI on any test named for a superseded ADR (comments may cite old IDs as history; test names may not).
+   - Shipped citations → `lib/` and `bin/` may only cite **live** ADRs (script messages, comments, wiki, templates). Mechanically enforced: the meta-guard fails CI on any superseded-ADR citation outside this ledger — re-point each to the superseding ADR. Citations stay safe to write because IDs are immutable and a superseded entry here always carries its forward pointer.
    - Each guard gets an explicit fate: **transfer** (still protects the new world — re-label it under the new ADR), **gravestone** (denylist-style rules that must outlive the decision — keep), or **delete** (protected only the old world).
    - Config/doc remnants (ignore entries, allowlists, layout claims) → remove or correct.
 3. **Flip the old ADR's Status** to `Superseded by ADR-NNN` and update its index row (Guard cell → `—`).

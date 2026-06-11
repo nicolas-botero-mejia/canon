@@ -602,6 +602,38 @@ test('ADR-017: no active test is named for a superseded ADR', () => {
   }
 })
 
+test('ADR-017: no shipped surface cites a superseded ADR', () => {
+  // ADR citations in lib/ and bin/ are live pointers consumers can resolve in
+  // node_modules — they may only point at Accepted decisions. The ledger itself
+  // (system-decisions.md) is exempt: it holds history, and superseded entries
+  // there carry the forward pointer. docs/ is exempt: contributor narrative.
+  // When a supersede lands, this test lists every shipped citation to re-point.
+  const superseded = ADR_ROWS.filter((r) => r.status.startsWith('Superseded')).map((r) => r.id)
+  const SHIP_EXT = new Set(['.sh', '.mjs', '.md', '.mdc', '.json'])
+  const files = []
+  const walk = (dir) => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, e.name)
+      if (e.isDirectory()) walk(full)
+      else if (SHIP_EXT.has(e.name.slice(e.name.lastIndexOf('.')))) files.push(full)
+    }
+  }
+  walk(join(PKG, 'lib'))
+  walk(join(PKG, 'bin'))
+
+  for (const f of files) {
+    const rel = f.slice(PKG.length + 1)
+    if (rel === 'lib/wiki/system-decisions.md') continue
+    const src = readFileSync(f, 'utf8')
+    for (const id of superseded) {
+      assert.ok(
+        !src.includes(id),
+        `${rel} cites superseded ${id} — re-point the comment/message to the superseding ADR (shipped surfaces may only cite live decisions)`
+      )
+    }
+  }
+})
+
 // ─── R-014: doc-currency bindings — Rule 10's mechanical half ─────────────────
 // The enumerable halves of the architecture docs are bound to the filesystem:
 // a script, skill, or unit suite that exists but isn't documented fails CI.
