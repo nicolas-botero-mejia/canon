@@ -38,7 +38,7 @@ Worked examples: ADR-016 (Consequences as disposal manifest), ADR-018 (guard tra
 | ADR-022 | One scope-tagged ledger, shipped whole; audience boundary explicit | methodology | Accepted | `ADR-017` meta-guard Scope-enum check (tagging born-enforced) |
 | ADR-021 | CONTENT_INDEX project layer projected from frontmatter (target) | methodology | Accepted | none — directional; the generator PR lands the guard (builds on ADR-019's core) |
 | ADR-020 | Skill and agent evals: promptfoo scenarios via npx, not push-CI | package-internal | Accepted | none — directional; the first eval-suite PR lands configs + runner |
-| ADR-019 | Markdown validation moves to a Node core; bash stays dispatch | package-internal | Accepted | none — directional; the first migration (CONTENT_INDEX block) lands the core + tests |
+| ADR-019 | Markdown validation moves to a Node core; bash stays dispatch | package-internal | Accepted | stage 1 live: `md-rules` core + `content-index-fenced-example` regression; stages 2–3 tracked in #17 |
 | ADR-018 | Cursor hooks delegate to the package dispatcher | tool:cursor | Accepted | `writeCursorHooks` dispatcher invariant (gravestone for the wrapper model) |
 | ADR-017 | ADR index with machine-checked Guard contract | package-internal | Accepted | `ADR-017` meta-guard tests in invariants |
 | ADR-016 | examples/ removed; init output is the reference | package-internal | Accepted | `ADR-016` invariants; `update-safety` step 2c |

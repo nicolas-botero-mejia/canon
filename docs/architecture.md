@@ -171,6 +171,8 @@ This is the concrete map of governance layer 3 (`system-architecture.md §7.1` h
 │                            test/fixtures/ — one violation per bad/*  │
 │                            tree; clean-populated/ is the golden      │
 │                            no-false-positive consumer                │
+│ md-rules.test.mjs          ADR-019 Node validation core, direct      │
+│                            (fence-aware markdownlint custom rules)   │
 │ doctor-deep.test.mjs       runContentChecks() PASS/WARN/FAIL tiers   │
 │ doctor.test.mjs · sync.test.mjs · init.test.mjs — CLI command units  │
 │ skill-structure.test.mjs · skill-addendum-append.test.mjs            │
