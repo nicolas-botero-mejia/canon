@@ -40,12 +40,20 @@ if [[ -z "$FILE_PATH" ]]; then
 fi
 
 # For findings/ and conclusions/ files: warn if not yet in CONTENT_INDEX (advisory, non-blocking).
-# Registered = the file's relative path appears on a line with markdown-link syntax — same
-# matching as check-index.sh (G3): a prose mention of the filename does not count.
+# Registered = the file's relative path is a markdown link *target* in the index — the same
+# Node-core matching as check-index.sh (ADR-019 stage 2, G3 kept): a prose mention never counts,
+# even on a line that also contains an unrelated link. node exists by construction in consumers
+# (the package arrived via npm); on a missing node or a core crash (exit ≥ 2) stay silent —
+# this is a write-time nudge, check-index at Stop is the authority.
 if [[ "$FILE_PATH" == *"/findings/"* || "$FILE_PATH" == *"/conclusions/"* ]]; then
     FILENAME=$(basename "$FILE_PATH")
     RELPATH="${FILE_PATH#$PROJECT_ROOT/}"
-    if [[ -f "$INDEX" ]] && ! grep -F "$RELPATH" "$INDEX" | grep -qE '\]\(' ; then
+    REG_STATUS=0
+    if [[ -f "$INDEX" ]] && command -v node >/dev/null 2>&1; then
+        node "${SCRIPT_DIR}/../../bin/validate-md.mjs" index-registration "$INDEX" "$RELPATH" >/dev/null 2>&1
+        REG_STATUS=$?
+    fi
+    if [[ "$REG_STATUS" -eq 1 ]]; then
         python3 -c "
 import json, sys
 filename = sys.argv[1]

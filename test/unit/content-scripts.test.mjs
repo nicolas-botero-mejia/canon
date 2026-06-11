@@ -329,6 +329,26 @@ test('G8: post-write-check: properly registered findings file → silent', { ski
   assert.equal(out.trim(), '', `registered file must not warn: ${out}`)
 })
 
+// ─── ADR-019 stage 2 parity: the write-time advisory uses the same Node-core
+// target matching as check-index. Same tree as the Stop-side regression — the
+// trap line mentions the ghost in prose AND genuinely links the sibling. ───────
+test('G8: post-write-check: prose mention + unrelated link on one line → advisory fires (same-line parity)', { skip: needsPython }, () => {
+  const fixtureDir = join(FIXTURES, 'bad/index-sameline-prose')
+  const filePath = join(fixtureDir, 'findings/phase-01-ghost-results.md')
+  const { status, out } = runPostWrite('bad/index-sameline-prose', filePath)
+  assert.equal(status, 0, out)
+  const parsed = JSON.parse(out.trim())
+  assert.match(parsed.hookSpecificOutput.additionalContext, /not yet in CONTENT_INDEX/)
+})
+
+test('G8: post-write-check: the genuinely linked sibling on that same line → silent', { skip: needsPython }, () => {
+  const fixtureDir = join(FIXTURES, 'bad/index-sameline-prose')
+  const filePath = join(fixtureDir, 'findings/phase-01-real-results.md')
+  const { status, out } = runPostWrite('bad/index-sameline-prose', filePath)
+  assert.equal(status, 0)
+  assert.equal(out.trim(), '', `registered file must not warn: ${out}`)
+})
+
 // ─── check-index mtime branch (advisory ⚠, exit 0) ─────────────────────────────
 // A watched file newer than CONTENT_INDEX.md warns that entries may be stale.
 // Runs against a temp copy of clean-populated so fixture mtimes stay untouched.

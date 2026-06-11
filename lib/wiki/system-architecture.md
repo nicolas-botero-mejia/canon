@@ -271,9 +271,9 @@ Validates the in-file addendum model (ADR-010, Dim 10–11). **FAIL (exit 1):** 
 **Used by:** Stop hook (after `check-contracts.sh`) and `canon doctor --deep`.
 
 ### `scripts/post-write-check.sh`
-PostToolUse hook wrapper. Reads the tool-use JSON payload from stdin, extracts `file_path` (or Cursor's `path`) from `tool_input`. For `wiki/` and `plans/` files: calls `check-stale-refs.sh --file` and returns `{"decision":"block"}` if a deprecated pattern is found. For `findings/` and `conclusions/` files: emits ⚠ warning if the file is not yet in CONTENT_INDEX.md (advisory, non-blocking) — registered means the full relative path appears inside a markdown link (line-level grep, the write-time approximation); a prose mention of the filename does not count. check-index.sh at Stop is the authority: its matching is target-exact on the Node core (ADR-019 stage 2). Requires `python3` for JSON parsing.
+PostToolUse hook wrapper. Reads the tool-use JSON payload from stdin, extracts `file_path` (or Cursor's `path`) from `tool_input`. For `wiki/` and `plans/` files: calls `check-stale-refs.sh --file` and returns `{"decision":"block"}` if a deprecated pattern is found. For `findings/` and `conclusions/` files: emits ⚠ warning if the file is not yet in CONTENT_INDEX.md (advisory, non-blocking) — registered means the full relative path is a markdown link **target** in the index, the same Node-core matching as check-index.sh (ADR-019 stage 2); a prose mention never counts. If `node` is unavailable or the core crashes, the advisory stays silent (write-time nudge only — check-index.sh at Stop is the authority). Requires `python3` for JSON parsing.
 
-**Dependencies:** `python3`, `bash` — standard on macOS.
+**Dependencies:** `python3`, `bash` + `node` via `bin/validate-md.mjs` (registration advisory; silent-skip without it).
 **Used by:** PostToolUse hook (matcher: `Write|Edit`).
 
 ### `scripts/phase-transition.sh`
@@ -535,7 +535,7 @@ Structural guarantees for template-generated files. Required for MCP query relia
 
 - **Required format:** `### [filename](./path/to/file)` followed by either: (a) full four-part block — `**What it is:**`, `**Key facts:**`, `**Questions it answers:**`; or (b) lightweight single-line description (0 markers — valid for mechanism files: agents, skills, templates, scripts)
 - **Contract:** entries with 1–2 of 3 markers are invalid (partial/broken block); entries demoted below `###` level are an error; entries with 0 or 3/3 markers are valid. Validated per-entry, not by global count. Fence-aware: headings and markers inside code blocks are not entries (ADR-019 Node core).
-- **Registration (check-index):** a monitored file counts as listed only when its full relative path is a markdown link **target** in the index — fence-aware and target-exact (ADR-019 stage 2). Prose mentions never register, even on a line that also contains another link.
+- **Registration (check-index + post-write advisory):** a monitored file counts as listed only when its full relative path is a markdown link **target** in the index — fence-aware and target-exact (ADR-019 stage 2), identical at write time and at Stop. Prose mentions never register, even on a line that also contains another link.
 
 ### `findings/*.md`
 
