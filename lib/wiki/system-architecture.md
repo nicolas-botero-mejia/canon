@@ -480,6 +480,8 @@ Recommended CI trigger: push to `wiki/` or `plans/`. The `check-conclusions-alig
 
 ### CD pipeline (package repo)
 
+**When to release:** publish on consumer-visible value — not per PR, and not "when the backlog is empty" (it never is). The test is mechanical: does the merged diff change `lib/` or `bin/` behavior? Internal-only work (`test/`, `docs/`, `.github/`, repo meta) never triggers a release. Batch small consumer-visible changes until a coherent unit ships (a completed migration stage, a new check set); don't let a consumer-facing *fix* sit unpublished across more than a few merges. Every PR declares its release impact in the PR template, so the unreleased queue is readable at release time: `git log <last-tag>..master -- lib/ bin/` lists exactly what consumers are waiting for.
+
 `npm publish` is triggered manually after the full test suite passes. No automatic publish on push. The publish step:
 1. `npm run test:all` — runs unit tests (node --test), integration test (pack → install → init → sync → doctor), and hook dispatcher tests
 2. `npm version patch|minor|major` — bumps version, creates git tag
