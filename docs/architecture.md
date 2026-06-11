@@ -23,6 +23,8 @@ A user's working repo contains **only their content plus thin references.** All 
 
 > **No checked-in consumer reference** — `examples/consumer/` was removed (ADR-016, superseding ADR-014). The reference for what `init` produces is running `canon init` in a scratch dir; `test/integration/update-safety.sh` verifies init output end-to-end (wiring files, seeded CONTENT_INDEX, `doctor --deep` green). The index seed ships at `lib/templates/init.content-index-template.md`.
 
+> **Dogfooding** — the package repo carries *untracked* vendored copies of the consumer wiring (`.claude/`, `.cursor/`, `.agents/`) so sessions here run canon's own hooks, rules, and skills; refresh them with `canon sync` (recreate the untracked `.framework-version` marker first if absent). `canon init` **refuses to run anywhere inside this repo** (ADR-023) — user-content scaffolding belongs only in consumers, and a past in-repo init had appended to the tracked `.gitignore`.
+
 > The current clean-slate folder is shaped like a *consumer's* framework-owned files. To become the package, the payload must be re-homed (see §10). The clean slate is the reference for *what gets shipped*, not the package itself.
 
 ---
@@ -91,7 +93,7 @@ Why npm over the alternatives, given the "update the core later" requirement:
 
 | Command | Does |
 |---------|------|
-| `npx @nicolas-botero-mejia/canon init` | Interactive. Iterates `bin/lib/tools-registry.mjs` to ask which AI-tool layers to enable (currently: Claude Code, Cursor). Scaffolds user content dirs; writes per-tool wiring (`CLAUDE.md` + `settings.json`, `hooks.json`); writes cross-tool paths unconditionally (`AGENTS.md` with base content, `.agents/skills/ → .claude/skills/` symlink); records `.framework-version`. Adding a new AI tool = one entry in `tools-registry.mjs`, no code changes elsewhere. |
+| `npx @nicolas-botero-mejia/canon init` | Interactive. Iterates `bin/lib/tools-registry.mjs` to ask which AI-tool layers to enable (currently: Claude Code, Cursor). Scaffolds user content dirs; writes per-tool wiring (`CLAUDE.md` + `settings.json`, `hooks.json`); writes cross-tool paths unconditionally (`AGENTS.md` with base content, `.agents/skills/ → .claude/skills/` symlink); records `.framework-version`. Refuses to run anywhere inside the canon package repo itself (ADR-023). Adding a new AI tool = one entry in `tools-registry.mjs`, no code changes elsewhere. |
 | `npx @nicolas-botero-mejia/canon sync` | Re-applies the wiring from the currently-installed package version. Writes only the wiring bucket; never the user bucket. Run after `npm update`. |
 | `npx @nicolas-botero-mejia/canon doctor` | Validates integrity: package installed, `@import` line present, discovered dirs present and pointing at the right version, hook dispatcher resolves, `.framework-version` matches `node_modules`. This is the user's "guarantee the link is always there." |
 | `npx @nicolas-botero-mejia/canon migrate` | *(Not yet implemented — removed per ADR-005. Corpus import is handled manually.)* |

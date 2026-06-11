@@ -1,6 +1,6 @@
 # System Decisions
 
-**Last updated:** 2026-06-10
+**Last updated:** 2026-06-11
 
 Architectural and methodology decisions for the Canon framework.
 Newest first. One entry per decision.
@@ -35,6 +35,7 @@ Worked examples: ADR-016 (Consequences as disposal manifest), ADR-018 (guard tra
 
 | ID | Title | Scope | Status | Guard |
 |----|-------|-------|--------|-------|
+| ADR-023 | init refuses to run inside the package repo; gitignore keeps only dogfood wiring | package-internal | Accepted | `ADR-023` init-guard tests (refusal + walk-up + no side effects + consumer pass) |
 | ADR-022 | One scope-tagged ledger, shipped whole; audience boundary explicit | methodology | Accepted | `ADR-017` meta-guard Scope-enum check (tagging born-enforced) |
 | ADR-021 | CONTENT_INDEX project layer projected from frontmatter (target) | methodology | Accepted | none — directional; the generator PR lands the guard (builds on ADR-019's core) |
 | ADR-020 | Skill and agent evals: promptfoo scenarios via npx, not push-CI | package-internal | Accepted | none — directional; the first eval-suite PR lands configs + runner |
@@ -57,6 +58,21 @@ Worked examples: ADR-016 (Consequences as disposal manifest), ADR-018 (guard tra
 | ADR-003 | lib/ as package IP container name | package-internal | Accepted | none — structural; every suite path resolves lib/ |
 | ADR-002 | manifest.json single source for sync boundaries | methodology | Accepted | `manifest` checks in doctor + sync tests |
 | ADR-001 | Thin-vendor over symlinks | methodology | Accepted | `update-safety` vendoring + user-file asserts |
+
+---
+
+## ADR-023 — init refuses to run inside the package repo; gitignore keeps only dogfood wiring
+
+**Date:** 2026-06-11
+**Status:** Accepted
+
+**Context:** The package repo dogfoods its own consumer wiring — untracked vendored copies of `.claude/`, `.cursor/`, and `.agents/` run canon's hooks, rules, and skills on canon development itself. That layer was historically bootstrapped by running `canon init` at the repo root, and the accident cost was real: init scaffolds eleven user-content dirs that belong only in consumer projects, and its `writeGitignore` **appended to the tracked `.gitignore`** (the stray `# Canon` + `Thumbs.db` block was forensic evidence). The defense was ~16 gitignore entries silently swallowing consumer outputs — entries that read as "these folders belong here" and confused every later audit of the repo root.
+
+**Decision:** `canon init` walks up from cwd; if any ancestor `package.json` is named `@nicolas-botero-mejia/canon`, it refuses (exit 1) with a pointer to scratch-dir testing and `canon sync`. With init impossible here, `.gitignore` keeps only the **sync/dogfood wiring** entries (`.claude/*`, `.cursor/*`, `.agents/`, `.framework-version`, `.canon-sync-manifest.json`); all init-only outputs (user dirs, `AGENTS.md`, `CONTENT_INDEX.md`, `log.md`) lose their entries. Fail loudly beats ignore silently.
+
+**Rationale:** An ignore entry hides the accident; a guard prevents it — and the slimmed gitignore stops misdescribing the repo. The walk-up form also protects subdirectories: an init run inside `lib/` would have scaffolded user dirs into the shipped payload. Consumers are unaffected — the installed copy in `node_modules` is a descendant of the consumer root, never an ancestor, so the name match cannot fire in a real project.
+
+**Consequences:** Dogfood-layer maintenance is sync-only: refresh with `canon sync` (recreate the untracked `.framework-version` marker first if absent); bootstrapping a fresh clone's dogfood layer means copying `.claude/` + `.cursor/` from an existing checkout or a scratch init's output. The guard and the gitignore slimming are one decision — reverting either alone reopens the hole. Guard: `ADR-023` init-guard tests in `init.test.mjs` (refusal, walk-up, untouched-repo asserts, consumer-name pass).
 
 ---
 

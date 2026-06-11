@@ -116,3 +116,37 @@ test('does not write .cursor/ files when Cursor layer not enabled', () => {
   runInit(dir, ['--yes'])
   assert.ok(!existsSync(join(dir, '.cursor', 'hooks.json')))
 })
+
+// ── ADR-023: init refuses to run inside the canon package repo ──────────────
+
+const CANON_PKG_JSON = JSON.stringify({ name: '@nicolas-botero-mejia/canon', version: '0.0.0' })
+
+test('ADR-023: refuses inside the package repo and leaves it untouched', () => {
+  const dir = makeTmp()
+  writeFileSync(join(dir, 'package.json'), CANON_PKG_JSON)
+  writeFileSync(join(dir, '.gitignore'), 'node_modules/\n')
+  const result = runInitSafe(dir, ['--yes'])
+  assert.notEqual(result.code, 0)
+  assert.match(result.stderr, /package repo/)
+  assert.ok(!existsSync(join(dir, 'plans')), 'must not scaffold user dirs')
+  assert.ok(!existsSync(join(dir, '.framework-version')), 'must not write the version marker')
+  assert.equal(readFileSync(join(dir, '.gitignore'), 'utf8'), 'node_modules/\n',
+    'must not append to the repo .gitignore')
+})
+
+test('ADR-023: refusal walks up — subdirectories of the package repo are blocked too', () => {
+  const dir = makeTmp()
+  writeFileSync(join(dir, 'package.json'), CANON_PKG_JSON)
+  const sub = join(dir, 'lib', 'templates')
+  mkdirSync(sub, { recursive: true })
+  const result = runInitSafe(sub, ['--yes'])
+  assert.notEqual(result.code, 0)
+  assert.ok(!existsSync(join(sub, 'plans')), 'must not scaffold into the shipped payload')
+})
+
+test('ADR-023: a consumer package.json with a different name initializes normally', () => {
+  const dir = makeTmp()
+  writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'some-consumer-app', version: '1.0.0' }))
+  runInit(dir, ['--yes'])
+  assert.ok(existsSync(join(dir, '.framework-version')))
+})
