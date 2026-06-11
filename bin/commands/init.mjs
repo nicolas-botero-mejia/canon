@@ -1,11 +1,31 @@
 import { createInterface } from 'readline'
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs'
-import { join } from 'path'
+import { join, dirname, resolve } from 'path'
 import { vendorDirs, writeAgentsMd, writeAgentsSymlink, writeGitignore, writeMcpSettings } from '../lib/sync-ops.mjs'
 import { PKG_NAME, packageRoot, readManifest } from '../lib/paths.mjs'
 import { TOOLS } from '../lib/tools-registry.mjs'
 
 const PACKAGE_ROOT = packageRoot()
+
+// ADR-023: init scaffolds consumer projects. Anywhere inside the canon package
+// repo it would scaffold user dirs into the repo (or the shipped lib/ payload)
+// and append to the tracked .gitignore — walk up and refuse. A consumer is
+// never affected: the installed copy in node_modules is a descendant of the
+// consumer root, not an ancestor.
+function findPackageRepoRoot(startDir) {
+  let dir = resolve(startDir)
+  while (true) {
+    const pkgPath = join(dir, 'package.json')
+    if (existsSync(pkgPath)) {
+      try {
+        if (JSON.parse(readFileSync(pkgPath, 'utf8')).name === PKG_NAME) return dir
+      } catch { /* unparseable package.json — not the package repo */ }
+    }
+    const parent = dirname(dir)
+    if (parent === dir) return null
+    dir = parent
+  }
+}
 const USER_DIRS = [
   'plans', 'findings', 'conclusions', 'raw', 'tmp', 'deliverables',
   'wiki/project', 'wiki/standards', 'wiki/client', 'wiki/user',
@@ -20,6 +40,14 @@ export async function run(args) {
   const yes   = args.includes('--yes')
   const force = args.includes('--force')
   const consumerRoot = process.cwd()
+
+  const repoRoot = findPackageRepoRoot(consumerRoot)
+  if (repoRoot) {
+    console.error(`canon init: refusing to run inside the canon package repo (${repoRoot}).`)
+    console.error('  init scaffolds consumer projects — here it would create user dirs and append to the tracked .gitignore.')
+    console.error('  Test init in a scratch dir (cd "$(mktemp -d)"); refresh dogfood wiring with `canon sync`.')
+    process.exit(1)
+  }
 
   if (existsSync(join(consumerRoot, '.framework-version')) && !force) {
     console.error('canon init: already initialized. Run with --force to re-init.')

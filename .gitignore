@@ -1,36 +1,29 @@
+# OS noise
 .DS_Store
-tmp/
+Thumbs.db
+
+# editors
 .obsidian/
+
+# npm
 node_modules/
 
 # npm pack output (Phase 1 acceptance)
 *.tgz
 
-# runtime artifact
+# scratch space
+tmp/
+
+# runtime artifact (dogfood hooks)
 .claude/pending-updates.log
 
-# Canon
-Thumbs.db
-
-# Consumer-generated files (created by `canon init` if run from the package repo root)
-# These belong in consumer projects, not here.
+# Dogfood consumer wiring — this repo runs canon's own hooks/rules/skills from
+# untracked vendored copies; refresh with `canon sync`. `canon init` refuses to
+# run inside this repo (ADR-023), so init-only outputs (conclusions/, findings/,
+# plans/, log.md, AGENTS.md, CONTENT_INDEX.md, …) need no entries here.
 /.agents/
 /.canon-sync-manifest.json
 /.framework-version
-/AGENTS.md
-/CONTENT_INDEX.md
-/conclusions/
-/deliverables/
-/findings/
-/log.md
-/plans/
-/raw/
-/wiki/client/
-/wiki/project/
-/wiki/standards/
-/wiki/user/
-/scripts/project/
-# vendored consumer tool dirs (consumer has .claude/skills etc; package has lib/.claude/)
 /.claude/agents/
 /.claude/rules/
 /.claude/skills/
