@@ -96,6 +96,17 @@ test('bad/index-substring-false-positive → check-index FAILs on a prose-only m
   assert.match(out, /not listed/)
 })
 
+// ─── ADR-019 stage 2: registration runs on the Node core — target-exact and
+// fence-aware. The line-grep matcher counted "path in prose + unrelated link on
+// the same line" as registered (probe-confirmed false negative); now dead. ─────
+test('bad/index-sameline-prose → check-index FAILs (same-line false negative fixed)', () => {
+  const { status, out } = runScript('check-index', 'bad/index-sameline-prose')
+  assert.equal(status, 2, 'a prose mention sharing a line with an unrelated link is not registration')
+  assert.match(out, /not listed/)
+  assert.match(out, /findings\/phase-01-ghost-results\.md/)
+  assert.ok(!out.includes('phase-01-real-results.md'), 'the genuinely linked sibling must not be flagged')
+})
+
 // ─── WARN tier (G2): present-but-empty alignment passes contracts yet warns ────
 // This pair documents the gap that lets unverified stubs through doctor --deep,
 // which judges on exit code only and so reports a green check here.
@@ -314,6 +325,26 @@ test('G8: post-write-check: properly registered findings file → silent', { ski
   const fixtureDir = join(FIXTURES, 'clean-populated')
   const target = readdirSync(join(fixtureDir, 'findings')).find((f) => f.endsWith('.md') && f !== 'README.md')
   const { status, out } = runPostWrite('clean-populated', join(fixtureDir, 'findings', target))
+  assert.equal(status, 0)
+  assert.equal(out.trim(), '', `registered file must not warn: ${out}`)
+})
+
+// ─── ADR-019 stage 2 parity: the write-time advisory uses the same Node-core
+// target matching as check-index. Same tree as the Stop-side regression — the
+// trap line mentions the ghost in prose AND genuinely links the sibling. ───────
+test('G8: post-write-check: prose mention + unrelated link on one line → advisory fires (same-line parity)', { skip: needsPython }, () => {
+  const fixtureDir = join(FIXTURES, 'bad/index-sameline-prose')
+  const filePath = join(fixtureDir, 'findings/phase-01-ghost-results.md')
+  const { status, out } = runPostWrite('bad/index-sameline-prose', filePath)
+  assert.equal(status, 0, out)
+  const parsed = JSON.parse(out.trim())
+  assert.match(parsed.hookSpecificOutput.additionalContext, /not yet in CONTENT_INDEX/)
+})
+
+test('G8: post-write-check: the genuinely linked sibling on that same line → silent', { skip: needsPython }, () => {
+  const fixtureDir = join(FIXTURES, 'bad/index-sameline-prose')
+  const filePath = join(fixtureDir, 'findings/phase-01-real-results.md')
+  const { status, out } = runPostWrite('bad/index-sameline-prose', filePath)
   assert.equal(status, 0)
   assert.equal(out.trim(), '', `registered file must not warn: ${out}`)
 })

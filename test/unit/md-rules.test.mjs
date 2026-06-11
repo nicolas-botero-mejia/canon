@@ -5,7 +5,7 @@
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { runContentIndexCheck } from '../../bin/lib/md-rules.mjs'
+import { runContentIndexCheck, runIndexRegistrationCheck } from '../../bin/lib/md-rules.mjs'
 
 const FULL_ENTRY = [
   '### [a.md](./wiki/a.md)',
@@ -54,4 +54,31 @@ test('md-rules: fenced headings and markers are not entries (the awk bug class)'
   const { issues, entryCount } = runContentIndexCheck(md)
   assert.deepEqual(issues, [], 'fenced example must not be validated as an entry')
   assert.equal(entryCount, 1, 'fenced ### must not inflate the entry count')
+})
+
+// ── ADR-019 stage 2: index registration is target-exact and fence-aware ──────
+
+test('md-rules: registration — prose mention sharing a line with an unrelated link is NOT registration (the line-grep bug class)', () => {
+  const md = 'See findings/ghost.md and the [real](./findings/real.md) entry.\n'
+  const { missing, checkedCount } = runIndexRegistrationCheck(md, ['findings/ghost.md', 'findings/real.md'])
+  assert.deepEqual(missing, ['findings/ghost.md'], 'ghost is prose-only; real is a genuine target on the same line')
+  assert.equal(checkedCount, 2)
+})
+
+test('md-rules: registration — a link inside fenced code is not a registration', () => {
+  const md = 'Example:\n\n```\n- [x](findings/fenced.md)\n```\n'
+  const { missing } = runIndexRegistrationCheck(md, ['findings/fenced.md'])
+  assert.deepEqual(missing, ['findings/fenced.md'])
+})
+
+test('md-rules: registration — ./-prefix, #fragment, and reference definitions all register', () => {
+  const md = [
+    '- [a](./findings/a.md)',
+    '- [b](findings/b.md#section)',
+    '',
+    '[ref]: conclusions/c.md',
+    '',
+  ].join('\n')
+  const { missing } = runIndexRegistrationCheck(md, ['findings/a.md', 'findings/b.md', 'conclusions/c.md'])
+  assert.deepEqual(missing, [])
 })
