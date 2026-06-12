@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync, symlinkSync, writeFileSync, appendFileSync, readFileSync, existsSync, readdirSync } from 'fs'
+import { cpSync, mkdirSync, symlinkSync, writeFileSync, appendFileSync, readFileSync, existsSync, readdirSync, lstatSync, unlinkSync } from 'fs'
 import { join, dirname } from 'path'
 import { createHash } from 'crypto'
 
@@ -22,8 +22,10 @@ function saveSyncManifest(consumerRoot, hashes) {
   writeFileSync(join(consumerRoot, SYNC_MANIFEST), JSON.stringify(hashes, null, 2))
 }
 
-// Collect hashes of all files under dir, keyed by path relative to dir
-function collectHashes(dir, rel = '', out = {}) {
+// Collect hashes of all files under dir, keyed by path relative to dir.
+// Exported: doctor's vendored-integrity check (issue #15) compares the consumer
+// copy against the installed package with the same walk.
+export function collectHashes(dir, rel = '', out = {}) {
   const entries = readdirSync(join(dir, rel), { withFileTypes: true })
   for (const entry of entries) {
     const relPath = rel ? `${rel}/${entry.name}` : entry.name
@@ -158,12 +160,19 @@ export function writeAgentsMd(consumerRoot, pkgName, pkgRoot) {
  * Gemini CLI (and all agentskills.io tools that prefer it over .claude/skills/).
  * .claude/skills/ remains the canonical source; this symlink requires no
  * duplication — a single SKILL.md edit propagates to both paths.
- * No-ops if the symlink already exists.
+ * No-ops if the symlink already exists and resolves; a broken symlink (target
+ * gone or wrong) is removed and re-created so `canon sync` self-heals it.
  */
 export function writeAgentsSymlink(consumerRoot) {
   const agentsDir = join(consumerRoot, '.agents')
   const symlinkPath = join(agentsDir, 'skills')
-  if (existsSync(symlinkPath)) return
+  let entry = null
+  try { entry = lstatSync(symlinkPath) } catch { /* absent */ }
+  if (entry) {
+    if (existsSync(symlinkPath)) return
+    if (!entry.isSymbolicLink()) return // unexpected real entry — leave it for doctor to flag
+    unlinkSync(symlinkPath) // broken symlink — heal
+  }
   mkdirSync(agentsDir, { recursive: true })
   // Relative target: from .agents/, go up one level then into .claude/skills/
   symlinkSync(join('..', '.claude', 'skills'), symlinkPath)

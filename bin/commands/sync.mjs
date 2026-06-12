@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
-import { vendorDirs, writeMcpSettings } from '../lib/sync-ops.mjs'
+import { vendorDirs, writeAgentsMd, writeAgentsSymlink, writeMcpSettings } from '../lib/sync-ops.mjs'
 import { PKG_NAME, packageRoot, readManifest } from '../lib/paths.mjs'
 import { TOOLS } from '../lib/tools-registry.mjs'
 
@@ -18,6 +18,13 @@ export async function run(args) {
   const version = JSON.parse(readFileSync(join(PACKAGE_ROOT, 'package.json'), 'utf8')).version
 
   vendorDirs(manifest, PACKAGE_ROOT, consumerRoot, { force })
+
+  // Cross-tool wiring (manifest lists both under "wiring") — idempotent:
+  // AGENTS.md is written only if absent (never overwrites a user-edited copy);
+  // the .agents/skills symlink no-ops when healthy and re-creates itself when
+  // broken. Makes doctor's "run `canon sync`" remediation true for both.
+  writeAgentsMd(consumerRoot, PKG_NAME, PACKAGE_ROOT)
+  writeAgentsSymlink(consumerRoot)
 
   // Re-write wiring for each installed tool (registry-driven).
   // A tool is "installed" when its primary wiring file already exists in the consumer —

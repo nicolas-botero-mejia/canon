@@ -24,33 +24,23 @@ FAILED=0
 pass() { echo "  ✓ $1"; }
 fail() { echo "  ✗ $1"; FAILED=$(( FAILED + 1 )); }
 
-# python3 is required by check-links.sh
-HAS_PYTHON3=false
-command -v python3 >/dev/null 2>&1 && HAS_PYTHON3=true
-
 echo "=== doctor --deep CLI integration tests ==="
 
 # ── Stage a fully-wired consumer from a fixture ──────────────────────────────
-# Returns the path to a temp dir that mirrors a real consumer: framework wired,
-# vendored dirs present, CLAUDE.md with @import, .framework-version set, and
-# the fixture content copied into place.
+# Real wiring via `canon init` — doctor validates wiring *integrity* (issue #15:
+# vendored content hashes, hooks blocks, .agents/skills resolution, user dirs),
+# so hand-rolled stubs no longer pass. The fixture content is overlaid after
+# (its CONTENT_INDEX replaces the init seed; the fixture has no CLAUDE.md, so
+# init's @import skeleton survives).
 stage_consumer() {
   local fixture="${1:-$CLEAN_FIXTURE}"
   local dir
   dir=$(mktemp -d)
 
-  # Copy content from fixture
+  ( cd "$dir" && node "$CLI" init --yes >/dev/null 2>&1 )
+
+  # Overlay content from fixture
   cp -r "${fixture}/." "$dir/"
-
-  # Wiring: .framework-version
-  node -e "const p=JSON.parse(require('fs').readFileSync('$PKG/package.json','utf8')); process.stdout.write(p.version)" \
-    > "$dir/.framework-version"
-
-  # Wiring: CLAUDE.md with @import
-  printf "@node_modules/@nicolas-botero-mejia/canon/lib/CLAUDE.base.md\n" > "$dir/CLAUDE.md"
-
-  # Wiring: vendored dirs (empty stubs satisfy doctor's existence check)
-  mkdir -p "$dir/.claude/agents" "$dir/.claude/skills" "$dir/.claude/rules" "$dir/.cursor/rules"
 
   # Wiring: node_modules symlink pointing at the package under test
   mkdir -p "$dir/node_modules/@nicolas-botero-mejia"
