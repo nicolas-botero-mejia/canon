@@ -1,6 +1,19 @@
+---
+type: research-notes
+phase: "[NN]"
+topic: "[topic]"
+status: in-progress
+author: Mixed
+date: "YYYY-MM-DD"
+description: ""
+key_facts: []
+questions: []
+---
 # Research: [Research Topic] — Notes
 
 **Phase:** Phase NN
+**Author:** Mixed
+**Date:** YYYY-MM-DD
 **Plan:** `plans/phase-NN-research-[topic]-plan.md`
 **Status:** In progress
 

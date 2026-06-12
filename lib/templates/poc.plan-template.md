@@ -1,3 +1,12 @@
+---
+type: poc-plan
+phase: "[NN]"
+topic: "[short-name]"
+status: draft
+description: ""
+key_facts: []
+questions: []
+---
 # Phase N — POC XX: [Title]
 
 <!--

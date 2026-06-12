@@ -1,3 +1,12 @@
+---
+type: addendum-plan
+phase: "[NN]"
+topic: "[slug]"
+status: draft
+description: ""
+key_facts: []
+questions: []
+---
 # Phase N — [Parent Identifier] Addendum NN: [Title] — Plan
 
 <!--

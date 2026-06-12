@@ -1,3 +1,9 @@
+---
+type: discovery-backlog
+description: ""
+key_facts: []
+questions: []
+---
 <!-- discovery-backlog-template.md
      Destination: plans/discovery-backlog.md
      One per project. Tracks signals and addendum triggers awaiting action.
