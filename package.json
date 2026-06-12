@@ -1,6 +1,6 @@
 {
   "name": "@nicolas-botero-mejia/canon",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Canon — AI-assisted engagement framework",
   "type": "module",
   "bin": {
