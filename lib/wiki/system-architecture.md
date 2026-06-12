@@ -93,7 +93,7 @@ Phase lifecycle
                               ▼
 ╔══════════════════════════════════════════════════════════════════════╗
 ║ SESSION STOP — advisory chain, never blocks close (ADR-013)          ║
-║ check-index.sh           → unlisted files + ⚠ mtime drift            ║
+║ check-index.sh           → unlisted files                            ║
 ║ check-links.sh           → broken relative markdown links            ║
 ║ check-stale-refs.sh      → retired tool/pattern names in wiki/       ║
 ║ check-conclusions-alignment.sh → Complete without alignment date     ║
@@ -207,7 +207,7 @@ All scripts are executable (`chmod +x`).
 ### Governance Scripts (`scripts/`)
 
 ### `scripts/check-index.sh`
-Scans `wiki/`, `findings/`, `plans/`, `conclusions/`, `deliverables/` for `.md` files not listed in `CONTENT_INDEX.md`. Excludes `_archive/` subdirs and `README.md` files. Registration matching runs on the Node validation core (ADR-019 stage 2): a file counts as listed only when its full relative path is a markdown link **target** in the index — fence-aware and target-exact, so a prose mention never registers, even on a line that also contains an unrelated link. mtime drift elevated to `⚠` warning level.
+Scans `wiki/`, `findings/`, `plans/`, `conclusions/`, `deliverables/` for `.md` files not listed in `CONTENT_INDEX.md`. Excludes `_archive/` subdirs and `README.md` files. Registration matching runs on the Node validation core (ADR-019 stage 2): a file counts as listed only when its full relative path is a markdown link **target** in the index — fence-aware and target-exact, so a prose mention never registers, even on a line that also contains an unrelated link. The remedy for an unlisted file is `description:` frontmatter + `canon index` (ADR-021), or a hand-written entry outside the generated markers. (The former mtime-drift warning retired with ADR-021 — regenerate beats warn.)
 
 **Dependencies:** `find`, `basename` + `node` via `bin/validate-md.mjs` (registration matching; ⚠ warn-skip without it).
 **Used by:** Stop hook.

@@ -104,13 +104,26 @@ grep -q "system-principles.md" "${WORK_DIR}/CONTENT_INDEX.md" \
   || fail "CONTENT_INDEX.md not seeded from init.content-index-template.md"
 
 # A fresh consumer must pass its own governance checks (seed validity gate).
-if command -v python3 >/dev/null 2>&1; then
-  node "${WORK_DIR}/node_modules/@nicolas-botero-mejia/canon/bin/cli.mjs" doctor --deep >/dev/null \
-    && pass "doctor --deep green on fresh init (seed passes all content checks)" \
-    || fail "doctor --deep failed on fresh init — seed or wiring violates a content check"
-else
-  pass "doctor --deep on fresh init skipped (python3 not available)"
-fi
+# (No python3 gate — the content roster runs fully on node since ADR-019 stage 3.)
+node "${WORK_DIR}/node_modules/@nicolas-botero-mejia/canon/bin/cli.mjs" doctor --deep >/dev/null \
+  && pass "doctor --deep green on fresh init (seed passes all content checks)" \
+  || fail "doctor --deep failed on fresh init — seed or wiring violates a content check"
+
+# canon index e2e (ADR-021): a frontmattered file projects into the marked
+# project layer, and the regenerated index keeps doctor --deep green.
+printf -- '---\ndescription: E2E probe file.\nkey_facts: []\nquestions: []\n---\n# Probe\n\n**Author:** test\n**Date:** 2026-06-12\n**Status:** Complete\n' \
+  > "${WORK_DIR}/findings/phase-01-e2e-probe-results.md"
+node "${WORK_DIR}/node_modules/@nicolas-botero-mejia/canon/bin/cli.mjs" index >/dev/null \
+  && pass "canon index ran on the installed package" \
+  || fail "canon index failed"
+grep -q "phase-01-e2e-probe-results.md" "${WORK_DIR}/CONTENT_INDEX.md" \
+  && pass "canon index projected the frontmattered file into CONTENT_INDEX" \
+  || fail "canon index did not register the probe file"
+node "${WORK_DIR}/node_modules/@nicolas-botero-mejia/canon/bin/cli.mjs" doctor --deep >/dev/null \
+  && pass "doctor --deep green after canon index (generated layer passes all checks)" \
+  || fail "doctor --deep failed after canon index"
+rm "${WORK_DIR}/findings/phase-01-e2e-probe-results.md"
+node "${WORK_DIR}/node_modules/@nicolas-botero-mejia/canon/bin/cli.mjs" index >/dev/null
 
 # ── Step 3: write junk into user dirs and CLAUDE.md body ────────────────────
 echo "[3] Write user content"

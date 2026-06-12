@@ -5,6 +5,9 @@ topic: "[slug]"
 status: in-progress
 author: AI
 date: "YYYY-MM-DD"
+description: ""
+key_facts: []
+questions: []
 ---
 
 # Phase N — Session NN: [Topic] — Results

@@ -4,6 +4,9 @@ phase: "[NN]"
 topic: "[short-name]"
 status: in-progress
 alignment_verified: ""
+description: ""
+key_facts: []
+questions: []
 ---
 
 # Phase N — POC XX: [Title] — Conclusions

@@ -5,6 +5,9 @@ topic: "[slug]"
 status: in-progress
 author: AI
 date: "YYYY-MM-DD"
+description: ""
+key_facts: []
+questions: []
 ---
 
 # Phase NN — Handoff: [Source] to [Destination]

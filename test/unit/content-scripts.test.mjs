@@ -358,25 +358,6 @@ test('G8: post-write-check: the genuinely linked sibling on that same line → s
   assert.equal(out.trim(), '', `registered file must not warn: ${out}`)
 })
 
-// ─── check-index mtime branch (advisory ⚠, exit 0) ─────────────────────────────
-// A watched file newer than CONTENT_INDEX.md warns that entries may be stale.
-// Runs against a temp copy of clean-populated so fixture mtimes stay untouched.
-
-test('check-index mtime: file newer than CONTENT_INDEX → ⚠ warns, exits 0', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'canon-mtime-'))
-  try {
-    cpSync(join(FIXTURES, 'clean-populated'), dir, { recursive: true })
-    const past = new Date(Date.now() - 60_000)
-    utimesSync(join(dir, 'CONTENT_INDEX.md'), past, past)
-    const target = readdirSync(join(dir, 'findings')).find((f) => f.endsWith('.md') && f !== 'README.md')
-    const now = new Date()
-    utimesSync(join(dir, 'findings', target), now, now)
-
-    const res = spawnSync('bash', [join(SCRIPTS, 'check-index.sh')], { cwd: dir, encoding: 'utf8' })
-    assert.equal(res.status, 0, `mtime drift is advisory — must exit 0:\n${res.stdout}${res.stderr}`)
-    assert.match(res.stdout, /modified after/, 'expected the mtime-drift warning')
-    assert.match(res.stdout, new RegExp(`findings/${target}`))
-  } finally {
-    rmSync(dir, { recursive: true, force: true })
-  }
-})
+// (The check-index mtime-drift branch and its test retired with ADR-021 — the
+// project layer is generated from frontmatter by `canon index`; regenerate
+// beats warn.)

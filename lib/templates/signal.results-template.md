@@ -6,6 +6,9 @@ status: in-progress
 author: AI
 date: "YYYY-MM-DD"
 discovery_type: external
+description: ""
+key_facts: []
+questions: []
 ---
 
 # Phase N — Signal NN: [Slug]

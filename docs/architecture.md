@@ -49,7 +49,7 @@ The whole design problem reduces to: **keep the wiring bucket as small and as pu
 |------------|------------------------------|--------------------|-------|------------------------------|
 | `AGENTS.md` | framework base in `node_modules`; copy written at init | content from `lib/CLAUDE.base.md` written by `canon init` | **User** | restored by sync only if absent — never overwrites the user's copy |
 | `CLAUDE.md` | user's facts in the repo; framework base in `node_modules` | one `@import node_modules/@nicolas-botero-mejia/canon/CLAUDE.base.md` line | **User** | nothing — the imported file changes, the user's file doesn't |
-| `CONTENT_INDEX.md` | seeded at init from `lib/templates/init.content-index-template.md` — framework-layer entries pre-registered (ADR-016); user-dir entries added by the consumer | written once by `canon init` | **User** | nothing — consumer-owned after init |
+| `CONTENT_INDEX.md` | seeded at init from `lib/templates/init.content-index-template.md` — framework-layer entries pre-registered (ADR-016); project layer generated from file frontmatter by `canon index` between markers (ADR-021); hand-written entries outside the markers stay consumer-owned | written once by `canon init`; marked section rewritten by `canon index` | **User** | nothing — sync never touches it; `canon index` is consumer-run |
 | `.claude/settings.json` | hook logic in `node_modules` | hooks call `bin/hook.sh <event>` dispatcher | Wiring | optional re-sync if the dispatcher contract changes |
 | `.claude/skills`, `.claude/agents`, `.claude/rules` | the package | **thin-vendor** (see §5); `.claude/skills/` is the cross-tool path (read natively by Claude Code, Cursor v2.4+, and all Copilot hosts — no extra vendoring needed for these tools) | Framework (discovered) | overwrite — safe, no user content |
 | `.agents/skills` | symlink → `.claude/skills/` | written by `canon init`/`sync`; makes `.agents/skills/` available as the convergent path for Codex and Gemini CLI | Framework (wiring) | no-op if healthy; sync re-creates a broken symlink |
@@ -96,6 +96,7 @@ Why npm over the alternatives, given the "update the core later" requirement:
 | `npx @nicolas-botero-mejia/canon init` | Interactive. Iterates `bin/lib/tools-registry.mjs` to ask which AI-tool layers to enable (currently: Claude Code, Cursor). Scaffolds user content dirs; writes per-tool wiring (`CLAUDE.md` + `settings.json`, `hooks.json`); writes cross-tool paths unconditionally (`AGENTS.md` with base content, `.agents/skills/ → .claude/skills/` symlink); records `.framework-version`. Refuses to run anywhere inside the canon package repo itself (ADR-023). Adding a new AI tool = one entry in `tools-registry.mjs`, no code changes elsewhere. |
 | `npx @nicolas-botero-mejia/canon sync` | Re-applies the wiring from the currently-installed package version. Writes only the wiring bucket; never the user bucket. Run after `npm update`. |
 | `npx @nicolas-botero-mejia/canon doctor` | Validates wiring **integrity, not just existence** (issue #15): package installed, `@import` line present, `.framework-version` matches `node_modules`, hook dispatcher resolves — plus vendored content hash-compared against the installed package (hand-edit drift and orphaned files → ⚠ advisory; missing files → ✗), hooks blocks in `.claude/settings.json` / `.cursor/hooks.json` still dispatch every event to `bin/hook.sh`, `.agents/skills` resolves to `.claude/skills`, `AGENTS.md` present, user content dirs present (`tmp/` advisory — usually gitignored). ✗ blocks (exit 1); ⚠ never blocks. This is the user's "guarantee the link is always there." |
+| `npx @nicolas-botero-mejia/canon index` | Regenerates the CONTENT_INDEX **project layer** from per-file frontmatter (`description` / `key_facts` / `questions`; `noindex: true` opt-out) — ADR-021. Writes only between the `canon:project-layer` markers; the framework seed and hand-written entries outside the markers are never touched. `wiki/client/` + `wiki/user/` fall back to H1 titles (ADR-012 frontmatter ban). |
 | `npx @nicolas-botero-mejia/canon migrate` | *(Not yet implemented — removed per ADR-005. Corpus import is handled manually.)* |
 
 ---
@@ -175,6 +176,8 @@ This is the concrete map of governance layer 3 (`system-architecture.md §7.1` h
 │                            no-false-positive consumer                │
 │ md-rules.test.mjs          ADR-019 Node validation core, direct      │
 │                            (fence-aware markdownlint custom rules)   │
+│ index-gen.test.mjs         ADR-021 index generator: frontmatter      │
+│                            dialect, entry forms, markers, CLI e2e    │
 │ doctor-deep.test.mjs       runContentChecks() PASS/WARN/FAIL tiers   │
 │ doctor.test.mjs · sync.test.mjs · init.test.mjs — CLI command units  │
 │ skill-structure.test.mjs · skill-addendum-append.test.mjs            │
