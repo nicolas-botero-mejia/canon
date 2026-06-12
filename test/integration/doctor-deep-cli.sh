@@ -105,8 +105,10 @@ fi
 
 STAGED2=$(stage_consumer "$CLEAN_FIXTURE")
 CONC="$STAGED2/conclusions/phase-01-poc-01-conclusions.md"
-# Strip the alignment date, leave the field present (WARN, not FAIL)
-sed 's/\*\*Alignment verified:\*\* [0-9-]*/\*\*Alignment verified:\*\*/' "$CONC" > "${CONC}.tmp" \
+# Strip the alignment date from BOTH fields — body and frontmatter — leaving
+# them present but empty (WARN, not FAIL; body-only would be an A7 disagreement)
+sed -e 's/\*\*Alignment verified:\*\* [0-9-]*/\*\*Alignment verified:\*\*/' \
+    -e 's/alignment_verified: "[0-9-]*"/alignment_verified: ""/' "$CONC" > "${CONC}.tmp" \
   && mv "${CONC}.tmp" "$CONC"
 WARN_OUTPUT=$(cd "$STAGED2" && node "$CLI" doctor --deep 2>&1) || true
 WARN_EXIT=$(cd "$STAGED2" && node "$CLI" doctor --deep >/dev/null 2>&1; echo $?)

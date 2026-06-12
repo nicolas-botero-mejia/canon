@@ -174,6 +174,26 @@ function unquote(s) {
     : t
 }
 
+// ── A7: alignment_verified YAML ↔ body agreement ─────────────────────────────
+
+// Conclusions files carry the verification date twice: YAML `alignment_verified`
+// (read by MCP queries) and the body `**Alignment verified:**` field (read by
+// every script and skill). Nothing enforced agreement — MCP could report
+// verified while the body said otherwise. Rule: when the frontmatter KEY is
+// present, its value must equal the body field's value (both empty is fine;
+// files without frontmatter or without the key are out of scope — legacy).
+export function runAlignmentAgreementCheck(content) {
+  const fm = parseFrontmatter(content)
+  if (!fm || !('alignment_verified' in fm)) return null
+  const fmValue = typeof fm.alignment_verified === 'string' ? fm.alignment_verified.trim() : ''
+  // [^\S\n]* = horizontal whitespace only — \s* would eat the newline after an
+  // EMPTY field and capture the next line as the "value".
+  const bodyMatch = content.match(/^\*\*Alignment verified:\*\*[^\S\n]*(.*)$/m)
+  const bodyValue = bodyMatch ? bodyMatch[1].trim() : ''
+  if (fmValue === bodyValue) return null
+  return `alignment_verified disagreement: frontmatter "${fmValue}" ≠ body **Alignment verified:** "${bodyValue}" (MCP reads the frontmatter; scripts read the body)`
+}
+
 // Line-based fence toggle — used only for the cosmetic entry count (validation
 // above uses real parser tokens). Mirrors strip_code_blocks in check-stale-refs.sh.
 function countEntriesOutsideFences(content) {

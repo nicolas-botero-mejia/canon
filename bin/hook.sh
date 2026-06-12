@@ -43,6 +43,11 @@ case "$EVENT" in
       STATUS=$?
       if [[ $STATUS -ne 0 ]]; then
         failed=$(( failed + 1 ))
+        if [[ $STATUS -ge 3 ]]; then
+          # G4 exit contract: scripts reserve 0–2 for verdicts; ≥3 means the
+          # check itself broke — say so instead of reporting a phantom violation.
+          label="${chk} crashed (exit ${STATUS}) — check error, not a content verdict"
+        else
         case "$chk" in
           check-index)                 label="CONTENT_INDEX.md out of date (unregistered files)" ;;
           check-links)                 label="broken markdown links" ;;
@@ -52,6 +57,7 @@ case "$EVENT" in
           check-addendum-integrity)    label="addendum model violations (standalone files / unverified sections)" ;;
           *)                           label="$chk" ;;
         esac
+        fi
         names+="  • ${label}"$'\n'
       elif echo "$OUT" | grep -q '⚠'; then
         warned=$(( warned + 1 ))

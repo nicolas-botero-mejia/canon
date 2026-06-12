@@ -17,20 +17,28 @@ export const CONTENT_CHECKS = [
   ['check-addendum-integrity', 'addendum model integrity'],
 ]
 
-// Run each content check and classify it into one of three tiers:
-//   fail — script exited non-zero (broken links, contract violations, stale index)
-//   warn — exited 0 but emitted an advisory (⚠) line: a Complete conclusion missing
-//          its alignment DATE, or an mtime-stale index entry. Real signals that
-//          exit-code-only reporting silently dropped.
-//   pass — exited 0 with no advisory output
-// Returns one {script, label, tier, out} per check, in CONTENT_CHECKS order.
+// Run each content check and classify it into one of four tiers (G4 exit
+// contract — check scripts reserve exits 0–2 for verdicts):
+//   fail  — exit 1 or 2: a content violation verdict (broken links, contract
+//           violations, stale index)
+//   crash — exit ≥ 3 or spawn failure: the check itself broke (missing
+//           interpreter, runtime error) — NOT a content verdict; surfaced
+//           distinctly so a broken check can't masquerade as a violation
+//   warn  — exit 0 but emitted an advisory (⚠) line: a real signal that
+//           exit-code-only reporting silently dropped
+//   pass  — exit 0 with no advisory output
+// Returns one {script, label, tier, out, status} per check, in CONTENT_CHECKS order.
 export function runContentChecks(consumerRoot, pkgRoot) {
   return CONTENT_CHECKS.map(([script, label]) => {
     const scriptPath = join(pkgRoot, 'lib', 'scripts', `${script}.sh`)
     const res = spawnSync('bash', [scriptPath], { cwd: consumerRoot, encoding: 'utf8' })
     const out = `${res.stdout || ''}${res.stderr || ''}`.trimEnd()
-    const tier = res.status !== 0 ? 'fail' : out.includes('⚠') ? 'warn' : 'pass'
-    return { script, label, tier, out }
+    const status = res.status ?? -1 // null = spawn failure → crash
+    const tier =
+      status === 0 ? (out.includes('⚠') ? 'warn' : 'pass')
+      : status === 1 || status === 2 ? 'fail'
+      : 'crash'
+    return { script, label, tier, out, status }
   })
 }
 
@@ -241,12 +249,16 @@ export async function run(args = []) {
   let contentWarnings = 0
   if (deep) {
     console.log('\nContent (knowledge base):')
-    for (const { script, label, tier, out } of runContentChecks(consumerRoot, PACKAGE_ROOT)) {
+    for (const { script, label, tier, out, status } of runContentChecks(consumerRoot, PACKAGE_ROOT)) {
       if (tier === 'pass') {
         console.log(`  ✓ ${label}`)
       } else if (tier === 'warn') {
         contentWarnings++
         console.log(`  ⚠ ${label} (${script}):`)
+        for (const line of out.split('\n')) console.log(`      ${line}`)
+      } else if (tier === 'crash') {
+        contentIssues++
+        console.log(`  ✗ ${label} (${script}) CRASHED (exit ${status}) — check error, not a content verdict:`)
         for (const line of out.split('\n')) console.log(`      ${line}`)
       } else {
         contentIssues++
