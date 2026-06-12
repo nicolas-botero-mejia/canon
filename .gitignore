@@ -17,6 +17,9 @@ tmp/
 # runtime artifact (dogfood hooks)
 .claude/pending-updates.log
 
+# eval output (ADR-020 — results are run artifacts, scenarios are tracked)
+/test/evals/results/
+
 # Dogfood consumer wiring — this repo runs canon's own hooks/rules/skills from
 # untracked vendored copies; refresh with `canon sync`. `canon init` refuses to
 # run inside this repo (ADR-023), so init-only outputs (conclusions/, findings/,

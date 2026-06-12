@@ -195,7 +195,13 @@ This is the concrete map of governance layer 3 (`system-architecture.md §7.1` h
 ├─ hooks — npm run test:hooks ─────────────────────────────────────────┤
 │ hook-dispatcher        event routing, banner JSON validity,          │
 │   .test.sh             advisory contract (always exit 0), WARN tier  │
-│                        surfaced in the Stop banner                   │
+│                        surfaced in the Stop banner, crash tier (G4)  │
+├─ evals — npm run test:evals (manual/scheduled, NEVER push-CI) ───────┤
+│ test/evals/            promptfoo scenarios over the real vendored    │
+│                        skills via the Claude Agent SDK provider —    │
+│                        billed; deterministic skill-used assertions;  │
+│                        free mechanics check: test:evals:selftest     │
+│                        (ADR-020; invariants pin the CI boundary)     │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 

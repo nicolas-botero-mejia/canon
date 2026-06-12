@@ -1,0 +1,43 @@
+# Canon skill evals (ADR-020) — promptfoo scenarios over the REAL vendored
+# skills, exercised through a freshly staged consumer (run-evals.sh stages it
+# and exports CANON_EVAL_WORKDIR).
+#
+# NEVER wired into push-CI: these invoke Claude and bill the API key. Run
+# manually (`npm run test:evals`) or as a scheduled job. Every eval failure
+# becomes a pinned regression scenario in this file.
+description: canon skill behaviors — deterministic assertions first (ADR-020)
+
+providers:
+  - id: anthropic:claude-agent-sdk
+    label: canon-skills
+    config:
+      model: claude-sonnet-4-6
+      working_dir: '{{ env.CANON_EVAL_WORKDIR }}'
+      setting_sources: ['project']
+      append_allowed_tools: ['Read', 'Grep', 'Glob', 'Write', 'Edit']
+      max_turns: 15
+
+prompts:
+  - '{{request}}'
+
+tests:
+  # ── /signal: fires on an external discovery with no parent activity ─────────
+  - description: external discovery with no open activity → /signal invoked
+    vars:
+      request: >-
+        I just stumbled on an article about a new MCP server registry while
+        working on something unrelated. I don't want to lose it — capture this
+        discovery quickly so we can route it later.
+    assert:
+      - type: skill-used
+        value: signal
+
+  # ── control: ordinary status question must NOT fire /signal ────────────────
+  - description: plain status question → no signal capture
+    vars:
+      request: >-
+        Give me a one-paragraph summary of what the conclusions/ folder is for
+        in this project.
+    assert:
+      - type: not-skill-used
+        value: signal

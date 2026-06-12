@@ -1,0 +1,20 @@
+# Free harness self-test (no API key, no billing): proves the promptfoo
+# runner, assertion evaluation, and JSON output work on this machine before
+# anyone spends tokens. `npm run test:evals:selftest`.
+description: canon eval harness self-test (echo provider, free)
+
+providers:
+  - echo
+
+prompts:
+  - '{{message}}'
+
+tests:
+  - description: assertions evaluate against provider output
+    vars:
+      message: canon eval harness self-test OK
+    assert:
+      - type: contains
+        value: harness self-test OK
+      - type: not-contains
+        value: this string must not appear

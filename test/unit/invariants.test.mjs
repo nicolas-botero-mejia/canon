@@ -298,6 +298,28 @@ test('ADR-016: init.mjs seeds CONTENT_INDEX.md from the shipped template', () =>
   )
 })
 
+// ─── ADR-020: skill/agent evals — configs exist, and NEVER in push-CI ─────────
+// The eval harness invokes Claude and bills an API key; ADR-020's hard rule is
+// manual/scheduled runs only. These guards pin both the harness's existence
+// and the never-push-CI boundary mechanically.
+
+test('ADR-020: eval harness configs exist with the deterministic skill-used assertion', () => {
+  const config = read('test/evals/promptfooconfig.yaml')
+  assert.ok(config.includes('anthropic:claude-agent-sdk'), 'evals must use the Claude Agent SDK provider')
+  assert.ok(config.includes('skill-used'), 'deterministic skill-used assertion is the ADR-020 baseline')
+  assert.ok(existsSync(join(PKG, 'test/evals/harness-selftest.yaml')), 'free self-test config missing')
+  assert.ok(existsSync(join(PKG, 'test/evals/run-evals.sh')), 'eval runner missing')
+})
+
+test('ADR-020: evals are never wired into push-CI or the default test scripts', () => {
+  const ci = read('.github/workflows/ci.yml')
+  assert.ok(!ci.includes('promptfoo') && !ci.includes('test:evals'), 'ci.yml must never run the billed evals (ADR-020)')
+  const pkg = JSON.parse(read('package.json'))
+  for (const name of ['test', 'test:all', 'test:integration', 'test:hooks']) {
+    assert.ok(!pkg.scripts[name].includes('evals'), `scripts.${name} must not pull in the billed evals`)
+  }
+})
+
 // ─── PROJECT_ROOT runtime fix ─────────────────────────────────────────────────
 // session-start-report.sh and watch-project.sh use dirname "$0" which resolves
 // to the package root inside node_modules, not the consumer project root.

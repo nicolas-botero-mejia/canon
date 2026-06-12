@@ -19,7 +19,9 @@
     "test": "node --test test/unit/*.test.mjs",
     "test:integration": "bash test/integration/run.sh",
     "test:hooks": "bash test/hooks/run.sh",
-    "test:all": "npm test && npm run test:integration && npm run test:hooks"
+    "test:all": "npm test && npm run test:integration && npm run test:hooks",
+    "test:evals": "bash test/evals/run-evals.sh",
+    "test:evals:selftest": "npx --yes promptfoo@latest eval -c test/evals/harness-selftest.yaml --no-cache"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
