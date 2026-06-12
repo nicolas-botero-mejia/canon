@@ -13,7 +13,7 @@
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, cpSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, cpSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CONTENT_CHECKS, runContentChecks } from '../../bin/commands/doctor.mjs'
@@ -55,12 +55,35 @@ test('runContentChecks: clean-populated → every check passes', () => {
   }
 })
 
+// ─── G4: exit contract — 0–2 are verdicts; ≥3 (or spawn failure) is a crash ────
+// A broken check must not masquerade as a content violation.
+
+test('G4: exit ≥3 → crash tier; exit 2 → fail tier (violation verdict)', () => {
+  const pkgStub = mkdtempSync(join(tmpdir(), 'canon-g4-pkg-'))
+  mkdirSync(join(pkgStub, 'lib', 'scripts'), { recursive: true })
+  for (const [name] of CONTENT_CHECKS) {
+    writeFileSync(join(pkgStub, 'lib', 'scripts', `${name}.sh`), '#!/usr/bin/env bash\nexit 0\n')
+  }
+  writeFileSync(join(pkgStub, 'lib', 'scripts', 'check-links.sh'), '#!/usr/bin/env bash\necho "boom: missing dependency" >&2\nexit 7\n')
+  writeFileSync(join(pkgStub, 'lib', 'scripts', 'check-index.sh'), '#!/usr/bin/env bash\necho "violation verdict"\nexit 2\n')
+
+  const byS = Object.fromEntries(runContentChecks(stageConsumer(), pkgStub).map((r) => [r.script, r]))
+  assert.equal(byS['check-links'].tier, 'crash', 'exit 7 is a crash, not a verdict')
+  assert.equal(byS['check-links'].status, 7)
+  assert.equal(byS['check-index'].tier, 'fail', 'exit 2 is a violation verdict')
+  assert.equal(byS['check-contracts'].tier, 'pass')
+})
+
 // ─── warn tier (G2): the bug this whole fix exists for ─────────────────────────
 
 test('runContentChecks: Complete conclusion w/ empty alignment date → WARN, not swallowed', () => {
   const dir = stageConsumer(d => {
     const f = join(d, 'conclusions', 'phase-01-poc-01-conclusions.md')
-    writeFileSync(f, readFileSync(f, 'utf8').replace('**Alignment verified:** 2026-06-02', '**Alignment verified:**'))
+    // Empty BOTH fields — body and frontmatter — to model real "unverified"
+    // state; emptying only the body is now an A7 disagreement (FAIL, not WARN).
+    writeFileSync(f, readFileSync(f, 'utf8')
+      .replace('**Alignment verified:** 2026-06-02', '**Alignment verified:**')
+      .replace('alignment_verified: "2026-06-02"', 'alignment_verified: ""'))
   })
   const r = byScript(dir)
   assert.equal(r['check-conclusions-alignment'].tier, 'warn', r['check-conclusions-alignment'].out)

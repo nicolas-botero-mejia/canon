@@ -178,7 +178,10 @@ This is the concrete map of governance layer 3 (`system-architecture.md §7.1` h
 │                            (fence-aware markdownlint custom rules)   │
 │ index-gen.test.mjs         ADR-021 index generator: frontmatter      │
 │                            dialect, entry forms, markers, CLI e2e    │
-│ doctor-deep.test.mjs       runContentChecks() PASS/WARN/FAIL tiers   │
+│ mcp-reader.test.mjs        MCP read layer, fixture-driven (G13):     │
+│                            frontmatter, tracker + roadmap columns    │
+│ doctor-deep.test.mjs       runContentChecks() PASS/WARN/FAIL/CRASH   │
+│                            tiers (G4 exit contract)                  │
 │ doctor.test.mjs · sync.test.mjs · init.test.mjs — CLI command units  │
 │ skill-structure.test.mjs · skill-addendum-append.test.mjs            │
 │ knowledge-audit-addendum-dims.test.mjs                               │

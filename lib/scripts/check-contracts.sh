@@ -142,6 +142,29 @@ elif [ "$CONCLUSIONS_FAIL" -eq 0 ]; then
   pass "conclusions: ${CONCLUSIONS_COUNT} file(s) — all have required header fields"
 fi
 
+# ── conclusions: YAML alignment_verified ↔ body agreement (A7) ───────────────
+# MCP reads the frontmatter field; scripts and skills read the body field.
+# When a file carries the frontmatter key, the two must agree — answered by the
+# Node core (validate-md alignment-agreement). Files without the key are exempt.
+if [ "$CONCLUSIONS_COUNT" -gt 0 ]; then
+  if command -v node >/dev/null 2>&1; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    AGREE_OUT=$(node "${SCRIPT_DIR}/../../bin/validate-md.mjs" alignment-agreement "${CONSUMER_ROOT}/conclusions/"*.md 2>&1) \
+      && AGREE_STATUS=0 || AGREE_STATUS=$?
+    if [ "$AGREE_STATUS" -eq 0 ]; then
+      pass "conclusions: alignment_verified frontmatter agrees with the body field"
+    elif [ "$AGREE_STATUS" -eq 1 ]; then
+      while IFS= read -r issue; do
+        [ -n "$issue" ] && fail "$issue"
+      done <<< "$AGREE_OUT"
+    else
+      warn "alignment-agreement check failed (exit ${AGREE_STATUS}) — skipping"
+    fi
+  else
+    warn "node not found — skipping alignment-agreement check"
+  fi
+fi
+
 # ── wiki/client + wiki/user: no YAML frontmatter (ADR-012) ───────────────────
 # MCP serves these layers as whole documents; frontmatter breaks the read model.
 FM_COUNT=0

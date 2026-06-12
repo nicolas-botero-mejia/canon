@@ -185,6 +185,16 @@ test('bad/content-index-demoted-heading → check-contracts FAILs (#### heading 
 
 // ADR-019 stage 1: validation moved to the Node core (fence-aware). A documentation
 // example inside a code block is not an entry — the awk predecessor false-positived here.
+// ─── A7: alignment_verified YAML ↔ body agreement — MCP reads the frontmatter,
+// scripts read the body; when the frontmatter key is present the two must agree.
+// Clean direction: clean-populated's conclusions carry an AGREEING pair. ───────
+test('bad/conclusions-alignment-mismatch → check-contracts FAILs (A7 disagreement)', () => {
+  const { status, out } = runScript('check-contracts', 'bad/conclusions-alignment-mismatch')
+  assert.equal(status, 1, out)
+  assert.match(out, /alignment_verified disagreement/)
+  assert.match(out, /frontmatter "2026-01-01"/)
+})
+
 // ─── #32: the header window is frontmatter-aware — required **Author:**/**Date:**
 // fields sit AFTER the (now ~11-line) frontmatter block; a raw head -10 never
 // reached them, so every template-derived findings/conclusions file failed. ────

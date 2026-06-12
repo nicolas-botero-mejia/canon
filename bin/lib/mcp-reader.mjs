@@ -1,29 +1,14 @@
 import { readFileSync, readdirSync, existsSync } from 'fs'
 import { join } from 'path'
+import { parseFrontmatter } from './md-rules.mjs'
 
-// Parse YAML frontmatter from a file. Returns {} if none found.
+// Parse frontmatter from a file. Returns {} if none found. Delegates to the
+// canon-dialect parser in md-rules (G13 consolidation) — the old local
+// mini-YAML diverged from it: it mis-keyed comment lines and dropped lists,
+// so MCP could read frontmatter differently than the validation core.
 export function readFrontmatter(filePath) {
   if (!existsSync(filePath)) return {}
-  const content = readFileSync(filePath, 'utf8')
-  if (!content.startsWith('---')) return {}
-  const end = content.indexOf('\n---', 3)
-  if (end === -1) return {}
-  const yaml = content.slice(4, end).trim()
-  return parseYaml(yaml)
-}
-
-// Minimal YAML parser for flat key: value pairs (no nesting, no complex types).
-function parseYaml(yaml) {
-  const result = {}
-  for (const line of yaml.split('\n')) {
-    const colon = line.indexOf(':')
-    if (colon === -1) continue
-    const key = line.slice(0, colon).trim()
-    const val = line.slice(colon + 1).trim().replace(/^["']|["']$/g, '')
-    if (key && val) result[key] = val
-    else if (key) result[key] = ''
-  }
-  return result
+  return parseFrontmatter(readFileSync(filePath, 'utf8')) ?? {}
 }
 
 // Return all files in dir matching filters (key-value pairs against frontmatter).
@@ -87,10 +72,11 @@ export function readPocRoadmap(roadmapPath) {
   const rows = []
 
   for (const line of lines) {
-    if (line.startsWith('| POC') || line.startsWith('| ---')) {
-      headerParsed = !line.startsWith('| ---')
-      continue
-    }
+    // Header is `| POC # | Name | …` — the '#' distinguishes it from data rows
+    // like `| POC 01 | …`, which the old prefix match swallowed as headers
+    // (and the unspaced separator row parsed as data). Caught by G13's tests.
+    if (line.startsWith('| POC #')) { headerParsed = true; continue }
+    if (/^\|\s*-/.test(line)) continue
     if (!headerParsed || !line.startsWith('|')) continue
     const cols = line.split('|').slice(1, -1).map(c => c.trim())
     if (cols.length >= 4) {

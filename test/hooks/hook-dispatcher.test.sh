@@ -80,6 +80,31 @@ else
 fi
 rm -rf "$STAGED"
 
+# ── Stop banner: crash vs violation (G4 exit contract) ───────────────────────
+# Scripts reserve exits 0–2 for verdicts; ≥3 means the check itself broke.
+# Stage a copy of the dispatcher with one stub script crashing (exit 7) and
+# verify the banner says "crashed", not the script's violation label.
+PKGSTUB=$(mktemp -d)
+mkdir -p "$PKGSTUB/bin" "$PKGSTUB/lib/scripts"
+cp "$HOOK" "$PKGSTUB/bin/hook.sh"
+for chk in check-index check-links check-stale-refs check-conclusions-alignment check-contracts check-addendum-integrity; do
+  printf '#!/usr/bin/env bash\nexit 0\n' > "$PKGSTUB/lib/scripts/${chk}.sh"
+done
+printf '#!/usr/bin/env bash\necho "boom: dependency missing" >&2\nexit 7\n' > "$PKGSTUB/lib/scripts/check-links.sh"
+STAGED_G4=$(mktemp -d)
+BANNER_G4=$(cd "$STAGED_G4" && bash "$PKGSTUB/bin/hook.sh" Stop 2>/dev/null)
+if echo "$BANNER_G4" | grep -q "crashed (exit 7)"; then
+  pass "Stop → exit ≥3 surfaces as a crash, not a verdict (G4)"
+else
+  fail "Stop → crash not surfaced distinctly: $BANNER_G4"
+fi
+if echo "$BANNER_G4" | grep -q "broken markdown links"; then
+  fail "Stop → crash mislabeled with the check's violation label"
+else
+  pass "Stop → crash not mislabeled as a content violation"
+fi
+rm -rf "$PKGSTUB" "$STAGED_G4"
+
 # Advisory contract: the hook always exits 0, even with check failures
 STAGED2=$(mktemp -d)
 mkdir -p "$STAGED2/findings"

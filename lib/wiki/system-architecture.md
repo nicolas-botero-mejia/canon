@@ -204,6 +204,8 @@ Scripts are organized in two locations:
 
 All scripts are executable (`chmod +x`).
 
+**Exit contract (G4):** check scripts reserve exit codes 0–2 for verdicts — 0 = pass (⚠ lines on stdout are the advisory tier), 1–2 = content violation. Anything ≥ 3 (or a failed spawn) means the *check itself broke* and is surfaced distinctly as a crash by both `doctor --deep` and the Stop banner — a broken check never masquerades as a content violation.
+
 ### Governance Scripts (`scripts/`)
 
 ### `scripts/check-index.sh`
@@ -259,6 +261,7 @@ Validates structural contracts on four file types — required for MCP query rel
 - `plans/phase-NN-poc-roadmap.md`: status values are from the allowed set — core emojis (🔜 ⏳ 🔄 ✅ ⏭️) plus terminal text statuses (`Deprecated`, `~~In Progress~~ Deprecated`, `Migrated → Phase NN`)
 - `findings/*.md`: `**Author:**` and `**Date:**` present in the first 10 body lines (frontmatter-aware window)
 - `conclusions/*.md`: `**Author:**`, `**Date:**`/`**Synthesis date:**`, and `**Alignment verified:**` present in the first 10 body lines (frontmatter-aware window)
+- `conclusions/*.md`: when frontmatter carries `alignment_verified`, it must agree with the body `**Alignment verified:**` value (A7 — MCP reads the frontmatter, scripts read the body; Node core check)
 - `wiki/client/` + `wiki/user/` `.md` files: no YAML frontmatter (ADR-012 — these layers are read whole by MCP)
 
 **Dependencies:** `grep`, `find`, `head` — standard POSIX.

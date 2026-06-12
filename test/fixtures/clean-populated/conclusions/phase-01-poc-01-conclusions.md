@@ -1,3 +1,13 @@
+---
+type: poc-conclusions
+phase: "01"
+topic: "foo"
+status: complete
+alignment_verified: "2026-06-02"
+description: ""
+key_facts: []
+questions: []
+---
 # POC 01 — Conclusions
 
 **Author:** Test Harness
