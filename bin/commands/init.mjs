@@ -26,7 +26,8 @@ function findPackageRepoRoot(startDir) {
     dir = parent
   }
 }
-const USER_DIRS = [
+// Exported: doctor's user-dir presence check (issue #15) validates this same list.
+export const USER_DIRS = [
   'plans', 'findings', 'conclusions', 'raw', 'tmp', 'deliverables',
   'wiki/project', 'wiki/standards', 'wiki/client', 'wiki/user',
   'scripts/project',

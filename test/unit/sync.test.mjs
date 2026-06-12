@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, existsSync, readFileSync, writeFileSync, mkdirSync, cpSync } from 'node:fs'
+import { mkdtempSync, existsSync, readFileSync, writeFileSync, mkdirSync, cpSync, unlinkSync, symlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { execFileSync, spawnSync } from 'node:child_process'
@@ -212,4 +212,29 @@ test('sync: preserves mcpServers.canon across a sync (MCP wipe regression)', () 
 
   const after = JSON.parse(readFileSync(settingsPath, 'utf8'))
   assert.ok(after.mcpServers?.canon, 'mcpServers.canon must survive a sync')
+})
+
+// ─── issue #15 adjacency: sync maintains the cross-tool wiring it owns ────────
+// manifest.json lists AGENTS.md and .agents/skills under "wiring" — doctor's
+// "run `canon sync`" remediation must be true for both.
+test('sync: re-creates a broken .agents/skills symlink (self-heal)', () => {
+  const dir = makeTmp()
+  initConsumer(dir)
+  unlinkSync(join(dir, '.agents', 'skills'))
+  symlinkSync('../no-such-dir', join(dir, '.agents', 'skills'))
+  runCmd(dir, ['sync'])
+  assert.ok(existsSync(join(dir, '.agents', 'skills')), 'symlink must resolve after sync')
+})
+
+test('sync: writes AGENTS.md when absent, never overwrites an edited one', () => {
+  const dir = makeTmp()
+  initConsumer(dir)
+  unlinkSync(join(dir, 'AGENTS.md'))
+  runCmd(dir, ['sync'])
+  assert.ok(existsSync(join(dir, 'AGENTS.md')), 'sync must restore a missing AGENTS.md')
+
+  const sentinel = 'USER EDIT DO NOT OVERWRITE\n'
+  writeFileSync(join(dir, 'AGENTS.md'), sentinel)
+  runCmd(dir, ['sync'])
+  assert.equal(readFileSync(join(dir, 'AGENTS.md'), 'utf8'), sentinel, 'sync must not touch an existing AGENTS.md')
 })

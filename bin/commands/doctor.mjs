@@ -1,7 +1,9 @@
-import { existsSync, readFileSync } from 'fs'
+import { existsSync, readFileSync, lstatSync, realpathSync } from 'fs'
 import { join } from 'path'
 import { spawnSync } from 'child_process'
 import { packageRoot, readManifest } from '../lib/paths.mjs'
+import { collectHashes } from '../lib/sync-ops.mjs'
+import { USER_DIRS } from './init.mjs'
 
 // The knowledge-base content checks run by `canon doctor --deep`, in order. Exported
 // so tests and a roster-completeness scanner can see the canonical set — bin/hook.sh's
@@ -38,6 +40,11 @@ export async function run(args = []) {
   const PACKAGE_ROOT = packageRoot()
   const errors = []
   const ok = []
+  // Wiring warnings (issue #15): advisory ⚠ band for findings doctor must surface
+  // but not block on — vendored drift may be a deliberate hand-edit that `canon
+  // sync` itself preserves, and orphans are inert. Mirrors the content tier model.
+  const warnings = []
+  const sample = (arr) => arr.slice(0, 5).join(', ') + (arr.length > 5 ? `, +${arr.length - 5} more` : '')
 
   // 1. Package installed
   if (existsSync(PACKAGE_ROOT)) {
@@ -76,14 +83,122 @@ export async function run(args = []) {
     }
   }
 
-  // 4. Vendored dirs present
+  // 4. Vendored dirs present — and their content intact (issue #15: existence
+  // checks can't see drift). Hash-compare every vendored file against the
+  // installed package: missing files are ✗ (plain `canon sync` restores them,
+  // nothing to lose); files that differ are ⚠ drift (sync deliberately skips
+  // hand-edits); consumer files the package no longer ships are ⚠ orphans
+  // (thin-vendor overwrite does not prune).
   const manifest = existsSync(PACKAGE_ROOT) ? readManifest(PACKAGE_ROOT) : { vendored: [] }
   for (const dir of manifest.vendored) {
+    const src = join(PACKAGE_ROOT, 'lib', dir)
     const target = join(consumerRoot, dir)
-    if (existsSync(target)) {
-      ok.push(`vendored: ${dir}`)
-    } else {
+    if (!existsSync(target)) {
       errors.push(`vendored dir missing: ${dir} — run \`canon sync\``)
+      continue
+    }
+    ok.push(`vendored: ${dir}`)
+    if (!existsSync(src)) continue
+    const pkgHashes = collectHashes(src)
+    const consHashes = collectHashes(target)
+    const missing = Object.keys(pkgHashes).filter((f) => consHashes[f] === undefined)
+    const drifted = Object.keys(pkgHashes).filter((f) => consHashes[f] !== undefined && consHashes[f] !== pkgHashes[f])
+    const orphans = Object.keys(consHashes).filter((f) => pkgHashes[f] === undefined)
+    if (missing.length > 0) {
+      errors.push(`vendored incomplete: ${dir} missing ${missing.length} file(s) (${sample(missing)}) — run \`canon sync\``)
+    }
+    if (drifted.length > 0) {
+      warnings.push(`vendored drift: ${dir} — ${drifted.length} file(s) differ from package (${sample(drifted)}) — \`canon sync\` preserves hand-edits; \`canon sync --force\` overwrites`)
+    }
+    if (orphans.length > 0) {
+      warnings.push(`orphaned in ${dir} (not shipped by package): ${sample(orphans)} — safe to delete`)
+    }
+  }
+
+  // 4b. Cross-tool wiring files (issue #15): AGENTS.md is written by init/sync,
+  // and .agents/skills must be a symlink that actually resolves to .claude/skills
+  // (a broken symlink silently drops skills for Codex/Gemini).
+  if (existsSync(join(consumerRoot, 'AGENTS.md'))) {
+    ok.push('AGENTS.md present')
+  } else {
+    errors.push('AGENTS.md missing — run `canon sync`')
+  }
+
+  const agentsSkills = join(consumerRoot, '.agents', 'skills')
+  let agentsEntry = null
+  try { agentsEntry = lstatSync(agentsSkills) } catch { /* absent */ }
+  if (!agentsEntry) {
+    errors.push('.agents/skills missing — run `canon sync`')
+  } else if (!existsSync(agentsSkills)) {
+    errors.push('.agents/skills is a broken symlink — run `canon sync`')
+  } else {
+    let pointsRight = false
+    try {
+      pointsRight = realpathSync(agentsSkills) === realpathSync(join(consumerRoot, '.claude', 'skills'))
+    } catch { /* .claude/skills itself missing — already flagged above */ }
+    if (pointsRight) {
+      ok.push('.agents/skills → .claude/skills')
+    } else {
+      errors.push('.agents/skills does not resolve to .claude/skills')
+    }
+  }
+
+  // 4c. User content dirs (issue #15): a deleted conclusions/ breaks file routing
+  // silently. tmp/ is advisory only — consumers gitignore it, so a fresh clone
+  // legitimately lacks it.
+  const missingUserDirs = USER_DIRS.filter((d) => d !== 'tmp' && !existsSync(join(consumerRoot, d)))
+  if (missingUserDirs.length === 0) {
+    ok.push('user content dirs present')
+  } else {
+    for (const d of missingUserDirs) {
+      errors.push(`user dir missing: ${d}/ — recreate it (mkdir -p ${d})`)
+    }
+  }
+  if (!existsSync(join(consumerRoot, 'tmp'))) {
+    warnings.push('tmp/ missing (scratch dir, usually gitignored) — mkdir tmp')
+  }
+
+  // 4d. Hooks block integrity (issue #15): a permissions edit to settings.json can
+  // clobber the dispatcher wiring silently. Assert each event still routes to
+  // bin/hook.sh — per tool layer, only when that layer's wiring file exists.
+  const settingsPath = join(consumerRoot, '.claude', 'settings.json')
+  if (existsSync(settingsPath)) {
+    try {
+      const settings = JSON.parse(readFileSync(settingsPath, 'utf8'))
+      const clobbered = ['SessionStart', 'PostToolUse', 'Stop'].filter((event) => {
+        const entries = settings.hooks?.[event] ?? []
+        return !entries.some((e) => (e.hooks ?? []).some((h) => typeof h.command === 'string' && h.command.includes(`hook.sh ${event}`)))
+      })
+      if (clobbered.length === 0) {
+        ok.push('.claude/settings.json hooks dispatch to bin/hook.sh')
+      } else {
+        for (const event of clobbered) {
+          errors.push(`.claude/settings.json: ${event} hook no longer dispatches to bin/hook.sh — run \`canon sync\``)
+        }
+      }
+    } catch {
+      errors.push('.claude/settings.json is not valid JSON')
+    }
+  }
+
+  const cursorHooksPath = join(consumerRoot, '.cursor', 'hooks.json')
+  if (existsSync(cursorHooksPath)) {
+    try {
+      const cursorHooks = JSON.parse(readFileSync(cursorHooksPath, 'utf8'))
+      const cursorEvents = { sessionStart: 'SessionStart', postToolUse: 'PostToolUse', stop: 'Stop' }
+      const clobbered = Object.entries(cursorEvents).filter(([key, event]) => {
+        const entries = cursorHooks.hooks?.[key] ?? []
+        return !entries.some((h) => typeof h.command === 'string' && h.command.includes(`hook.sh ${event}`))
+      })
+      if (clobbered.length === 0) {
+        ok.push('.cursor/hooks.json dispatches to bin/hook.sh')
+      } else {
+        for (const [, event] of clobbered) {
+          errors.push(`.cursor/hooks.json: ${event} hook no longer dispatches to bin/hook.sh — run \`canon sync\``)
+        }
+      }
+    } catch {
+      errors.push('.cursor/hooks.json is not valid JSON')
     }
   }
 
@@ -111,9 +226,10 @@ export async function run(args = []) {
     } catch { /* ignore */ }
   }
 
-  // Report wiring/install health
+  // Report wiring/install health — ✓, then ⚠ (advisory), then ✗ (blocking)
   console.log('Framework wiring:')
   for (const msg of ok) console.log(`  ✓ ${msg}`)
+  for (const msg of warnings) console.log(`  ⚠ ${msg}`)
   for (const msg of errors) console.log(`  ✗ ${msg}`)
 
   // Deep mode: also run the knowledge-base CONTENT checks. The default `canon doctor`
@@ -144,11 +260,14 @@ export async function run(args = []) {
   // with exit 1; WARN tiers are advisory — surfaced, but never block (matching the
   // Stop hook's advisory contract).
   const failed = errors.length > 0 || contentIssues > 0
-  if (failed || contentWarnings > 0) {
+  if (failed || contentWarnings > 0 || warnings.length > 0) {
     console.log('')
   }
   if (errors.length > 0) {
     console.log(`✗ ${errors.length} framework wiring issue(s) → run \`canon sync\``)
+  }
+  if (warnings.length > 0) {
+    console.log(`⚠ ${warnings.length} wiring warning(s) (advisory — drift/orphans/scratch)`)
   }
   if (contentIssues > 0) {
     console.log(`✗ ${contentIssues} content issue(s) → run \`/knowledge-audit\` to triage & propose fixes`)
