@@ -124,6 +124,56 @@ export function runIndexRegistrationCheck(content, relpaths) {
   }
 }
 
+// ── ADR-021: canon frontmatter dialect ───────────────────────────────────────
+
+// Parse canon's frontmatter dialect — a deliberate subset of YAML: flat string
+// scalars (optionally quoted), block-form string lists, booleans, full-line
+// comments. Template frontmatter is canon-authored and flat; a YAML dependency
+// would be parsing power no canon file needs. Returns null when the document
+// has no leading frontmatter block.
+export function parseFrontmatter(content) {
+  const lines = content.split('\n')
+  if (lines[0]?.trim() !== '---') return null
+  const end = lines.slice(1).findIndex((l) => l.trim() === '---')
+  if (end === -1) return null
+
+  const fields = {}
+  let listKey = null
+  for (const raw of lines.slice(1, end + 1)) {
+    if (/^\s*#/.test(raw) || raw.trim() === '') continue
+    const listItem = raw.match(/^\s+-\s+(.*)$/)
+    if (listItem && listKey) {
+      fields[listKey].push(unquote(listItem[1]))
+      continue
+    }
+    const kv = raw.match(/^([A-Za-z_][\w-]*):\s*(.*)$/)
+    if (!kv) { listKey = null; continue }
+    const [, key, rawValue] = kv
+    const value = rawValue.trim()
+    if (value === '' ) {
+      fields[key] = []
+      listKey = key // `key:` followed by `- item` lines is a list; stays [] otherwise
+    } else if (value === '[]') {
+      fields[key] = []
+      listKey = null
+    } else if (value === 'true' || value === 'false') {
+      fields[key] = value === 'true'
+      listKey = null
+    } else {
+      fields[key] = unquote(value)
+      listKey = null
+    }
+  }
+  return fields
+}
+
+function unquote(s) {
+  const t = s.trim()
+  return (t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))
+    ? t.slice(1, -1)
+    : t
+}
+
 // Line-based fence toggle — used only for the cosmetic entry count (validation
 // above uses real parser tokens). Mirrors strip_code_blocks in check-stale-refs.sh.
 function countEntriesOutsideFences(content) {

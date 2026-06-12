@@ -5,6 +5,9 @@ topic: "[short-name]"
 status: in-progress
 author: AI
 date: "YYYY-MM-DD"
+description: ""
+key_facts: []
+questions: []
 ---
 
 # Phase N — POC XX: [Title] — Session Notes

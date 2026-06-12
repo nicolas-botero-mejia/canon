@@ -4,6 +4,9 @@ phase: "[NN]"
 topic: "[slug]"
 status: in-progress
 alignment_verified: ""
+description: ""
+key_facts: []
+questions: []
 ---
 
 # Phase N — Session NN: [Topic] — Conclusions

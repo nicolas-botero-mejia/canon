@@ -1,6 +1,6 @@
 # System Template Standards
 
-**Last updated:** 2026-06-06
+**Last updated:** 2026-06-12
 **Scope:** Template philosophy, naming conventions, the two template categories, and how to add new templates. Companion to `template-index.md` (which maps every existing template to its destination and usage).
 
 ---
@@ -157,6 +157,19 @@ pending_confirmation:
 ---
 ```
 
+### Index projection fields (ADR-021)
+
+Every monitored-dir template additionally carries the CONTENT_INDEX projection fields, read by `canon index` to generate the project layer:
+
+```yaml
+description: ""        # one line — becomes the entry (lightweight form) or **What it is:** (full form)
+key_facts: []          # string list — full four-part entry requires all three fields
+questions: []          # string list — **Questions it answers:**
+noindex: true          # optional opt-out — file is never projected into the index
+```
+
+Empty `description` = not indexed (check-index flags the file at session close — fill the field and re-run `canon index`, or hand-write an entry outside the index's generated markers). A full four-part entry requires **all three** fields non-empty; `description` alone renders the lightweight one-liner form (the two-form contract — partial combinations render lightweight with a generator warning). `wiki/client/` + `wiki/user/` files never carry frontmatter (ADR-012) — `canon index` falls back to their H1 title.
+
 ### Key constraints
 
 - All date fields are strings (`"2026-06-06"`) not YAML date type — avoids timezone issues
@@ -164,6 +177,7 @@ pending_confirmation:
 - Fields use `snake_case`
 - Only `type` is required — other fields are strongly recommended
 - MCP tools (`query_findings`, `query_conclusions`, etc.) read these fields for filtering
+- Frontmatter is a flat canon dialect (string scalars, block string lists, booleans) — no nesting beyond the `pending_confirmation` wiki marker; `canon index` parses exactly this subset
 
 ---
 

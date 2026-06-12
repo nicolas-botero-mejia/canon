@@ -1,6 +1,6 @@
 # System Decisions
 
-**Last updated:** 2026-06-11
+**Last updated:** 2026-06-12
 
 Architectural and methodology decisions for the Canon framework.
 Newest first. One entry per decision.
@@ -37,7 +37,7 @@ Worked examples: ADR-016 (Consequences as disposal manifest), ADR-018 (guard tra
 |----|-------|-------|--------|-------|
 | ADR-023 | init refuses to run inside the package repo; gitignore keeps only dogfood wiring | package-internal | Accepted | `ADR-023` init-guard tests (refusal + walk-up + no side effects + consumer pass) |
 | ADR-022 | One scope-tagged ledger, shipped whole; audience boundary explicit | methodology | Accepted | `ADR-017` meta-guard Scope-enum check (tagging born-enforced) |
-| ADR-021 | CONTENT_INDEX project layer projected from frontmatter (target) | methodology | Accepted | none — directional; the generator PR lands the guard (builds on ADR-019's core) |
+| ADR-021 | CONTENT_INDEX project layer projected from frontmatter | methodology | Accepted | `ADR-021` generator tests in `index-gen` suite (forms, markers, ADR-012 fallback, e2e contract) |
 | ADR-020 | Skill and agent evals: promptfoo scenarios via npx, not push-CI | package-internal | Accepted | none — directional; the first eval-suite PR lands configs + runner |
 | ADR-019 | Markdown validation moves to a Node core; bash stays dispatch | package-internal | Accepted | `md-rules` core; regressions per stage: `content-index-fenced-example`, `index-sameline-prose`, `links-target-forms` |
 | ADR-018 | Cursor hooks delegate to the package dispatcher | tool:cursor | Accepted | `writeCursorHooks` dispatcher invariant (gravestone for the wrapper model) |

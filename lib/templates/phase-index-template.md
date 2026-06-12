@@ -2,6 +2,9 @@
 type: phase-index
 phase: "{{PHASE_NUMBER}}"
 status: active
+description: ""
+key_facts: []
+questions: []
 ---
 
 # Phase {{PHASE_NUMBER}} — Index
