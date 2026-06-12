@@ -51,3 +51,5 @@ When you change X, update Y — the enumerable parts are CI-enforced (R-014 doc-
 | new template | `lib/templates/template-index.md` row |
 | new cross-cutting value | `system-invariants.md` row + guard ("Adding a new invariant" checklist there) |
 | retired value or claim | scanners denylist gravestone |
+
+**Found-not-fixed = filed.** Any bug, gap, or follow-up discovered outside the current PR's scope is registered as a GitHub issue **before the work concludes**, and the discovering PR links it. Fixed inline = no issue needed; deferred silently = not allowed. (This is the package-repo form of the consumer-side discovery backlog — behavioral Rule 11.)
