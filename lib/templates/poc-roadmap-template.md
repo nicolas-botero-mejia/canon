@@ -1,3 +1,10 @@
+---
+type: poc-roadmap
+phase: "[NN]"
+description: ""
+key_facts: []
+questions: []
+---
 <!-- poc-roadmap-template.md
      Destination: plans/phase-NN-poc-roadmap.md
      Created by: /phase-new or manually at phase start

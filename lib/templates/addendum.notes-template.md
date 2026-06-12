@@ -1,6 +1,19 @@
+---
+type: addendum-notes
+phase: "[NN]"
+topic: "[slug]"
+status: in-progress
+author: Mixed
+date: "YYYY-MM-DD"
+description: ""
+key_facts: []
+questions: []
+---
 # Addendum NN — [Topic]: Notes
 
 **Phase:** Phase NN
+**Author:** Mixed
+**Date:** YYYY-MM-DD
 **Parent:** `conclusions/[parent-conclusions].md`
 **Plan:** `plans/phase-NN-addendum-NN-[topic]-plan.md`
 **Status:** In progress

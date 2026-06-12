@@ -185,6 +185,16 @@ test('bad/content-index-demoted-heading → check-contracts FAILs (#### heading 
 
 // ADR-019 stage 1: validation moved to the Node core (fence-aware). A documentation
 // example inside a code block is not an entry — the awk predecessor false-positived here.
+// ─── #32: the header window is frontmatter-aware — required **Author:**/**Date:**
+// fields sit AFTER the (now ~11-line) frontmatter block; a raw head -10 never
+// reached them, so every template-derived findings/conclusions file failed. ────
+test('bad/findings-header-after-frontmatter → check-contracts PASSes (window skips frontmatter)', () => {
+  const { status, out } = runScript('check-contracts', 'bad/findings-header-after-frontmatter')
+  assert.equal(status, 0, `headers after frontmatter must satisfy the window:\n${out}`)
+  assert.match(out, /findings: 1 file\(s\) — all have/)
+  assert.match(out, /conclusions: 1 file\(s\) — all have/)
+})
+
 test('bad/content-index-fenced-example → check-contracts PASSes (fenced ### is not an entry)', () => {
   const { status, out } = runScript('check-contracts', 'bad/content-index-fenced-example')
   assert.equal(status, 0, out)

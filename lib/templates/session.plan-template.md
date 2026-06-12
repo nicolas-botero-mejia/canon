@@ -1,3 +1,12 @@
+---
+type: session-plan
+phase: "[NN]"
+topic: "[topic]"
+status: draft
+description: ""
+key_facts: []
+questions: []
+---
 # Phase NN — Session NN: [Topic Slug]
 
 <!--

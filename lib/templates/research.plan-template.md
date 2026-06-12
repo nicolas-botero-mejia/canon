@@ -1,3 +1,12 @@
+---
+type: research-plan
+phase: "[NN]"
+topic: "[topic]"
+status: draft
+description: ""
+key_facts: []
+questions: []
+---
 # Phase N — Research: [Topic] — Plan
 
 <!--

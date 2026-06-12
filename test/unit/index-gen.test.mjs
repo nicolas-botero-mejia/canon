@@ -165,3 +165,49 @@ test('ADR-021: PROJECT_DIRS is the check-index DIRS list (single registration sc
   const shDirs = [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1])
   assert.deepEqual([...PROJECT_DIRS].sort(), [...shDirs].sort())
 })
+
+// ─── #32: every monitored-dir template projects into the index ────────────────
+// Binding: parse template-index.md's destination column; every template whose
+// output lands in a monitored dir must carry parseable frontmatter with the
+// projection fields — and a file created from it (description filled) must
+// produce a registered entry. Catches future templates added without the fields.
+
+function monitoredTemplates() {
+  const indexMd = readFileSync(join(PKG_ROOT, 'lib', 'templates', 'template-index.md'), 'utf8')
+  const rows = [...indexMd.matchAll(/^\| `([^`]+\.md)` \| ([^|]+) \|/gm)]
+  return rows
+    .map(([, name, dest]) => ({ name, dest: dest.trim() }))
+    .filter(({ dest }) => !dest.includes('§')) // section template — appended, never standalone
+    .filter(({ dest }) => PROJECT_DIRS.some((d) => dest.startsWith(`\`${d}/`) || dest.startsWith(d + '/')))
+}
+
+test('#32: every monitored-dir template carries the projection frontmatter', () => {
+  const templates = monitoredTemplates()
+  assert.ok(templates.length >= 20, `template-index parse looks broken: found ${templates.length}`)
+  for (const { name } of templates) {
+    const fm = parseFrontmatter(readFileSync(join(PKG_ROOT, 'lib', 'templates', name), 'utf8'))
+    assert.ok(fm, `${name}: no parseable frontmatter block`)
+    for (const field of ['description', 'key_facts', 'questions']) {
+      assert.ok(field in fm, `${name}: missing projection field ${field}`)
+    }
+    assert.ok('type' in fm, `${name}: missing type field`)
+  }
+})
+
+test('#32: a file created from each monitored template projects into the index', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'canon-tpl-proj-'))
+  const staged = []
+  monitoredTemplates().forEach(({ name, dest }, i) => {
+    const destDir = dest.replace(/`/g, '').split('/')[0]
+    const content = readFileSync(join(PKG_ROOT, 'lib', 'templates', name), 'utf8')
+      .replace('description: ""', `description: From template ${name}.`)
+    mkdirSync(join(dir, destDir), { recursive: true })
+    const relPath = `${destDir}/template-probe-${i}.md`
+    writeFileSync(join(dir, relPath), content)
+    staged.push(relPath)
+  })
+  const { section } = renderProjectLayer(dir)
+  for (const relPath of staged) {
+    assert.ok(section.includes(`(./${relPath})`), `${relPath} did not project into the index`)
+  }
+})

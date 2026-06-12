@@ -107,14 +107,14 @@ Script templates follow `[output-name]-template.md`:
 
 ### When frontmatter is used
 
-Frontmatter is added to template-generated files where cross-file filtering queries require it — specifically files in `findings/` and `conclusions/` (where many files accumulate over a project), and `plans/phase-NN-index.md` files. Frontmatter is NOT added to wiki files, templates, or plans/scripts.
+Every template whose output lands in a monitored dir (`findings/`, `conclusions/`, `plans/`, `deliverables/`) carries frontmatter — the type/phase/topic metadata for cross-file filtering plus the ADR-021 index-projection fields. Frontmatter is NOT added to wiki files (`wiki/client/` + `wiki/user/` ban it outright — ADR-012) or scripts. The exceptions are `addendum.conclusions-section-template.md` (appended into a parent file, never standalone) and `tmp.working-file-template.md` (tmp/ is not indexed).
 
 ### Schema
 
 **`findings/*.md`** (results, notes, signal, field-notes):
 ```yaml
 ---
-type: poc-results | research-results | signal-results | session-results | field-notes | addendum-results | handoff
+type: poc-results | research-results | signal-results | session-results | field-notes | addendum-results | handoff | poc-notes | research-notes | addendum-notes
 phase: "NN"
 topic: "[slug]"
 status: in-progress | complete
@@ -122,6 +122,16 @@ author: AI | Human | Mixed
 date: "YYYY-MM-DD"
 # signal-results only:
 discovery_type: external | internal
+---
+```
+
+**`plans/*.md`** (plan, roadmap, backlog tiers):
+```yaml
+---
+type: poc-plan | addendum-plan | research-plan | session-plan | phase-index | poc-roadmap | discovery-backlog
+phase: "NN"            # omitted on discovery-backlog (one per project)
+topic: "[slug]"        # plan templates only
+status: draft | planned | in-progress | complete   # plan templates; phase-index uses active | concluded
 ---
 ```
 

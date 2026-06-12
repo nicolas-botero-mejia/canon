@@ -257,8 +257,8 @@ Validates structural contracts on four file types — required for MCP query rel
 - `CONTENT_INDEX.md` entries: per-entry two-form check — full four-part block (`###` heading + all three markers) or lightweight one-liner (0 markers); 1–2 of 3 markers = broken entry; file entries demoted below `###` are flagged. Validated by the Node core (`bin/validate-md.mjs`, fence-aware — ADR-019)
 - `plans/phase-NN-index.md §Decisions Tracker`: all four columns present (`ID`, `Description`, `Status`, `Closed`)
 - `plans/phase-NN-poc-roadmap.md`: status values are from the allowed set — core emojis (🔜 ⏳ 🔄 ✅ ⏭️) plus terminal text statuses (`Deprecated`, `~~In Progress~~ Deprecated`, `Migrated → Phase NN`)
-- `findings/*.md`: `**Author:**` and `**Date:**` present in first 10 lines
-- `conclusions/*.md`: `**Author:**`, `**Date:**`/`**Synthesis date:**`, and `**Alignment verified:**` present in first 10 lines
+- `findings/*.md`: `**Author:**` and `**Date:**` present in the first 10 body lines (frontmatter-aware window)
+- `conclusions/*.md`: `**Author:**`, `**Date:**`/`**Synthesis date:**`, and `**Alignment verified:**` present in the first 10 body lines (frontmatter-aware window)
 - `wiki/client/` + `wiki/user/` `.md` files: no YAML frontmatter (ADR-012 — these layers are read whole by MCP)
 
 **Dependencies:** `grep`, `find`, `head` — standard POSIX.
@@ -539,13 +539,13 @@ Structural guarantees for template-generated files. Required for MCP query relia
 
 ### `findings/*.md`
 
-- **Required header fields (first 10 lines):** `**Author:**`, `**Date:**`, `**Status:**`
+- **Required header fields (first 10 body lines — leading YAML frontmatter excluded):** `**Author:**`, `**Date:**`, `**Status:**`
 - **YAML frontmatter:** `type`, `phase`, `topic`, `status`, `author`, `date` (see `system-template-standards.md`)
 - **Contract:** these fields appear in the first 10 lines of every file
 
 ### `conclusions/*.conclusions.md`
 
-- **Required header fields (first 10 lines):** `**Author:**`, `**Date:**` or `**Synthesis date:**`, `**Status:**`, `**Alignment verified:**`
+- **Required header fields (first 10 body lines — leading YAML frontmatter excluded):** `**Author:**`, `**Date:**` or `**Synthesis date:**`, `**Status:**`, `**Alignment verified:**`
 - **YAML frontmatter:** `type`, `phase`, `topic`, `status`, `alignment_verified`
 - **Contract:** `**Alignment verified:**` must be present somewhere in the file; left empty (``) until verified
 

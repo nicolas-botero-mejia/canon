@@ -1,6 +1,19 @@
+---
+type: poc-notes
+phase: "[NN]"
+topic: "[short-name]"
+status: in-progress
+author: Mixed
+date: "YYYY-MM-DD"
+description: ""
+key_facts: []
+questions: []
+---
 # POC NN — [POC Name]: Notes
 
 **Phase:** Phase NN
+**Author:** Mixed
+**Date:** YYYY-MM-DD
 **POC:** poc-NN-[name]
 **Plan:** `plans/phase-NN-poc-NN-[name]-plan.md`
 **Status:** In progress

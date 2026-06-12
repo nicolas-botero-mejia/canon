@@ -13,6 +13,16 @@ pass() { echo "  ✓ $1"; }
 fail() { echo "  ✗ $1"; ERRORS=$((ERRORS + 1)); }
 warn() { echo "  ⚠  $1"; }
 
+# First 10 lines of the document BODY — leading YAML frontmatter (--- … ---) is
+# metadata, not the header block. Templates carry frontmatter (ADR-021), so a
+# raw `head -10` would never reach the **Author:**/**Date:** lines.
+header_window() {
+  awk 'NR==1 && /^---$/ { infm=1; next }
+       infm && /^---$/  { infm=0; next }
+       infm { next }
+       { print; n++; if (n==10) exit }' "$1"
+}
+
 # ── CONTENT_INDEX.md: per-entry validation (path-tiered two-form model) ──────
 # Validation lives in the Node core (ADR-019): a fence-aware markdownlint rule —
 # headings and markers inside code blocks are not entries (the awk predecessor
@@ -96,8 +106,8 @@ FINDINGS_FAIL=0
 for f in "${CONSUMER_ROOT}/findings/"*.md; do
   [ -f "$f" ] || continue
   FINDINGS_COUNT=$((FINDINGS_COUNT + 1))
-  # Check first 10 lines for **Author:** and **Date:**
-  HEADER="$(head -10 "$f")"
+  # Check the first 10 body lines (frontmatter-aware) for **Author:** and **Date:**
+  HEADER="$(header_window "$f")"
   HAS_AUTHOR=$(echo "$HEADER" | grep -c "^\*\*Author:\*\*" || true)
   HAS_DATE=$(echo "$HEADER" | grep -c "^\*\*Date:\*\*\|^\*\*Synthesis date:\*\*" || true)
   if [ "$HAS_AUTHOR" -eq 0 ] || [ "$HAS_DATE" -eq 0 ]; then
@@ -117,7 +127,7 @@ CONCLUSIONS_FAIL=0
 for f in "${CONSUMER_ROOT}/conclusions/"*.md; do
   [ -f "$f" ] || continue
   CONCLUSIONS_COUNT=$((CONCLUSIONS_COUNT + 1))
-  HEADER="$(head -10 "$f")"
+  HEADER="$(header_window "$f")"
   HAS_AUTHOR=$(echo "$HEADER" | grep -c "^\*\*Author:\*\*" || true)
   HAS_DATE=$(echo "$HEADER" | grep -c "^\*\*Date:\*\*\|^\*\*Synthesis date:\*\*" || true)
   HAS_ALIGN=$(grep -c "^\*\*Alignment verified:\*\*" "$f" || true)
