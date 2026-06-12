@@ -75,13 +75,14 @@ function normalizeTarget(raw) {
   return t
 }
 
-// Collect every markdown link target in a document — inline resources and
-// reference definitions — from micromark tokens. Fence-awareness is structural:
-// fenced code yields no link tokens at all, and a path in prose yields nothing
-// either, so "mentioned on a line that also has an unrelated link" can never
-// count as a target (the false negative the line-grep matcher had).
-export function extractLinkTargets(content) {
-  const targets = new Set()
+// Collect every markdown link destination — inline resources and reference
+// definitions — in document order, raw (`./`/`../` prefixes and fragments
+// intact). Fence-awareness is structural: fenced and inline code yield no link
+// tokens, a path in prose yields nothing, and a link title is a separate token
+// so titled links yield the bare path (the python regex extractor in the old
+// check-links grabbed the title too — ADR-019 stage 3).
+export function extractLinkDestinations(content) {
+  const destinations = []
   const collector = {
     names: ['canon-collect-link-targets'],
     description: 'internal: collect link destinations',
@@ -91,7 +92,7 @@ export function extractLinkTargets(content) {
       const walk = (tokens) => {
         for (const t of tokens) {
           if (t.type === 'resourceDestinationString' || t.type === 'definitionDestinationString') {
-            targets.add(normalizeTarget(t.text))
+            destinations.push(t.text)
           }
           if (t.children) walk(t.children)
         }
@@ -104,7 +105,13 @@ export function extractLinkTargets(content) {
     customRules: [collector],
     config: { default: false, 'canon-collect-link-targets': true },
   })
-  return targets
+  return destinations
+}
+
+// The same destinations as a normalized Set — the registration matcher's view
+// (ADR-019 stage 2): "is this root-relative path a link target in the index?"
+export function extractLinkTargets(content) {
+  return new Set(extractLinkDestinations(content).map(normalizeTarget))
 }
 
 // Which of the given root-relative paths are not registered as link targets in

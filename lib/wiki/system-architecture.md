@@ -213,12 +213,12 @@ Scans `wiki/`, `findings/`, `plans/`, `conclusions/`, `deliverables/` for `.md` 
 **Used by:** Stop hook.
 
 ### `scripts/check-links.sh`
-Scans all `.md` files in `wiki/`, `findings/`, `plans/`, `CONTENT_INDEX.md`, and `.claude/` for relative markdown links (`./` or `../` prefixes). Resolves each path and checks it exists. Ignores fragment-only links.
+Scans all `.md` files in `wiki/`, `findings/`, `plans/`, `conclusions/`, `CONTENT_INDEX.md`, `CLAUDE.md`, and `.claude/` for relative markdown links (`./` or `../` prefixes). Resolves each against the linking file's directory and checks the target exists — `-e`, so directory targets like `[x](./deliverables/)` are valid links (ADR-019 stage 3). Link extraction runs on the Node validation core: fenced and inline code yield no links, and titled links yield the bare path. Ignores fragment-only links.
 
-> **Scope note:** `.claude/` (agents, skills, rules) was added to DIRS on 2026-06-01 to close a blind spot — broken links inside agent/skill/rules files were previously undetected by this check.
+> **Scope note:** `.claude/` (agents, skills, rules) was added to DIRS on 2026-06-01 to close a blind spot — broken links inside agent/skill/rules files were previously undetected by this check. `conclusions/` + `CLAUDE.md` joined later (G7).
 
-**Dependencies:** `python3` for link extraction (avoids BSD/GNU grep compatibility issues).
-**Dependency check:** Script self-tests for `python3` and exits with an install message if missing.
+**Dependencies:** `node` via `bin/validate-md.mjs` (link extraction — replaced the python3 extractor, ADR-019 stage 3).
+**Dependency check:** Script self-tests for `node` and exits 1 with a message if missing.
 **Used by:** Stop hook.
 
 ### `scripts/session-start-report.sh`
