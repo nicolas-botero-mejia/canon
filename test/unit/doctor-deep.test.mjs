@@ -16,15 +16,13 @@ import assert from 'node:assert/strict'
 import { mkdtempSync, cpSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { execSync } from 'node:child_process'
 import { CONTENT_CHECKS, runContentChecks } from '../../bin/commands/doctor.mjs'
 
 const PKG = new URL('../../', import.meta.url).pathname.replace(/\/$/, '')
 const CLEAN = join(PKG, 'test', 'fixtures', 'clean-populated')
 
-let HAS_PYTHON3 = false
-try { execSync('command -v python3', { stdio: 'ignore' }); HAS_PYTHON3 = true } catch { /* none */ }
-const needsPython = HAS_PYTHON3 ? false : 'python3 not available (check-links can\'t run)'
+// No python3 gate: the doctor roster's last python3 consumer (check-links) moved
+// its link extraction to the Node core (ADR-019 stage 3).
 
 // Copy the compliant tree to a temp consumer, optionally mutate it, then re-write
 // CONTENT_INDEX.md LAST so it is the newest file — this neutralises check-index's
@@ -51,7 +49,7 @@ test('CONTENT_CHECKS roster is the six content scripts in order', () => {
 
 // ─── pass tier ─────────────────────────────────────────────────────────────────
 
-test('runContentChecks: clean-populated → every check passes', { skip: needsPython }, () => {
+test('runContentChecks: clean-populated → every check passes', () => {
   for (const r of runContentChecks(stageConsumer(), PKG)) {
     assert.equal(r.tier, 'pass', `${r.script} expected pass:\n${r.out}`)
   }
@@ -59,7 +57,7 @@ test('runContentChecks: clean-populated → every check passes', { skip: needsPy
 
 // ─── warn tier (G2): the bug this whole fix exists for ─────────────────────────
 
-test('runContentChecks: Complete conclusion w/ empty alignment date → WARN, not swallowed', { skip: needsPython }, () => {
+test('runContentChecks: Complete conclusion w/ empty alignment date → WARN, not swallowed', () => {
   const dir = stageConsumer(d => {
     const f = join(d, 'conclusions', 'phase-01-poc-01-conclusions.md')
     writeFileSync(f, readFileSync(f, 'utf8').replace('**Alignment verified:** 2026-06-02', '**Alignment verified:**'))

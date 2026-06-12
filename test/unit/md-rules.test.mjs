@@ -5,7 +5,7 @@
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { runContentIndexCheck, runIndexRegistrationCheck } from '../../bin/lib/md-rules.mjs'
+import { runContentIndexCheck, runIndexRegistrationCheck, extractLinkDestinations } from '../../bin/lib/md-rules.mjs'
 
 const FULL_ENTRY = [
   '### [a.md](./wiki/a.md)',
@@ -81,4 +81,21 @@ test('md-rules: registration — ./-prefix, #fragment, and reference definitions
   ].join('\n')
   const { missing } = runIndexRegistrationCheck(md, ['findings/a.md', 'findings/b.md', 'conclusions/c.md'])
   assert.deepEqual(missing, [])
+})
+
+// ── ADR-019 stage 3: raw destination extraction for check-links ──────────────
+
+test('md-rules: destinations — relative forms preserved raw, titles excluded', () => {
+  const md = [
+    '- [a](./a.md "with a title")',
+    '- [b](../up/b.md)',
+    '- [c](wiki/c.md#frag)',
+    '',
+  ].join('\n')
+  assert.deepEqual(extractLinkDestinations(md), ['./a.md', '../up/b.md', 'wiki/c.md#frag'])
+})
+
+test('md-rules: destinations — fenced and inline-code links yield nothing', () => {
+  const md = 'Use `[x](./inline.md)` and:\n\n```\n[y](./fenced.md)\n```\n'
+  assert.deepEqual(extractLinkDestinations(md), [])
 })

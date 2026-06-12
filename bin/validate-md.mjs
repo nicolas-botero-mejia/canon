@@ -2,10 +2,12 @@
 // Thin CLI over the Node validation core (ADR-019), called by lib/scripts wrappers.
 //   validate-md.mjs content-index <file>
 //   validate-md.mjs index-registration <file> [relpath...]
-// Output protocol: issues one-per-line + exit 1; `OK <count>` + exit 0.
-// Exit 2 = usage error. The bash wrapper owns ✓/⚠/✗ formatting and tiers.
+//   validate-md.mjs link-targets <file>
+// Output protocol (validating modes): issues one-per-line + exit 1; `OK <count>`
+// + exit 0. link-targets is pure extraction: raw destinations one-per-line,
+// always exit 0. Exit 2 = usage error. The bash wrapper owns ✓/⚠/✗ and tiers.
 import { readFileSync } from 'fs'
-import { runContentIndexCheck, runIndexRegistrationCheck } from './lib/md-rules.mjs'
+import { runContentIndexCheck, runIndexRegistrationCheck, extractLinkDestinations } from './lib/md-rules.mjs'
 
 const [mode, file, ...rest] = process.argv.slice(2)
 
@@ -23,7 +25,9 @@ if (mode === 'content-index' && file) {
     process.exit(1)
   }
   console.log(`OK ${checkedCount}`)
+} else if (mode === 'link-targets' && file) {
+  for (const dest of extractLinkDestinations(readFileSync(file, 'utf8'))) console.log(dest)
 } else {
-  console.error('usage: validate-md.mjs content-index <file> | index-registration <file> [relpath...]')
+  console.error('usage: validate-md.mjs content-index <file> | index-registration <file> [relpath...] | link-targets <file>')
   process.exit(2)
 }

@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
-# Checks that all relative markdown links in project files resolve to existing files.
+# Checks that all relative markdown links in project files resolve to existing paths.
 # Exits 2 if broken links are found. (Advisory from the Stop hook — see bin/hook.sh.)
 
 PROJECT_ROOT="$(pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIRS=("wiki" "findings" "plans" "conclusions" "CONTENT_INDEX.md" "CLAUDE.md" ".claude")
 
-# Dependency check — python3 required for link extraction
-if ! command -v python3 &>/dev/null; then
-  echo "⚠  check-links.sh requires python3."
-  echo "   Install: brew install python3"
+# Dependency check — node required for link extraction (ADR-019 stage 3; node is
+# present by construction in consumers — the package arrived via npm)
+if ! command -v node &>/dev/null; then
+  echo "⚠  check-links.sh requires node."
   exit 1
 fi
 BROKEN=()
@@ -18,7 +19,9 @@ check_file() {
   local file_dir
   file_dir="$(dirname "$file")"
 
-  # Extract relative link targets — lines like [text](./path) or [text](../path)
+  # Link extraction runs on the Node core (ADR-019 stage 3): micromark tokens,
+  # so fenced/inline code yields no links and titled links yield the bare path
+  # (the old python regex grabbed the title into the target).
   while IFS= read -r target; do
     # Strip any fragment (#section)
     target="${target%%#*}"
@@ -28,19 +31,11 @@ check_file() {
     [[ "$target" != ./* && "$target" != ../* ]] && continue
 
     resolved="$file_dir/$target"
-    if [[ ! -f "$resolved" ]]; then
+    # -e, not -f: directory targets like [x](./deliverables/) are valid links
+    if [[ ! -e "$resolved" ]]; then
       BROKEN+=("${file#$PROJECT_ROOT/} → $target")
     fi
-  done < <(python3 -c "
-import re, sys
-content = open(sys.argv[1]).read()
-# Remove fenced code blocks before extracting links
-content = re.sub(r'\`\`\`.*?\`\`\`', '', content, flags=re.DOTALL)
-# Remove inline code spans
-content = re.sub(r'\`[^\`]+\`', '', content)
-for m in re.findall(r'\]\(([^)]+)\)', content):
-    print(m)
-" "$file" 2>/dev/null)
+  done < <(node "${SCRIPT_DIR}/../../bin/validate-md.mjs" link-targets "$file" 2>/dev/null)
 }
 
 for entry in "${DIRS[@]}"; do

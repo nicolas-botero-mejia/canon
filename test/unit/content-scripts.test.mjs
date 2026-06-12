@@ -22,8 +22,9 @@ const PKG = new URL('../../', import.meta.url).pathname.replace(/\/$/, '')
 const SCRIPTS = join(PKG, 'lib', 'scripts')
 const FIXTURES = join(PKG, 'test', 'fixtures')
 
-// python3 is a hard dependency of check-links.sh (and post-write-check.sh). Skip
-// those cases rather than fail when it's absent, so the suite is environment-robust.
+// python3 is a hard dependency of post-write-check.sh (JSON parsing). Skip those
+// cases rather than fail when it's absent, so the suite is environment-robust.
+// (check-links migrated its extraction to the Node core — ADR-019 stage 3.)
 let HAS_PYTHON3 = false
 try { execSync('command -v python3', { stdio: 'ignore' }); HAS_PYTHON3 = true } catch { /* no python3 */ }
 const needsPython = HAS_PYTHON3 ? false : 'python3 not available'
@@ -45,7 +46,7 @@ for (const s of ['check-index', 'check-stale-refs', 'check-conclusions-alignment
   })
 }
 
-test('clean-populated: check-links passes (exit 0)', { skip: needsPython }, () => {
+test('clean-populated: check-links passes (exit 0)', () => {
   const { status, out } = runScript('check-links', 'clean-populated')
   assert.equal(status, 0, `check-links should pass on a compliant tree:\n${out}`)
 })
@@ -82,10 +83,18 @@ test('bad/unregistered-file → check-index FAILs (exit 2)', () => {
   assert.match(out, /not listed/)
 })
 
-test('bad/broken-link → check-links FAILs (exit 2)', { skip: needsPython }, () => {
+test('bad/broken-link → check-links FAILs (exit 2)', () => {
   const { status, out } = runScript('check-links', 'bad/broken-link')
   assert.equal(status, 2, out)
   assert.match(out, /Broken markdown links/)
+})
+
+// ─── ADR-019 stage 3: link extraction on the Node core — directory targets and
+// titled links are valid, fenced links invisible. The python-regex extractor +
+// -f test flagged all of these (probe-confirmed false positives). ──────────────
+test('bad/links-target-forms → check-links PASSes (directory + titled + fenced forms)', () => {
+  const { status, out } = runScript('check-links', 'bad/links-target-forms')
+  assert.equal(status, 0, `valid target forms must not be flagged:\n${out}`)
 })
 
 // ─── G3 fixed: check-index now requires the path to appear in a markdown link,
@@ -183,7 +192,7 @@ test('bad/content-index-fenced-example → check-contracts PASSes (fenced ### is
 })
 
 // G7 fixed: check-links now scans conclusions/ and CLAUDE.md too.
-test('bad/links-unscanned-paths → check-links FAILs on broken links in conclusions/ + CLAUDE.md (G7 fixed)', { skip: needsPython }, () => {
+test('bad/links-unscanned-paths → check-links FAILs on broken links in conclusions/ + CLAUDE.md (G7 fixed)', () => {
   const { status, out } = runScript('check-links', 'bad/links-unscanned-paths')
   assert.equal(status, 2, out)
   assert.match(out, /Broken markdown links/)
